@@ -10,11 +10,11 @@
 
 # Kotlinx Serialization
 -keepclassmembers class kotlinx.serialization.json.** { *; }
--keep,includedescriptorclasses class com.zarnth.savr.**$$serializer { *; }
--keepclassmembers class com.zarnth.savr.** {
+-keep,includedescriptorclasses class in.iambhvsh.shelf.**$$serializer { *; }
+-keepclassmembers class in.iambhvsh.shelf.** {
     *** Companion;
 }
--keepclasseswithmembers class com.zarnth.savr.** {
+-keepclasseswithmembers class in.iambhvsh.shelf.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 

@@ -17,7 +17,7 @@ val appVersionName: String = versionProps.getProperty("VERSION_NAME", "1.0.0")
 val appVersionCode: Int = versionProps.getProperty("VERSION_CODE", "1").toInt()
 
 android {
-    namespace = "com.iambhvsh.shelf"
+    namespace = "in.iambhvsh.shelf"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.iambhvsh.shelf"
+        applicationId = "in.iambhvsh.shelf"
         minSdk = 28
         targetSdk = 36
         versionCode = appVersionCode

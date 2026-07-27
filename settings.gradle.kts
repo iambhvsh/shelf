@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Savr"
+rootProject.name = "Shelf"
 include(":app")

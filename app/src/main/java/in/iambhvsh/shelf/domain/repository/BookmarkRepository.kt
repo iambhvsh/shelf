@@ -1,0 +1,23 @@
+package in.iambhvsh.shelf.domain.repository
+
+import in.iambhvsh.shelf.domain.model.Bookmark
+import in.iambhvsh.shelf.domain.model.Collection
+import in.iambhvsh.shelf.utils.Resource
+import kotlinx.coroutines.flow.Flow
+
+interface BookmarkRepository {
+    suspend fun insert(bookmark: Bookmark): Boolean
+    fun getBookmarks(): Flow<Resource<List<Bookmark>>>
+    suspend fun getBookmarksWithoutImage(): List<Bookmark>
+    suspend fun hideBookmarks(ids: List<Long>)
+    suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>>
+
+    suspend fun createCollection(name: String): Long
+    suspend fun deleteCollection(collection: Collection)
+    fun getAllCollections(): Flow<Resource<List<Collection>>>
+    fun getBookmarksInCollection(collectionId: Long): Flow<Resource<List<Bookmark>>>
+    suspend fun addBookmarkToCollection(bookmarkId: Long, collectionId: Long)
+    suspend fun addBookmarksToCollection(bookmarkIds: List<Long>, collectionId: Long)
+    suspend fun removeBookmarkFromCollection(bookmarkId: Long, collectionId: Long)
+    suspend fun updateImageUrl(id: Long, imageUrl: String?)
+}
