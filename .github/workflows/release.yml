@@ -101,12 +101,12 @@ jobs:
         run: |
           tag="v$VERSION"
           mkdir -p dist
-          cp app/build/outputs/apk/release/*.apk "dist/Shelf-$VERSION.apk"
+          cp app/build/outputs/apk/release/*.apk "dist/shelf-release.apk"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag already exists, skipping."
             exit 0
           fi
-          gh release create "$tag" "dist/Shelf-$VERSION.apk" \
+          gh release create "$tag" "dist/shelf-release.apk" \
             --title "Shelf $VERSION" \
             --generate-notes
 
