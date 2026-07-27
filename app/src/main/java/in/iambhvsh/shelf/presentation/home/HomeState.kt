@@ -2,6 +2,7 @@ package `in`.iambhvsh.shelf.presentation.home
 
 import `in`.iambhvsh.shelf.domain.model.Bookmark
 import `in`.iambhvsh.shelf.domain.model.SortOrder
+import `in`.iambhvsh.shelf.domain.model.Collection
 
 data class HomeState(
     val isLoading: Boolean = false,
@@ -16,7 +17,7 @@ data class HomeState(
     val selectedIds: Set<Long> = emptySet(),
     val isSelectionMode: Boolean = false,
     val showCollectionPicker: Boolean = false,
-    val collections: List<in.iambhvsh.shelf.domain.model.Collection> = emptyList(),
+    val collections: List<Collection> = emptyList(),
     val sortOrder: SortOrder = SortOrder.DATE_NEWEST,
     val showSortSheet: Boolean = false,
     val duplicateToastKey: Int = 0

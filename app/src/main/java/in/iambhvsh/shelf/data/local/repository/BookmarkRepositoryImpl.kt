@@ -3,6 +3,7 @@ package `in`.iambhvsh.shelf.data.local.repository
 import `in`.iambhvsh.shelf.data.local.dao.BookmarkDao
 import `in`.iambhvsh.shelf.data.local.dao.CollectionDao
 import `in`.iambhvsh.shelf.data.local.entity.BookmarkCollectionCrossRef
+import `in`.iambhvsh.shelf.data.local.entity.CollectionEntity
 import `in`.iambhvsh.shelf.data.local.mapper.toDomain
 import `in`.iambhvsh.shelf.data.local.mapper.toEntity
 import `in`.iambhvsh.shelf.domain.model.Bookmark
@@ -47,7 +48,7 @@ class BookmarkRepositoryImpl(
 
     override suspend fun createCollection(name: String): Long {
         return collectionDao.insertCollection(
-            in.iambhvsh.shelf.data.local.entity.CollectionEntity(name = name)
+            CollectionEntity(name = name)
         )
     }
 
