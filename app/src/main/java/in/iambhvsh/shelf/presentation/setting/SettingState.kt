@@ -42,11 +42,13 @@ data class SettingState(
     val autoBackupEnabled: Boolean = false,
     val lastBackupTimeText: String = "",
     val showAutoBackupInfoDialog: Boolean = false,
+    val appLockEnabled: Boolean = false,
     val exportState: ExportState = ExportState.Idle,
     val importState: ImportState = ImportState.Idle,
     val browserImportState: BrowserImportState = BrowserImportState.Idle,
     val browserExportState: ExportState = ExportState.Idle,
     val showExportSheet: Boolean = false,
     val showImportSheet: Boolean = false,
+    val showAboutSheet: Boolean = false,
     val showAboutDialog: Boolean = false
 )

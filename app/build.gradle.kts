@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
-// Single source of truth for versioning. Bump version.properties to release.
 val versionProps = Properties().apply {
     val file = rootProject.file("version.properties")
     if (file.exists()) load(FileInputStream(file))
@@ -30,9 +29,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Signing is optional locally. In CI, these env vars are populated from
-    // GitHub Secrets (see .github/workflows/release.yml). Without them the
-    // release build is simply left unsigned, unless local secrets exist.
     val hasSigningEnv = !System.getenv("KEYSTORE_PATH").isNullOrEmpty()
     val localKeystore = rootProject.file("secrets/shelf-release.jks")
     val localKeysFile = rootProject.file("secrets/Shelf-signing-keys.txt")
@@ -121,8 +117,5 @@ dependencies {
     implementation("androidx.browser:browser:1.10.0")
 
     implementation("com.materialkolor:material-kolor:5.0.0")
-
-
-
-
+    implementation(libs.androidx.biometric)
 }

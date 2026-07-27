@@ -3,6 +3,7 @@ package `in`.iambhvsh.shelf.presentation.home
 import `in`.iambhvsh.shelf.domain.model.Bookmark
 import `in`.iambhvsh.shelf.domain.model.SortOrder
 import `in`.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.domain.model.Tag
 
 data class HomeState(
     val isLoading: Boolean = false,
@@ -20,5 +21,9 @@ data class HomeState(
     val collections: List<Collection> = emptyList(),
     val sortOrder: SortOrder = SortOrder.DATE_NEWEST,
     val showSortSheet: Boolean = false,
-    val duplicateToastKey: Int = 0
+    val duplicateToastKey: Int = 0,
+    val tags: List<Tag> = emptyList(),
+    val tempBookmarkTags: List<Tag> = emptyList(),
+    val showTagManager: Boolean = false,
+    val activeTagFilters: Set<Long> = emptySet()
 )

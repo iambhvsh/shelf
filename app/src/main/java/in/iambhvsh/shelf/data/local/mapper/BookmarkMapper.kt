@@ -11,7 +11,8 @@ fun BookmarkEntity.toDomain(): Bookmark {
         title = title,
         description = description,
         imageUrl = imageUrl,
-        createdAt = createdAt
+        createdAt = createdAt,
+        isPinned = isPinned
     )
 }
 
@@ -22,6 +23,7 @@ fun Bookmark.toEntity(): BookmarkEntity {
         title = title,
         description = description,
         imageUrl = imageUrl,
-        createdAt = createdAt
+        createdAt = createdAt,
+        isPinned = isPinned
     )
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
@@ -21,11 +22,13 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
 
     private val parser = LinkMetadataParser()
     private var rawBookmarks: List<Bookmark> = emptyList()
+    private var bookmarkJob: Job? = null
     private var isFetchingMetadata = false
 
     init {
         loadBookmarks()
         loadCollections()
+        loadTags()
         fetchMissingMetadataOnStart()
     }
 
@@ -160,6 +163,55 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
             HomeEvents.HideSortSheet -> {
                 _state.update { it.copy(showSortSheet = false) }
             }
+            
+            is HomeEvents.TogglePin -> {
+                viewModelScope.launch {
+                    repository.togglePinStatus(events.bookmark.id, !events.bookmark.isPinned)
+                }
+            }
+            
+            HomeEvents.ShowTagManager -> {
+                _state.update { it.copy(showTagManager = true) }
+            }
+            
+            HomeEvents.HideTagManager -> {
+                _state.update { it.copy(showTagManager = false) }
+            }
+            
+            is HomeEvents.CreateTag -> {
+                viewModelScope.launch {
+                    repository.insertTag(events.name)
+                }
+            }
+            
+            is HomeEvents.ToggleTagForBookmark -> {
+                val tempBm = _state.value.tempBookmark ?: return
+                viewModelScope.launch {
+                    if (events.isChecked) {
+                        repository.addTagToBookmark(tempBm.id, events.tag.id)
+                    } else {
+                        repository.removeTagFromBookmark(tempBm.id, events.tag.id)
+                    }
+                    repository.getTagsForBookmark(tempBm.id).collect { resource ->
+                        if (resource is Resource.Success) {
+                            _state.update { it.copy(tempBookmarkTags = resource.data ?: emptyList()) }
+                        }
+                    }
+                }
+            }
+            
+            is HomeEvents.ToggleTagFilter -> {
+                _state.update { state ->
+                    val newFilters = state.activeTagFilters.toMutableSet()
+                    if (newFilters.contains(events.tagId)) {
+                        newFilters.remove(events.tagId)
+                    } else {
+                        newFilters.add(events.tagId)
+                    }
+                    state.copy(activeTagFilters = newFilters)
+                }
+                loadBookmarks()
+            }
         }
     }
 
@@ -232,6 +284,16 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
         }
     }
 
+    private fun loadTags() {
+        viewModelScope.launch {
+            repository.getAllTags().collect { resource ->
+                if (resource is Resource.Success) {
+                    _state.update { it.copy(tags = resource.data ?: emptyList()) }
+                }
+            }
+        }
+    }
+
     private fun addSelectedToCollection(collectionId: Long) {
         val ids = _state.value.selectedIds.toList()
         if (ids.isEmpty()) return
@@ -248,8 +310,15 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
     }
 
     private fun loadBookmarks() {
-        viewModelScope.launch {
-            repository.getBookmarks().collect { data ->
+        bookmarkJob?.cancel()
+        bookmarkJob = viewModelScope.launch {
+            val filters = _state.value.activeTagFilters
+            val flow = if (filters.isEmpty()) {
+                repository.getBookmarks()
+            } else {
+                repository.getBookmarksByTags(filters.toList())
+            }
+            flow.collect { data ->
                 when (data) {
                     is Resource.Error<*> -> {
                         _state.update {
@@ -301,10 +370,10 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
 
     private fun sortBookmarks(bookmarks: List<Bookmark>, sortOrder: SortOrder): List<Bookmark> {
         return when (sortOrder) {
-            SortOrder.DATE_NEWEST -> bookmarks.sortedByDescending { it.createdAt }
-            SortOrder.DATE_OLDEST -> bookmarks.sortedBy { it.createdAt }
-            SortOrder.TITLE_ASC -> bookmarks.sortedBy { it.title?.lowercase() }
-            SortOrder.TITLE_DESC -> bookmarks.sortedByDescending { it.title?.lowercase() }
+            SortOrder.DATE_NEWEST -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenByDescending { it.createdAt })
+            SortOrder.DATE_OLDEST -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenBy { it.createdAt })
+            SortOrder.TITLE_ASC -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenBy { it.title?.lowercase() })
+            SortOrder.TITLE_DESC -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenByDescending { it.title?.lowercase() })
         }
     }
 }

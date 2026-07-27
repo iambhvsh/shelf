@@ -7,10 +7,22 @@ import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository {
     suspend fun insert(bookmark: Bookmark): Boolean
+    suspend fun deleteBookmark(bookmark: Bookmark)
+    fun getAllBookmarks(): Flow<Resource<List<Bookmark>>>
     fun getBookmarks(): Flow<Resource<List<Bookmark>>>
+    fun getBookmarksByTags(tagIds: List<Long>): Flow<Resource<List<Bookmark>>>
     suspend fun getBookmarksWithoutImage(): List<Bookmark>
     suspend fun hideBookmarks(ids: List<Long>)
     suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>>
+    suspend fun togglePinStatus(id: Long, isPinned: Boolean)
+
+    fun getAllTags(): Flow<Resource<List<in.iambhvsh.shelf.domain.model.Tag>>>
+    suspend fun insertTag(name: String): Long
+    suspend fun deleteTag(tagId: Long)
+    suspend fun addTagToBookmark(bookmarkId: Long, tagId: Long)
+    suspend fun removeTagFromBookmark(bookmarkId: Long, tagId: Long)
+    fun getTagsForBookmark(bookmarkId: Long): Flow<Resource<List<in.iambhvsh.shelf.domain.model.Tag>>>
+    fun getBookmarksForTag(tagId: Long): Flow<Resource<List<Long>>>
 
     suspend fun createCollection(name: String): Long
     suspend fun deleteCollection(collection: Collection)

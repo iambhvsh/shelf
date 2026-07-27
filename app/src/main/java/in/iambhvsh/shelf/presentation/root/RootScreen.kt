@@ -257,13 +257,11 @@ fun RootScreen(
                         searchQuery = collectionSearchQuery
                     )
                 },
-                settingsScreen = { onNavToAbout -> 
+                settingsScreen = { 
                     SettingScreen(
-                        onNavigateToAbout = onNavToAbout, 
                         viewModel = settingViewModel
                     ) 
-                },
-                aboutScreen = { onBack -> AboutScreen(onBack = onBack) }
+                }
             )
 
             BackHandler(enabled = isSearching) {

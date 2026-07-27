@@ -18,6 +18,7 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
         private const val KEY_ACCENT_COLOR = "accent_color"
         private const val KEY_VIEW_MODE = "view_mode"
         private const val KEY_AUTO_BACKUP = "auto_backup"
+        private const val KEY_APP_LOCK = "app_lock"
     }
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -72,5 +73,13 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun setAutoBackupEnabled(enabled: Boolean) {
         prefs.edit { putBoolean(KEY_AUTO_BACKUP, enabled) }
+    }
+
+    override fun getAppLockEnabled(): Boolean {
+        return prefs.getBoolean(KEY_APP_LOCK, false)
+    }
+
+    override fun setAppLockEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_APP_LOCK, enabled) }
     }
 }

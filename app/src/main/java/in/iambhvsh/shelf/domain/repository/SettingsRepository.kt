@@ -4,6 +4,7 @@ import `in`.iambhvsh.shelf.presentation.setting.TapAction
 import `in`.iambhvsh.shelf.presentation.setting.ViewMode
 import `in`.iambhvsh.shelf.ui.theme.AccentColor
 import `in`.iambhvsh.shelf.ui.theme.ThemeMode
+import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
     fun getThemeMode(): ThemeMode
@@ -18,4 +19,6 @@ interface SettingsRepository {
     fun setViewMode(mode: ViewMode)
     fun getAutoBackupEnabled(): Boolean
     fun setAutoBackupEnabled(enabled: Boolean)
+    fun getAppLockEnabled(): Boolean
+    fun setAppLockEnabled(enabled: Boolean)
 }

@@ -6,5 +6,6 @@ data class Bookmark(
     val title: String?,
     val description: String?,
     val imageUrl: String?,
+    val isPinned: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )

@@ -30,6 +30,8 @@ import `in`.iambhvsh.shelf.presentation.home.components.EmptyBookmarkState
 import `in`.iambhvsh.shelf.presentation.home.components.HomeInputSheet
 import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
 import `in`.iambhvsh.shelf.presentation.home.components.PhotoPreview
+import `in`.iambhvsh.shelf.presentation.home.components.TagFilterRow
+import `in`.iambhvsh.shelf.presentation.home.components.TagManagerSheet
 import `in`.iambhvsh.shelf.presentation.home.components.handleTap
 import `in`.iambhvsh.shelf.presentation.search.SearchResults
 import `in`.iambhvsh.shelf.presentation.setting.TapAction
@@ -99,42 +101,54 @@ fun HomeScreen(
             onPhotoClick = { viewModel.homeEvents(HomeEvents.PreviewImageClick(url = it)) }
         )
     } else {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            if (state.bookmarkData.isEmpty() && !state.isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    EmptyBookmarkState()
+            TagFilterRow(
+                tags = state.tags,
+                activeTagIds = state.activeTagFilters,
+                onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                if (state.bookmarkData.isEmpty() && !state.isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        EmptyBookmarkState()
+                    }
+                } else if (viewMode == ViewMode.GRID) {
+                    BookmarkGrid(
+                        items = state.bookmarkData,
+                        gridState = gridState,
+                        selectedIds = state.selectedIds,
+                        isSelectionMode = state.isSelectionMode,
+                        tapAction = tapAction,
+                        context = context,
+                        clipboard = clipboard,
+                        viewModel = viewModel
+                    )
+                } else {
+                    BookmarkList(
+                        items = state.bookmarkData,
+                        listState = listState,
+                        selectedIds = state.selectedIds,
+                        isSelectionMode = state.isSelectionMode,
+                        tapAction = tapAction,
+                        context = context,
+                        clipboard = clipboard,
+                        viewModel = viewModel
+                    )
                 }
-            } else if (viewMode == ViewMode.GRID) {
-                BookmarkGrid(
-                    items = state.bookmarkData,
-                    gridState = gridState,
-                    selectedIds = state.selectedIds,
-                    isSelectionMode = state.isSelectionMode,
-                    tapAction = tapAction,
-                    context = context,
-                    clipboard = clipboard,
-                    viewModel = viewModel
-                )
-            } else {
-                BookmarkList(
-                    items = state.bookmarkData,
-                    listState = listState,
-                    selectedIds = state.selectedIds,
-                    isSelectionMode = state.isSelectionMode,
-                    tapAction = tapAction,
-                    context = context,
-                    clipboard = clipboard,
-                    viewModel = viewModel
-                )
+                LoadingProgress(state.isLoading)
             }
-            LoadingProgress(state.isLoading)
         }
     }
 
@@ -154,8 +168,24 @@ fun HomeScreen(
 
     BookmarkPreviewSheet(
         showBottomSheet = state.isBodySheet,
+        isPinned = state.tempBookmark?.isPinned ?: false,
         onDismissRequest = { viewModel.homeEvents(HomeEvents.BookmarkPreviewDismissClick) },
         openInBrowser = { state.tempBookmark?.url?.let { openChromeTab(url = it, context = context) } },
-        copyLinkButtonClick = { state.tempBookmark?.url?.let { clipboard.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) } }
+        copyLinkButtonClick = { state.tempBookmark?.url?.let { clipboard.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) } },
+        onPinButtonClick = { state.tempBookmark?.let { viewModel.homeEvents(HomeEvents.TogglePin(it)) } },
+        onTagsButtonClick = { viewModel.homeEvents(HomeEvents.ShowTagManager) }
     )
+    if (state.showTagManager) {
+        TagManagerSheet(
+            tags = state.tags,
+            selectedTags = state.tempBookmarkTags,
+            onToggleTag = { tag, isChecked ->
+                viewModel.homeEvents(HomeEvents.ToggleTagForBookmark(tag, isChecked))
+            },
+            onCreateTag = { name ->
+                viewModel.homeEvents(HomeEvents.CreateTag(name))
+            },
+            onDismiss = { viewModel.homeEvents(HomeEvents.HideTagManager) }
+        )
+    }
 }

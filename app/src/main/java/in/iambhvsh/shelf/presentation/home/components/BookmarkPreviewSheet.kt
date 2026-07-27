@@ -20,6 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -46,9 +49,12 @@ import `in`.iambhvsh.shelf.R
 @Composable
 fun BookmarkPreviewSheet(
     showBottomSheet: Boolean,
+    isPinned: Boolean = false,
     onDismissRequest: () -> Unit,
     openInBrowser: () -> Unit,
-    copyLinkButtonClick: () -> Unit
+    copyLinkButtonClick: () -> Unit,
+    onPinButtonClick: (() -> Unit)? = null,
+    onTagsButtonClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     if (!showBottomSheet) return
@@ -57,6 +63,56 @@ fun BookmarkPreviewSheet(
         onDismissRequest = onDismissRequest,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
+        if (onPinButtonClick != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        onPinButtonClick()
+                        onDismissRequest()
+                    },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                headlineContent = {
+                    Text(if (isPinned) "Unpin" else "Pin")
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = if (isPinned) Icons.Default.Star else Icons.Outlined.StarBorder,
+                        contentDescription = "Pin Bookmark",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            )
+        }
+        
+        if (onTagsButtonClick != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        onTagsButtonClick()
+                        onDismissRequest()
+                    },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                headlineContent = {
+                    Text("Manage Tags")
+                },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.bookmark_add),
+                        contentDescription = "Manage Tags"
+                    )
+                }
+            )
+        }
         ListItem(
             modifier = Modifier
                 .padding(8.dp)

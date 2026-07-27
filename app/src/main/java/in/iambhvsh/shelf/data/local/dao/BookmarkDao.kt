@@ -28,8 +28,21 @@ interface BookmarkDao {
     @Query("UPDATE bookmarks SET isHidden = 1 WHERE id IN (:ids)")
     suspend fun hideBookmarks(ids: List<Long>)
 
+    @Query("UPDATE bookmarks SET isHidden = 0 WHERE id IN (:ids)")
+    suspend fun unhideBookmarks(ids: List<Long>)
+
+    @Query("UPDATE bookmarks SET isPinned = :isPinned WHERE id = :id")
+    suspend fun updatePinStatus(id: Long, isPinned: Boolean)
+
     @Query("SELECT * FROM bookmarks WHERE url = :url AND isHidden = 1 LIMIT 1")
     suspend fun findHiddenByUrl(url: String): BookmarkEntity?
+
+    @Query("""
+        SELECT DISTINCT b.* FROM bookmarks b 
+        INNER JOIN bookmark_tag_cross_ref cross ON b.id = cross.bookmarkId
+        WHERE cross.tagId IN (:tagIds) AND b.isHidden = 0
+    """)
+    fun getBookmarksByTags(tagIds: List<Long>): Flow<List<BookmarkEntity>>
 
     @Query("UPDATE bookmarks SET isHidden = 0, title = :title, description = :description, imageUrl = :imageUrl, createdAt = :createdAt WHERE id = :id")
     suspend fun unhideBookmark(id: Long, title: String?, description: String?, imageUrl: String?, createdAt: Long)

@@ -99,6 +99,7 @@ fun SearchResults(
                         imageUrl = item.imageUrl,
                         title = item.title,
                         description = item.description,
+                        isPinned = item.isPinned,
                         photoClickUrl = { onPhotoClick?.invoke(it) },
                         bodyClick = { onBodyClick?.invoke(item) },
                         onLongClick = { onLongClick?.invoke(item.id) },

@@ -134,6 +134,7 @@ fun CollectionDetailScreen(
                             imageUrl = item.imageUrl,
                             title = item.title,
                             description = item.description,
+                            isPinned = item.isPinned,
                             photoClickUrl = { Log.d("CollectionDetail", "Photo click: $it") },
                             bodyClick = {
                                 when (tapAction) {

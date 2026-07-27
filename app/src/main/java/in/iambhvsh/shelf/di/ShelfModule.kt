@@ -16,13 +16,14 @@ import org.koin.dsl.module
 
 val shelfModule = module {
 
-    // Database
     single {
         Room.databaseBuilder(
                 get(),
                 BookmarkDatabase::class.java,
                 "bookmark_db"
-            )            .fallbackToDestructiveMigration(true)
+            )
+            .addMigrations(BookmarkDatabase.MIGRATION_4_5)
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 
@@ -33,6 +34,10 @@ val shelfModule = module {
     single {
         get<BookmarkDatabase>().collectionDao()
     }
+    
+    single {
+        get<BookmarkDatabase>().tagDao()
+    }
 
     // Repository
     single<SettingsRepository> {
@@ -40,7 +45,11 @@ val shelfModule = module {
     }
 
     single<BookmarkRepository> {
-        BookmarkRepositoryImpl(get(), get())
+        BookmarkRepositoryImpl(
+            get<BookmarkDatabase>().bookmarkDao(),
+            get<BookmarkDatabase>().collectionDao(),
+            get<BookmarkDatabase>().tagDao()
+        )
     }
 
     single {

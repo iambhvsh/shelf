@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import `in`.iambhvsh.shelf.openChromeTab
 import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
 import `in`.iambhvsh.shelf.presentation.setting.components.AboutSection
+import `in`.iambhvsh.shelf.presentation.setting.components.AboutSheet
 import `in`.iambhvsh.shelf.presentation.setting.components.AccentColorSheet
 import `in`.iambhvsh.shelf.presentation.setting.components.AutoBackupInfoDialog
 import `in`.iambhvsh.shelf.presentation.setting.components.CommunitySection
@@ -31,6 +32,7 @@ import `in`.iambhvsh.shelf.presentation.setting.components.DataSection
 import `in`.iambhvsh.shelf.presentation.setting.components.GeneralSection
 import `in`.iambhvsh.shelf.presentation.setting.components.InfoDialog
 import `in`.iambhvsh.shelf.presentation.setting.components.LegalSection
+import `in`.iambhvsh.shelf.presentation.setting.components.SecuritySection
 import `in`.iambhvsh.shelf.presentation.setting.components.OptionSheet
 import `in`.iambhvsh.shelf.presentation.setting.components.RadioOptionSheet
 import `in`.iambhvsh.shelf.presentation.setting.components.ThemeSection
@@ -39,7 +41,6 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SettingScreen(
-    onNavigateToAbout: () -> Unit,
     viewModel: SettingViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -117,12 +118,13 @@ fun SettingScreen(
         ) {
             ThemeSection(state, viewModel)
             GeneralSection(state, viewModel)
+            SecuritySection(state, viewModel)
             DataSection(state, viewModel)
             CommunitySection(context)
             LegalSection(context)
             AboutSection(
                 versionName = versionName,
-                onAboutClick = onNavigateToAbout
+                onAboutClick = { viewModel.onEvent(SettingEvents.ShowAboutSheet) }
             )
         }
 
@@ -287,6 +289,13 @@ fun SettingScreen(
         AutoBackupInfoDialog(
             onEnable = { viewModel.onEvent(SettingEvents.ConfirmAutoBackupEnable) },
             onDismiss = { viewModel.onEvent(SettingEvents.DismissAutoBackupInfoDialog) }
+        )
+    }
+
+    if (state.showAboutSheet) {
+        AboutSheet(
+            versionName = versionName,
+            onDismiss = { viewModel.onEvent(SettingEvents.HideAboutSheet) }
         )
     }
 }

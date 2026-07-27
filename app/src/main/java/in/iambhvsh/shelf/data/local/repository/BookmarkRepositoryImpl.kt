@@ -2,8 +2,11 @@ package `in`.iambhvsh.shelf.data.local.repository
 
 import `in`.iambhvsh.shelf.data.local.dao.BookmarkDao
 import `in`.iambhvsh.shelf.data.local.dao.CollectionDao
+import `in`.iambhvsh.shelf.data.local.dao.TagDao
 import `in`.iambhvsh.shelf.data.local.entity.BookmarkCollectionCrossRef
+import `in`.iambhvsh.shelf.data.local.entity.BookmarkTagCrossRef
 import `in`.iambhvsh.shelf.data.local.entity.CollectionEntity
+import `in`.iambhvsh.shelf.data.local.entity.TagEntity
 import `in`.iambhvsh.shelf.data.local.mapper.toDomain
 import `in`.iambhvsh.shelf.data.local.mapper.toEntity
 import `in`.iambhvsh.shelf.domain.model.Bookmark
@@ -17,7 +20,8 @@ import kotlinx.coroutines.flow.onStart
 
 class BookmarkRepositoryImpl(
     private val dao: BookmarkDao,
-    private val collectionDao: CollectionDao
+    private val collectionDao: CollectionDao,
+    private val tagDao: TagDao
 ) : BookmarkRepository {
 
     override suspend fun insert(bookmark: Bookmark): Boolean {
@@ -32,6 +36,59 @@ class BookmarkRepositoryImpl(
         dao.hideBookmarks(ids)
     }
 
+    override suspend fun togglePinStatus(id: Long, isPinned: Boolean) {
+        dao.updatePinStatus(id, isPinned)
+    }
+
+    override fun getAllTags(): Flow<Resource<List<in.iambhvsh.shelf.domain.model.Tag>>> = flow {
+        emit(Resource.Loading())
+        try {
+            tagDao.getAllTags().collect { tags ->
+                emit(Resource.Success(tags.map { it.toDomain() }))
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error("Failed to fetch tags: ${e.localizedMessage}"))
+        }
+    }
+
+    override suspend fun insertTag(name: String): Long {
+        return tagDao.insertTag(TagEntity(name = name))
+    }
+
+    override suspend fun deleteTag(tagId: Long) {
+        tagDao.deleteTag(tagId)
+    }
+
+    override suspend fun addTagToBookmark(bookmarkId: Long, tagId: Long) {
+        tagDao.addTagToBookmark(BookmarkTagCrossRef(bookmarkId, tagId))
+    }
+
+    override suspend fun removeTagFromBookmark(bookmarkId: Long, tagId: Long) {
+        tagDao.removeTagFromBookmark(bookmarkId, tagId)
+    }
+
+    override fun getTagsForBookmark(bookmarkId: Long): Flow<Resource<List<in.iambhvsh.shelf.domain.model.Tag>>> = flow {
+        emit(Resource.Loading())
+        try {
+            tagDao.getTagsForBookmark(bookmarkId).collect { tags ->
+                emit(Resource.Success(tags.map { it.toDomain() }))
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error(e.localizedMessage ?: "Unknown Error"))
+        }
+    }
+
+    override fun getBookmarksForTag(tagId: Long): Flow<Resource<List<Long>>> = flow {
+        emit(Resource.Loading())
+        try {
+            tagDao.getBookmarksForTag(tagId).collect { list ->
+                emit(Resource.Success(list))
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error(e.localizedMessage ?: "Unknown Error"))
+        }
+    }
+
     override suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>> {
         return dao.searchBookmarks(text)
             .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
@@ -44,6 +101,18 @@ class BookmarkRepositoryImpl(
             .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
             .onStart { emit(Resource.Loading()) }
             .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
+    }
+
+    override fun getAllBookmarks(): Flow<Resource<List<Bookmark>>> {
+        return dao.getAllBookmarks()
+            .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
+            .catch { emit(Resource.Error(it.localizedMessage ?: "Unknown Error")) }
+    }
+
+    override fun getBookmarksByTags(tagIds: List<Long>): Flow<Resource<List<Bookmark>>> {
+        return dao.getBookmarksByTags(tagIds)
+            .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
+            .catch { emit(Resource.Error(it.localizedMessage ?: "Unknown Error")) }
     }
 
     override suspend fun createCollection(name: String): Long {

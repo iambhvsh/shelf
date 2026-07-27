@@ -27,7 +27,8 @@ class SettingViewModel(
             isDynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
             accentColor = settingsRepository.getAccentColor(),
             viewMode = settingsRepository.getViewMode(),
-            autoBackupEnabled = settingsRepository.getAutoBackupEnabled()
+            autoBackupEnabled = settingsRepository.getAutoBackupEnabled(),
+            appLockEnabled = settingsRepository.getAppLockEnabled()
         )
     )
     val state = _state.asStateFlow()
@@ -160,6 +161,11 @@ class SettingViewModel(
             SettingEvents.DismissAutoBackupInfoDialog -> {
                 _state.update { it.copy(showAutoBackupInfoDialog = false) }
             }
+            
+            is SettingEvents.ToggleAppLock -> {
+                settingsRepository.setAppLockEnabled(event.enabled)
+                _state.update { it.copy(appLockEnabled = event.enabled) }
+            }
 
             is SettingEvents.ImportBrowserBookmarks -> {
                 importBrowserBookmarks(event.html)
@@ -167,6 +173,13 @@ class SettingViewModel(
 
             SettingEvents.DismissBrowserImportResult -> {
                 _state.update { it.copy(browserImportState = BrowserImportState.Idle) }
+            }
+
+            SettingEvents.ShowAboutSheet -> {
+                _state.update { it.copy(showAboutSheet = true) }
+            }
+            SettingEvents.HideAboutSheet -> {
+                _state.update { it.copy(showAboutSheet = false) }
             }
 
             SettingEvents.ExportBrowserBookmarks -> {

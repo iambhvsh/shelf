@@ -22,6 +22,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,6 +55,7 @@ fun BookmarkCard(
     onLongClick: () -> Unit,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
+    isPinned: Boolean = false,
     url: String
 ) {
 
@@ -142,8 +146,18 @@ fun BookmarkCard(
                 text = cleanHost,
                 style = MaterialTheme.typography.labelLarge,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
             )
+
+            if (isPinned) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Pinned",
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
 
@@ -185,7 +199,6 @@ fun BookmarkCard(
                     }
                 )
 
-                // gradient overlay
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
