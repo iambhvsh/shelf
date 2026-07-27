@@ -42,6 +42,7 @@ import kotlinx.coroutines.withContext
     }
 
     private fun checkNullParserResult(linkPreviewData: LinkPreviewData?): Boolean {
-        return (linkPreviewData?.title.isNullOrEmpty() || linkPreviewData?.title == "null") && (linkPreviewData?.description.isNullOrEmpty() || linkPreviewData?.description == "null")
+        if (linkPreviewData == null) return true
+        return (linkPreviewData.title.isNullOrEmpty() || linkPreviewData.title == "null") && (linkPreviewData.description.isNullOrEmpty() || linkPreviewData.description == "null")
     }
 }

@@ -156,6 +156,6 @@ fun HomeScreen(
         showBottomSheet = state.isBodySheet,
         onDismissRequest = { viewModel.homeEvents(HomeEvents.BookmarkPreviewDismissClick) },
         openInBrowser = { state.tempBookmark?.url?.let { openChromeTab(url = it, context = context) } },
-        copyLinkButtonClick = { state.tempBookmark?.url?.let { clipboard.nativeClipboard.text = it } }
+        copyLinkButtonClick = { state.tempBookmark?.url?.let { clipboard.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) } }
     )
 }

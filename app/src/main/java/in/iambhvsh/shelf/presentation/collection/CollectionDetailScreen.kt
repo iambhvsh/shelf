@@ -95,8 +95,8 @@ fun CollectionDetailScreen(
             isLoading = state.isDetailLoading,
             onBodyClick = { item ->
                 when (tapAction) {
-                    TapAction.OPEN_BROWSER -> item.url?.let { openChromeTab(it, context) }
-                    TapAction.COPY_LINK -> item.url?.let { clipboardManager.nativeClipboard.text = it }
+                    TapAction.OPEN_BROWSER -> item.url.let { openChromeTab(it, context) }
+                    TapAction.COPY_LINK -> item.url.let { clipboardManager.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) }
                     TapAction.SHOW_PREVIEW -> viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
                 }
             },
@@ -137,8 +137,8 @@ fun CollectionDetailScreen(
                             photoClickUrl = { Log.d("CollectionDetail", "Photo click: $it") },
                             bodyClick = {
                                 when (tapAction) {
-                                    TapAction.OPEN_BROWSER -> item.url?.let { openChromeTab(it, context) }
-                                    TapAction.COPY_LINK -> item.url?.let { clipboardManager.nativeClipboard.text = it }
+                                    TapAction.OPEN_BROWSER -> item.url.let { openChromeTab(it, context) }
+                                    TapAction.COPY_LINK -> item.url.let { clipboardManager.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) }
                                     TapAction.SHOW_PREVIEW -> viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
                                 }
                             },
@@ -168,8 +168,8 @@ fun CollectionDetailScreen(
                             photoClickUrl = { Log.d("CollectionDetail", "Photo click: $it") },
                             bodyClick = {
                                 when (tapAction) {
-                                    TapAction.OPEN_BROWSER -> item.url?.let { openChromeTab(it, context) }
-                                    TapAction.COPY_LINK -> item.url?.let { clipboardManager.nativeClipboard.text = it }
+                                    TapAction.OPEN_BROWSER -> item.url.let { openChromeTab(it, context) }
+                                    TapAction.COPY_LINK -> item.url.let { clipboardManager.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) }
                                     TapAction.SHOW_PREVIEW -> viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
                                 }
                             },
@@ -193,7 +193,7 @@ fun CollectionDetailScreen(
         },
         copyLinkButtonClick = {
             state.tempBookmark?.url?.let {
-                clipboardManager.nativeClipboard.text = it
+                clipboardManager.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it))
             }
         }
     )

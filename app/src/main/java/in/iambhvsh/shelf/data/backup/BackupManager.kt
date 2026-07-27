@@ -31,6 +31,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 
+import kotlinx.coroutines.FlowPreview
+
+@OptIn(FlowPreview::class)
 class BackupManager(
     private val bookmarkDao: BookmarkDao,
     private val collectionDao: CollectionDao,
@@ -151,8 +154,8 @@ class BackupManager(
         val sb = StringBuilder()
         sb.appendLine("<!DOCTYPE NETSCAPE-Bookmark-file-1>")
         sb.appendLine("<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">")
-        sb.appendLine("<TITLE>Shelf Bookmarks</TITLE>")
-        sb.appendLine("<H1>Shelf Bookmarks</H1>")
+        sb.appendLine("<TITLE>Shelf</TITLE>")
+        sb.appendLine("<H1>Shelf</H1>")
         sb.appendLine("<DL><p>")
 
         val collectionBookmarkIds = mutableMapOf<Long, MutableSet<Long>>()

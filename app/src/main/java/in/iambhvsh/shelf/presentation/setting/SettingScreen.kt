@@ -181,7 +181,7 @@ fun SettingScreen(
     if (exportError != null) {
         InfoDialog(
             title = "Export failed",
-            text = exportError.message ?: "Export failed",
+            text = exportError.message,
             onDismiss = { viewModel.onEvent(SettingEvents.DismissExport) }
         )
     }
@@ -198,7 +198,7 @@ fun SettingScreen(
     if (importError != null) {
         InfoDialog(
             title = "Import failed",
-            text = importError.message ?: "Import failed",
+            text = importError.message,
             onDismiss = { viewModel.onEvent(SettingEvents.DismissImportResult) }
         )
     }
@@ -225,7 +225,7 @@ fun SettingScreen(
     if (browserExportError != null) {
         InfoDialog(
             title = "Export as HTML failed",
-            text = browserExportError.message ?: "Export failed",
+            text = browserExportError.message,
             onDismiss = { viewModel.onEvent(SettingEvents.DismissBrowserExport) }
         )
     }

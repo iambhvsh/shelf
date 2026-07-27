@@ -21,7 +21,7 @@ class NetworkFetcher {
 
             // Automatically follows redirects
             val finalUrl = response.request.url.toString()
-            val body = response.body?.string()
+            val body = response.body.string()
 
             if (!body.isNullOrEmpty()) {
                 val doc = Jsoup.parse(body, finalUrl) // Final URL important for resolving relative paths

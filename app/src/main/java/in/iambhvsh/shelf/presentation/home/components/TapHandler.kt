@@ -17,7 +17,7 @@ fun handleTap(
 ) {
     when (tapAction) {
         TapAction.OPEN_BROWSER -> openChromeTab(item.url, context)
-        TapAction.COPY_LINK -> item.url.let { clipboard.nativeClipboard.text = it }
+        TapAction.COPY_LINK -> item.url.let { clipboard.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) }
         TapAction.SHOW_PREVIEW -> viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
     }
 }

@@ -149,7 +149,7 @@ fun DefaultTopBar(
         scrollBehavior = scrollBehavior,
         title = {
             Text(
-                if (currentTab == 0) "Shelf Bookmarks"
+                if (currentTab == 0) "Shelf"
                 else bottomAppBarItems[currentTab].title
             )
         },
