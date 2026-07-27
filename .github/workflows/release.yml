@@ -77,12 +77,6 @@ jobs:
           name: shelf-debug-apk
           path: app/build/outputs/apk/debug/*.apk
 
-      - name: Upload release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: shelf-release-apk
-          path: app/build/outputs/apk/release/*.apk
-
       - name: Check if version.properties changed
         id: check_release
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -93,26 +87,15 @@ jobs:
             echo "should_release=false" >> "$GITHUB_OUTPUT"
           fi
 
-  release:
-    needs: build
-    if: needs.build.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download release APK
-        uses: actions/download-artifact@v4
-        with:
-          name: shelf-release-apk
-          path: dist
-
-      - name: Tag and publish release
+      - name: Publish to GitHub Releases
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.check_release.outputs.should_release == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.build.outputs.version_name }}
+          VERSION: ${{ steps.version.outputs.version_name }}
         run: |
           tag="v$VERSION"
-          mv dist/*.apk "dist/Shelf-$VERSION.apk"
+          mkdir -p dist
+          cp app/build/outputs/apk/release/*.apk "dist/Shelf-$VERSION.apk"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag already exists, skipping."
             exit 0
@@ -120,3 +103,4 @@ jobs:
           gh release create "$tag" "dist/Shelf-$VERSION.apk" \
             --title "Shelf $VERSION" \
             --generate-notes
+

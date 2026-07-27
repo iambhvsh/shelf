@@ -16,12 +16,12 @@ fun CommunitySection(context: Context) {
     SettingItem(
         icon = R.drawable.github_icon,
         title = "Star on GitHub",
-        onClick = { openChromeTab("https://github.com/YOUR_USERNAME/Shelf", context) }
+        onClick = { openChromeTab("https://github.com/iambhvsh/shelf", context) }
     )
     Spacer(Modifier.height(4.dp))
     SettingItem(
         icon = R.drawable.bug_icon,
         title = "Report Issue",
-        onClick = { openChromeTab("https://github.com/YOUR_USERNAME/Shelf/issues", context) }
+        onClick = { openChromeTab("https://github.com/iambhvsh/shelf/issues", context) }
     )
 }

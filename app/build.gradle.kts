@@ -32,16 +32,27 @@ android {
 
     // Signing is optional locally. In CI, these env vars are populated from
     // GitHub Secrets (see .github/workflows/release.yml). Without them the
-    // release build is simply left unsigned.
+    // release build is simply left unsigned, unless local secrets exist.
     val hasSigningEnv = !System.getenv("KEYSTORE_PATH").isNullOrEmpty()
+    val localKeystore = rootProject.file("secrets/shelf-release.jks")
+    val localKeysFile = rootProject.file("secrets/Shelf-signing-keys.txt")
+    val hasLocalSigning = localKeystore.exists() && localKeysFile.exists()
 
     signingConfigs {
-        if (hasSigningEnv) {
+        if (hasSigningEnv || hasLocalSigning) {
             create("release") {
-                storeFile = file(System.getenv("KEYSTORE_PATH")!!)
-                storePassword = System.getenv("KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
+                if (hasSigningEnv) {
+                    storeFile = file(System.getenv("KEYSTORE_PATH")!!)
+                    storePassword = System.getenv("KEYSTORE_PASSWORD")
+                    keyAlias = System.getenv("KEY_ALIAS")
+                    keyPassword = System.getenv("KEY_PASSWORD")
+                } else {
+                    storeFile = localKeystore
+                    val lines = localKeysFile.readLines()
+                    keyAlias = lines[lines.indexOf("KEY_ALIAS") + 1].trim()
+                    storePassword = lines[lines.indexOf("KEYSTORE_PASSWORD") + 1].trim()
+                    keyPassword = lines[lines.indexOf("KEY_PASSWORD") + 1].trim()
+                }
             }
         }
     }
@@ -54,7 +65,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (hasSigningEnv) {
+            if (hasSigningEnv || hasLocalSigning) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }

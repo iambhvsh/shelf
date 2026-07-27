@@ -6,6 +6,12 @@
   <b>Save links worth keeping. Beautifully simple. Entirely yours.</b>
 </p>
 
+<p align="center">
+  <a href="https://github.com/iambhvsh/shelf/releases/latest">
+    <img alt="Download APK" src="https://img.shields.io/github/v/release/iambhvsh/shelf?label=Download%20APK&style=for-the-badge&color=blue&logo=android"/>
+  </a>
+</p>
+
 ---
 
 ## The Vision

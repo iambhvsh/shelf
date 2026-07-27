@@ -10,4 +10,5 @@ enum class AccentColor(val label: String, val seed: Color) {
     TEAL("Teal", Color(0xFF009688)),
     BLUE("Blue", Color(0xFF2196F3)),
     PURPLE("Purple", Color(0xFF9C27B0)),
+    PINK("Pink", Color(0xFFE91E63))
 }

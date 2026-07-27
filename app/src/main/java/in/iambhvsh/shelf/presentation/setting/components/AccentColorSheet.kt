@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -50,7 +53,7 @@ fun AccentColorSheet(
             modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 16.dp)
         )
 
-        val rows = AccentColor.entries.chunked(3)
+        val rows = AccentColor.entries.chunked(4)
 
         Column(
             modifier = Modifier.padding(horizontal = 24.dp),
@@ -59,7 +62,7 @@ fun AccentColorSheet(
             rows.forEach { rowColors ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally)
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     rowColors.forEach { accent ->
                         AccentSwatch(
@@ -87,7 +90,7 @@ private fun AccentSwatch(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .size(56.dp)
+                .size(64.dp)
                 .clip(CircleShape)
                 .background(accent.seed, CircleShape)
                 .border(
@@ -103,11 +106,11 @@ private fun AccentSwatch(
             contentAlignment = Alignment.Center
         ) {
             if (selected) {
-                Text(
-                    text = "✓",
-                    color = checkTint,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = checkTint,
+                    modifier = Modifier.size(32.dp)
                 )
             }
         }

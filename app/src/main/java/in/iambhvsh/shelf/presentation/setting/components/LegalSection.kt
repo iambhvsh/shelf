@@ -16,12 +16,12 @@ fun LegalSection(context: Context) {
     SettingItem(
         icon = R.drawable.privacy_policy_icon,
         title = "Privacy Policy",
-        onClick = { openChromeTab("https://example.com/TODO-your-privacy-policy", context) }
+        onClick = { openChromeTab("https://shelf.iambhvsh.in/privacy", context) }
     )
     Spacer(Modifier.height(4.dp))
     SettingItem(
         icon = R.drawable.terms_icons,
         title = "Terms & Conditions",
-        onClick = { openChromeTab("https://example.com/TODO-your-terms", context) }
+        onClick = { openChromeTab("https://shelf.iambhvsh.in/terms", context) }
     )
 }

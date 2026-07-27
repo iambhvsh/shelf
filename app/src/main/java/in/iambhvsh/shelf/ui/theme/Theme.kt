@@ -40,16 +40,18 @@ fun ShelfTheme(
     }
 
     val finalColorScheme = if (themeMode == ThemeMode.OLED) {
+        val darkSurface = Color(0xFF0A0A0A)
+        val lighterSurface = Color(0xFF121212)
         colorScheme.copy(
             background = PureBlack,
             surface = PureBlack,
             surfaceDim = PureBlack,
-            surfaceBright = PureBlack,
+            surfaceBright = darkSurface,
             surfaceContainerLowest = PureBlack,
-            surfaceContainerLow = PureBlack,
-            surfaceContainer = PureBlack,
-            surfaceContainerHigh = PureBlack,
-            surfaceContainerHighest = PureBlack,
+            surfaceContainerLow = darkSurface,
+            surfaceContainer = darkSurface,
+            surfaceContainerHigh = lighterSurface,
+            surfaceContainerHighest = lighterSurface,
         )
     } else {
         colorScheme
