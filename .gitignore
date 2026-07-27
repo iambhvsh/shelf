@@ -26,3 +26,6 @@ app/release/
 
 # macOS
 .DS_Store
+
+# Temp files
+secrets/
