@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.utils
+package `in`.iambhvsh.shelf.utils
 
 sealed class Resource<T>(
     val data: T? = null,

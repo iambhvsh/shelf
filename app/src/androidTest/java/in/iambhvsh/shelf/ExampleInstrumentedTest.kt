@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf
+package `in`.iambhvsh.shelf
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

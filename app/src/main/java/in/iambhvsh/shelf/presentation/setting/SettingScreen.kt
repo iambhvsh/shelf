@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package in.iambhvsh.shelf.presentation.setting
+package `in`.iambhvsh.shelf.presentation.setting
 
 import android.content.Intent
 import android.net.Uri
@@ -21,20 +21,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import in.iambhvsh.shelf.openChromeTab
-import in.iambhvsh.shelf.presentation.home.components.LoadingProgress
-import in.iambhvsh.shelf.presentation.setting.components.AboutSection
-import in.iambhvsh.shelf.presentation.setting.components.AccentColorSheet
-import in.iambhvsh.shelf.presentation.setting.components.AutoBackupInfoDialog
-import in.iambhvsh.shelf.presentation.setting.components.CommunitySection
-import in.iambhvsh.shelf.presentation.setting.components.DataSection
-import in.iambhvsh.shelf.presentation.setting.components.GeneralSection
-import in.iambhvsh.shelf.presentation.setting.components.InfoDialog
-import in.iambhvsh.shelf.presentation.setting.components.LegalSection
-import in.iambhvsh.shelf.presentation.setting.components.OptionSheet
-import in.iambhvsh.shelf.presentation.setting.components.RadioOptionSheet
-import in.iambhvsh.shelf.presentation.setting.components.ThemeSection
-import in.iambhvsh.shelf.ui.theme.ThemeMode
+import `in`.iambhvsh.shelf.openChromeTab
+import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
+import `in`.iambhvsh.shelf.presentation.setting.components.AboutSection
+import `in`.iambhvsh.shelf.presentation.setting.components.AccentColorSheet
+import `in`.iambhvsh.shelf.presentation.setting.components.AutoBackupInfoDialog
+import `in`.iambhvsh.shelf.presentation.setting.components.CommunitySection
+import `in`.iambhvsh.shelf.presentation.setting.components.DataSection
+import `in`.iambhvsh.shelf.presentation.setting.components.GeneralSection
+import `in`.iambhvsh.shelf.presentation.setting.components.InfoDialog
+import `in`.iambhvsh.shelf.presentation.setting.components.LegalSection
+import `in`.iambhvsh.shelf.presentation.setting.components.OptionSheet
+import `in`.iambhvsh.shelf.presentation.setting.components.RadioOptionSheet
+import `in`.iambhvsh.shelf.presentation.setting.components.ThemeSection
+import `in`.iambhvsh.shelf.ui.theme.ThemeMode
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

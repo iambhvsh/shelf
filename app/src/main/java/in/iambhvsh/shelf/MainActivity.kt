@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf
+package `in`.iambhvsh.shelf
 
 import android.content.Context
 import android.content.Intent
@@ -8,7 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
-import in.iambhvsh.shelf.presentation.root.RootScreen
+import `in`.iambhvsh.shelf.presentation.root.RootScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

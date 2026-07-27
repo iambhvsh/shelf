@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.home.components
+package `in`.iambhvsh.shelf.presentation.home.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

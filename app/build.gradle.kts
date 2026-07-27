@@ -18,11 +18,7 @@ val appVersionCode: Int = versionProps.getProperty("VERSION_CODE", "1").toInt()
 
 android {
     namespace = "in.iambhvsh.shelf"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "in.iambhvsh.shelf"
@@ -113,8 +109,6 @@ dependencies {
 
     implementation("androidx.browser:browser:1.10.0")
 
-    // Generates a full Material3 ColorScheme from a single accent seed color,
-    // the same technique Android's wallpaper-based Material You theming uses.
     implementation("com.materialkolor:material-kolor:5.0.0")
 
 

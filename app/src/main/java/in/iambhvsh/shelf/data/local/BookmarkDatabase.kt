@@ -1,12 +1,12 @@
-package in.iambhvsh.shelf.data.local
+package `in`.iambhvsh.shelf.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import in.iambhvsh.shelf.data.local.dao.BookmarkDao
-import in.iambhvsh.shelf.data.local.dao.CollectionDao
-import in.iambhvsh.shelf.data.local.entity.BookmarkCollectionCrossRef
-import in.iambhvsh.shelf.data.local.entity.BookmarkEntity
-import in.iambhvsh.shelf.data.local.entity.CollectionEntity
+import `in`.iambhvsh.shelf.data.local.dao.BookmarkDao
+import `in`.iambhvsh.shelf.data.local.dao.CollectionDao
+import `in`.iambhvsh.shelf.data.local.entity.BookmarkCollectionCrossRef
+import `in`.iambhvsh.shelf.data.local.entity.BookmarkEntity
+import `in`.iambhvsh.shelf.data.local.entity.CollectionEntity
 
 @Database(
     entities = [BookmarkEntity::class, CollectionEntity::class, BookmarkCollectionCrossRef::class],

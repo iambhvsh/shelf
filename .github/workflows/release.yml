@@ -38,8 +38,8 @@ jobs:
       - name: Read version.properties
         id: version
         run: |
-          name=$(grep VERSION_NAME version.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          code=$(grep VERSION_CODE version.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          name=$(grep '^VERSION_NAME' version.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          code=$(grep '^VERSION_CODE' version.properties | cut -d'=' -f2 | tr -d '[:space:]')
           echo "version_name=$name" >> "$GITHUB_OUTPUT"
           echo "version_code=$code" >> "$GITHUB_OUTPUT"
           echo "Building version $name ($code)"

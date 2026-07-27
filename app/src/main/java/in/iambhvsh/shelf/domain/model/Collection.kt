@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.domain.model
+package `in`.iambhvsh.shelf.domain.model
 
 data class Collection(
     val id: Long = 0,

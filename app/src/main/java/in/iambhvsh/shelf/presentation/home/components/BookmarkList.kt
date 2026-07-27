@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.home.components
+package `in`.iambhvsh.shelf.presentation.home.components
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
@@ -11,10 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.unit.dp
-import in.iambhvsh.shelf.domain.model.Bookmark
-import in.iambhvsh.shelf.presentation.home.HomeEvents
-import in.iambhvsh.shelf.presentation.home.HomeViewModel
-import in.iambhvsh.shelf.presentation.setting.TapAction
+import `in`.iambhvsh.shelf.domain.model.Bookmark
+import `in`.iambhvsh.shelf.presentation.home.HomeEvents
+import `in`.iambhvsh.shelf.presentation.home.HomeViewModel
+import `in`.iambhvsh.shelf.presentation.setting.TapAction
 
 @Composable
 fun BookmarkList(

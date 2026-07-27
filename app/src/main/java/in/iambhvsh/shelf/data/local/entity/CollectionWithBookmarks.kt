@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.data.local.entity
+package `in`.iambhvsh.shelf.data.local.entity
 
 import androidx.room.Embedded
 import androidx.room.Junction

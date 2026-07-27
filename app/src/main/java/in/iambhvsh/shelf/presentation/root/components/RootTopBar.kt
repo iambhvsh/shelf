@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.root.components
+package `in`.iambhvsh.shelf.presentation.root.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -24,15 +24,15 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import in.iambhvsh.shelf.R
-import in.iambhvsh.shelf.presentation.collection.CollectionEvents
-import in.iambhvsh.shelf.presentation.collection.CollectionState
-import in.iambhvsh.shelf.presentation.collection.CollectionViewModel
-import in.iambhvsh.shelf.presentation.home.HomeEvents
-import in.iambhvsh.shelf.presentation.home.HomeState
-import in.iambhvsh.shelf.presentation.home.HomeViewModel
-import in.iambhvsh.shelf.presentation.root.bottomAppBarItems
-import in.iambhvsh.shelf.presentation.search.SearchViewModel
+import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.presentation.collection.CollectionEvents
+import `in`.iambhvsh.shelf.presentation.collection.CollectionState
+import `in`.iambhvsh.shelf.presentation.collection.CollectionViewModel
+import `in`.iambhvsh.shelf.presentation.home.HomeEvents
+import `in`.iambhvsh.shelf.presentation.home.HomeState
+import `in`.iambhvsh.shelf.presentation.home.HomeViewModel
+import `in`.iambhvsh.shelf.presentation.root.bottomAppBarItems
+import `in`.iambhvsh.shelf.presentation.search.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

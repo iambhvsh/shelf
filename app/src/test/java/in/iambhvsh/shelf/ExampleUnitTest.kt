@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf
+package `in`.iambhvsh.shelf
 
 import org.junit.Test
 

@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.domain.model
+package `in`.iambhvsh.shelf.domain.model
 
 enum class SortOrder {
     DATE_NEWEST,

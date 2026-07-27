@@ -1,7 +1,7 @@
-package in.iambhvsh.shelf.data.local.mapper
+package `in`.iambhvsh.shelf.data.local.mapper
 
-import in.iambhvsh.shelf.data.local.entity.BookmarkEntity
-import in.iambhvsh.shelf.domain.model.Bookmark
+import `in`.iambhvsh.shelf.data.local.entity.BookmarkEntity
+import `in`.iambhvsh.shelf.domain.model.Bookmark
 
 
 fun BookmarkEntity.toDomain(): Bookmark {

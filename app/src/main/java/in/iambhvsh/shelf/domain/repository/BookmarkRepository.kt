@@ -1,8 +1,8 @@
-package in.iambhvsh.shelf.domain.repository
+package `in`.iambhvsh.shelf.domain.repository
 
-import in.iambhvsh.shelf.domain.model.Bookmark
-import in.iambhvsh.shelf.domain.model.Collection
-import in.iambhvsh.shelf.utils.Resource
+import `in`.iambhvsh.shelf.domain.model.Bookmark
+import `in`.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.utils.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository {

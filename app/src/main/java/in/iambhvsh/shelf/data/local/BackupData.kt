@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.data.local
+package `in`.iambhvsh.shelf.data.local
 
 import kotlinx.serialization.Serializable
 

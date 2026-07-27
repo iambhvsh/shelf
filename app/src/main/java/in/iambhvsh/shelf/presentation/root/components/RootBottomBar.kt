@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.root.components
+package `in`.iambhvsh.shelf.presentation.root.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomAppBar
@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import in.iambhvsh.shelf.presentation.root.bottomAppBarItems
+import `in`.iambhvsh.shelf.presentation.root.bottomAppBarItems
 
 @Composable
 fun RootBottomBar(

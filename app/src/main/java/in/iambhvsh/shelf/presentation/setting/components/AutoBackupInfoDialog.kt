@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.setting.components
+package `in`.iambhvsh.shelf.presentation.setting.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme

@@ -1,10 +1,10 @@
-package in.iambhvsh.shelf.data.local.dao
+package `in`.iambhvsh.shelf.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
-import in.iambhvsh.shelf.data.local.entity.BookmarkEntity
+import `in`.iambhvsh.shelf.data.local.entity.BookmarkEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

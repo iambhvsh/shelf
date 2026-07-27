@@ -1,6 +1,6 @@
-package in.iambhvsh.shelf.presentation.search
+package `in`.iambhvsh.shelf.presentation.search
 
-import in.iambhvsh.shelf.domain.model.Bookmark
+import `in`.iambhvsh.shelf.domain.model.Bookmark
 
 data class SearchState(
     val searchQuery: String = "",

@@ -1,9 +1,9 @@
-package in.iambhvsh.shelf.data.local.mapper
+package `in`.iambhvsh.shelf.data.local.mapper
 
-import in.iambhvsh.shelf.data.local.dao.CollectionWithCount
-import in.iambhvsh.shelf.data.local.entity.CollectionEntity
-import in.iambhvsh.shelf.data.local.entity.CollectionWithBookmarks
-import in.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.data.local.dao.CollectionWithCount
+import `in`.iambhvsh.shelf.data.local.entity.CollectionEntity
+import `in`.iambhvsh.shelf.data.local.entity.CollectionWithBookmarks
+import `in`.iambhvsh.shelf.domain.model.Collection
 
 fun CollectionEntity.toDomain(): Collection {
     return Collection(

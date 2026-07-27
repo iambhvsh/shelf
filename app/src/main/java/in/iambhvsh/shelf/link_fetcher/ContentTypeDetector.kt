@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.link_fetcher
+package `in`.iambhvsh.shelf.link_fetcher
 
 class ContentTypeDetector {
 

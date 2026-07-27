@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.collection.components
+package `in`.iambhvsh.shelf.presentation.collection.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -32,8 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import in.iambhvsh.shelf.R
-import in.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.domain.model.Collection
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable

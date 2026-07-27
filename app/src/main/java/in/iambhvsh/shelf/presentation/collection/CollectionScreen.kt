@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.collection
+package `in`.iambhvsh.shelf.presentation.collection
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,9 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import in.iambhvsh.shelf.presentation.collection.components.CollectionCard
-import in.iambhvsh.shelf.presentation.collection.components.CollectionInputSheet
-import in.iambhvsh.shelf.presentation.home.components.LoadingProgress
+import `in`.iambhvsh.shelf.presentation.collection.components.CollectionCard
+import `in`.iambhvsh.shelf.presentation.collection.components.CollectionInputSheet
+import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

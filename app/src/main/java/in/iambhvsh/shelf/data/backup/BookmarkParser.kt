@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.data.backup
+package `in`.iambhvsh.shelf.data.backup
 
 data class ParsedBookmark(
     val url: String,

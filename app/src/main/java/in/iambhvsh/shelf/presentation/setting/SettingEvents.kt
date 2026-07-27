@@ -1,7 +1,7 @@
-package in.iambhvsh.shelf.presentation.setting
+package `in`.iambhvsh.shelf.presentation.setting
 
-import in.iambhvsh.shelf.ui.theme.AccentColor
-import in.iambhvsh.shelf.ui.theme.ThemeMode
+import `in`.iambhvsh.shelf.ui.theme.AccentColor
+import `in`.iambhvsh.shelf.ui.theme.ThemeMode
 
 sealed class SettingEvents {
     data class SelectTheme(val themeMode: ThemeMode) : SettingEvents()

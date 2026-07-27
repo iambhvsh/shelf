@@ -1,6 +1,6 @@
-package in.iambhvsh.shelf.presentation.root
+package `in`.iambhvsh.shelf.presentation.root
 
-import in.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.R
 
 data class BottomAppBarItem(
     val title: String,

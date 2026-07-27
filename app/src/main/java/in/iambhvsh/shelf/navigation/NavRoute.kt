@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.navigation
+package `in`.iambhvsh.shelf.navigation
 
 import kotlinx.serialization.Serializable
 

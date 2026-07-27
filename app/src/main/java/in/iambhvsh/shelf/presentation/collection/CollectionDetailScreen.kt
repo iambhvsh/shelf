@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.collection
+package `in`.iambhvsh.shelf.presentation.collection
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -31,15 +31,15 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import in.iambhvsh.shelf.openChromeTab
-import in.iambhvsh.shelf.presentation.home.components.BookmarkCard
-import in.iambhvsh.shelf.presentation.home.components.BookmarkListItem
-import in.iambhvsh.shelf.presentation.home.components.BookmarkPreviewSheet
-import in.iambhvsh.shelf.presentation.home.components.LoadingProgress
-import in.iambhvsh.shelf.presentation.search.SearchResults
-import in.iambhvsh.shelf.domain.model.Bookmark
-import in.iambhvsh.shelf.presentation.setting.TapAction
-import in.iambhvsh.shelf.presentation.setting.ViewMode
+import `in`.iambhvsh.shelf.openChromeTab
+import `in`.iambhvsh.shelf.presentation.home.components.BookmarkCard
+import `in`.iambhvsh.shelf.presentation.home.components.BookmarkListItem
+import `in`.iambhvsh.shelf.presentation.home.components.BookmarkPreviewSheet
+import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
+import `in`.iambhvsh.shelf.presentation.search.SearchResults
+import `in`.iambhvsh.shelf.domain.model.Bookmark
+import `in`.iambhvsh.shelf.presentation.setting.TapAction
+import `in`.iambhvsh.shelf.presentation.setting.ViewMode
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

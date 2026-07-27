@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.collection.components
+package `in`.iambhvsh.shelf.presentation.collection.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import in.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,9 +1,9 @@
-package in.iambhvsh.shelf.domain.repository
+package `in`.iambhvsh.shelf.domain.repository
 
-import in.iambhvsh.shelf.presentation.setting.TapAction
-import in.iambhvsh.shelf.presentation.setting.ViewMode
-import in.iambhvsh.shelf.ui.theme.AccentColor
-import in.iambhvsh.shelf.ui.theme.ThemeMode
+import `in`.iambhvsh.shelf.presentation.setting.TapAction
+import `in`.iambhvsh.shelf.presentation.setting.ViewMode
+import `in`.iambhvsh.shelf.ui.theme.AccentColor
+import `in`.iambhvsh.shelf.ui.theme.ThemeMode
 
 interface SettingsRepository {
     fun getThemeMode(): ThemeMode

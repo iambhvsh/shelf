@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.setting.components
+package `in`.iambhvsh.shelf.presentation.setting.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,7 +26,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import in.iambhvsh.shelf.ui.theme.AccentColor
+import `in`.iambhvsh.shelf.ui.theme.AccentColor
 
 /**
  * Google Material You-style accent color picker: 7 swatches laid out as a

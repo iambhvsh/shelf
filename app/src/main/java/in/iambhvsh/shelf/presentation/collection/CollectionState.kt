@@ -1,8 +1,8 @@
-package in.iambhvsh.shelf.presentation.collection
+package `in`.iambhvsh.shelf.presentation.collection
 
-import in.iambhvsh.shelf.domain.model.Bookmark
-import in.iambhvsh.shelf.domain.model.Collection
-import in.iambhvsh.shelf.domain.model.SortOrder
+import `in`.iambhvsh.shelf.domain.model.Bookmark
+import `in`.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.domain.model.SortOrder
 
 data class CollectionState(
     val collections: List<Collection> = emptyList(),

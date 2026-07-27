@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.ui.theme
+package `in`.iambhvsh.shelf.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

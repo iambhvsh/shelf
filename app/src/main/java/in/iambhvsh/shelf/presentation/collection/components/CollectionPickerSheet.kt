@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.collection.components
+package `in`.iambhvsh.shelf.presentation.collection.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,8 +26,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import in.iambhvsh.shelf.R
-import in.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.domain.model.Collection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,12 +1,12 @@
-package in.iambhvsh.shelf.presentation.home.components
+package `in`.iambhvsh.shelf.presentation.home.components
 
 import android.content.Context
 import androidx.compose.ui.platform.Clipboard
-import in.iambhvsh.shelf.domain.model.Bookmark
-import in.iambhvsh.shelf.openChromeTab
-import in.iambhvsh.shelf.presentation.home.HomeEvents
-import in.iambhvsh.shelf.presentation.home.HomeViewModel
-import in.iambhvsh.shelf.presentation.setting.TapAction
+import `in`.iambhvsh.shelf.domain.model.Bookmark
+import `in`.iambhvsh.shelf.openChromeTab
+import `in`.iambhvsh.shelf.presentation.home.HomeEvents
+import `in`.iambhvsh.shelf.presentation.home.HomeViewModel
+import `in`.iambhvsh.shelf.presentation.setting.TapAction
 
 fun handleTap(
     item: Bookmark,

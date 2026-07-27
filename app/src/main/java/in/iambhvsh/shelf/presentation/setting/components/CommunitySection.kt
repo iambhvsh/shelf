@@ -1,4 +1,4 @@
-package in.iambhvsh.shelf.presentation.setting.components
+package `in`.iambhvsh.shelf.presentation.setting.components
 
 import android.content.Context
 import androidx.compose.foundation.layout.Spacer
@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import in.iambhvsh.shelf.R
-import in.iambhvsh.shelf.openChromeTab
+import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.openChromeTab
 
 @Composable
 fun CommunitySection(context: Context) {
