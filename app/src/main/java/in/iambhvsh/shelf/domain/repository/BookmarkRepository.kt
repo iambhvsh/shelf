@@ -2,6 +2,7 @@ package `in`.iambhvsh.shelf.domain.repository
 
 import `in`.iambhvsh.shelf.domain.model.Bookmark
 import `in`.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.domain.model.Tag
 import `in`.iambhvsh.shelf.utils.Resource
 import kotlinx.coroutines.flow.Flow
 
@@ -16,12 +17,12 @@ interface BookmarkRepository {
     suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>>
     suspend fun togglePinStatus(id: Long, isPinned: Boolean)
 
-    fun getAllTags(): Flow<Resource<List<in.iambhvsh.shelf.domain.model.Tag>>>
+    fun getAllTags(): Flow<Resource<List<Tag>>>
     suspend fun insertTag(name: String): Long
     suspend fun deleteTag(tagId: Long)
     suspend fun addTagToBookmark(bookmarkId: Long, tagId: Long)
     suspend fun removeTagFromBookmark(bookmarkId: Long, tagId: Long)
-    fun getTagsForBookmark(bookmarkId: Long): Flow<Resource<List<in.iambhvsh.shelf.domain.model.Tag>>>
+    fun getTagsForBookmark(bookmarkId: Long): Flow<Resource<List<Tag>>>
     fun getBookmarksForTag(tagId: Long): Flow<Resource<List<Long>>>
 
     suspend fun createCollection(name: String): Long

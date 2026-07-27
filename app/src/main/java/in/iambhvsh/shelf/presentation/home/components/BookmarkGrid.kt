@@ -54,8 +54,7 @@ fun BookmarkGrid(
                 bodyClick = { handleTap(item, tapAction, context, clipboard, viewModel) },
                 onLongClick = { viewModel.homeEvents(HomeEvents.ToggleSelection(item.id)) },
                 isSelected = item.id in selectedIds,
-                isSelectionMode = isSelectionMode,
-                url = item.url
+                isSelectionMode = isSelectionMode
             )
         }
     }

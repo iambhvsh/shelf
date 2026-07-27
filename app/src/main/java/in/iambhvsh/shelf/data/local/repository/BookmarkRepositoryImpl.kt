@@ -11,10 +11,12 @@ import `in`.iambhvsh.shelf.data.local.mapper.toDomain
 import `in`.iambhvsh.shelf.data.local.mapper.toEntity
 import `in`.iambhvsh.shelf.domain.model.Bookmark
 import `in`.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.domain.model.Tag
 import `in`.iambhvsh.shelf.domain.repository.BookmarkRepository
 import `in`.iambhvsh.shelf.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
@@ -26,6 +28,10 @@ class BookmarkRepositoryImpl(
 
     override suspend fun insert(bookmark: Bookmark): Boolean {
         return dao.insertOrUnhide(bookmark.toEntity())
+    }
+
+    override suspend fun deleteBookmark(bookmark: Bookmark) {
+        dao.deleteBookmark(bookmark.toEntity())
     }
 
     override suspend fun getBookmarksWithoutImage(): List<Bookmark> {
@@ -40,7 +46,7 @@ class BookmarkRepositoryImpl(
         dao.updatePinStatus(id, isPinned)
     }
 
-    override fun getAllTags(): Flow<Resource<List<in.iambhvsh.shelf.domain.model.Tag>>> = flow {
+    override fun getAllTags(): Flow<Resource<List<Tag>>> = flow {
         emit(Resource.Loading())
         try {
             tagDao.getAllTags().collect { tags ->
@@ -67,7 +73,7 @@ class BookmarkRepositoryImpl(
         tagDao.removeTagFromBookmark(bookmarkId, tagId)
     }
 
-    override fun getTagsForBookmark(bookmarkId: Long): Flow<Resource<List<in.iambhvsh.shelf.domain.model.Tag>>> = flow {
+    override fun getTagsForBookmark(bookmarkId: Long): Flow<Resource<List<Tag>>> = flow {
         emit(Resource.Loading())
         try {
             tagDao.getTagsForBookmark(bookmarkId).collect { tags ->

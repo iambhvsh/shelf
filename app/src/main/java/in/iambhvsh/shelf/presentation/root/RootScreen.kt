@@ -43,7 +43,6 @@ import `in`.iambhvsh.shelf.presentation.setting.ImportState
 import `in`.iambhvsh.shelf.presentation.setting.SettingScreen
 import `in`.iambhvsh.shelf.presentation.setting.SettingViewModel
 import `in`.iambhvsh.shelf.presentation.setting.components.RadioOptionSheet
-import `in`.iambhvsh.shelf.presentation.about.AboutScreen
 import `in`.iambhvsh.shelf.ui.theme.ShelfTheme
 import org.koin.androidx.compose.koinViewModel
 
