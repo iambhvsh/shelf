@@ -39,8 +39,8 @@ interface BookmarkDao {
 
     @Query("""
         SELECT DISTINCT b.* FROM bookmarks b 
-        INNER JOIN bookmark_tag_cross_ref cross ON b.id = cross.bookmarkId
-        WHERE cross.tagId IN (:tagIds) AND b.isHidden = 0
+        INNER JOIN bookmark_tag_cross_ref ref ON b.id = ref.bookmarkId
+        WHERE ref.tagId IN (:tagIds) AND b.isHidden = 0
     """)
     fun getBookmarksByTags(tagIds: List<Long>): Flow<List<BookmarkEntity>>
 

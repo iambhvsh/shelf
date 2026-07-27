@@ -42,9 +42,6 @@ jobs:
           echo "version_code=$code" >> "$GITHUB_OUTPUT"
           echo "Building version $name ($code)"
 
-      # Decode the signing keystore from a repo secret, if one has been added.
-      # Repo secret required: KEYSTORE_BASE64 (base64 of your .jks/.keystore file)
-      # Plus: KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
       - name: Decode keystore
         id: keystore
         env:
