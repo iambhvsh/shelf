@@ -192,6 +192,14 @@ class SettingViewModel(
             SettingEvents.HideImportSheet -> {
                 _state.update { it.copy(showImportSheet = false) }
             }
+
+            SettingEvents.ShowAboutDialog -> {
+                _state.update { it.copy(showAboutDialog = true) }
+            }
+
+            SettingEvents.HideAboutDialog -> {
+                _state.update { it.copy(showAboutDialog = false) }
+            }
         }
     }
 

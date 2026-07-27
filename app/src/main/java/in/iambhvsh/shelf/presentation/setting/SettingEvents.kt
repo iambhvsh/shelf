@@ -32,4 +32,6 @@ sealed class SettingEvents {
     object HideExportSheet : SettingEvents()
     object ShowImportSheet : SettingEvents()
     object HideImportSheet : SettingEvents()
+    object ShowAboutDialog : SettingEvents()
+    object HideAboutDialog : SettingEvents()
 }

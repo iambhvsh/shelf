@@ -1,8 +1,6 @@
 <div align="center">
-  <img src="logo.png" width="128" alt="Shelf Logo" style="border-radius: 50%;">
+  <img src="logo-transparent.png" width="128" alt="Shelf Logo">
 
-  <br><br>
-  
   <h4>The links you love. Beautifully organized. Entirely yours.</h4>
 
   <br>

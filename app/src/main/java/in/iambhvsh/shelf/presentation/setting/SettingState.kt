@@ -47,5 +47,6 @@ data class SettingState(
     val browserImportState: BrowserImportState = BrowserImportState.Idle,
     val browserExportState: ExportState = ExportState.Idle,
     val showExportSheet: Boolean = false,
-    val showImportSheet: Boolean = false
+    val showImportSheet: Boolean = false,
+    val showAboutDialog: Boolean = false
 )

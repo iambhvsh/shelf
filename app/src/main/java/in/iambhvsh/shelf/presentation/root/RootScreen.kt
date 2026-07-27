@@ -43,6 +43,7 @@ import `in`.iambhvsh.shelf.presentation.setting.ImportState
 import `in`.iambhvsh.shelf.presentation.setting.SettingScreen
 import `in`.iambhvsh.shelf.presentation.setting.SettingViewModel
 import `in`.iambhvsh.shelf.presentation.setting.components.RadioOptionSheet
+import `in`.iambhvsh.shelf.presentation.about.AboutScreen
 import `in`.iambhvsh.shelf.ui.theme.ShelfTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -256,7 +257,13 @@ fun RootScreen(
                         searchQuery = collectionSearchQuery
                     )
                 },
-                settingsScreen = { SettingScreen(viewModel = settingViewModel) }
+                settingsScreen = { onNavToAbout -> 
+                    SettingScreen(
+                        onNavigateToAbout = onNavToAbout, 
+                        viewModel = settingViewModel
+                    ) 
+                },
+                aboutScreen = { onBack -> AboutScreen(onBack = onBack) }
             )
 
             BackHandler(enabled = isSearching) {

@@ -48,11 +48,7 @@ fun CollectionScreen(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "┑(￣Д ￣)┍",
-                        fontSize = 36.sp
-                    )
-                    Spacer(Modifier.height(12.dp))
+
                     Text(
                         text = "Please click + to create a collection",
                         style = MaterialTheme.typography.bodyLarge,

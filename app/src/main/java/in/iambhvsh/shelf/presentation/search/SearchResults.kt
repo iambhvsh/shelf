@@ -73,11 +73,7 @@ fun SearchResults(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "┑(￣Д ￣)┍",
-                        fontSize = 36.sp
-                    )
-                    Spacer(Modifier.height(12.dp))
+
                     Text(
                         text = "Type to search",
                         style = MaterialTheme.typography.bodyLarge,

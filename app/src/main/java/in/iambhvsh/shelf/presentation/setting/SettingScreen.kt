@@ -39,6 +39,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SettingScreen(
+    onNavigateToAbout: () -> Unit,
     viewModel: SettingViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -119,7 +120,10 @@ fun SettingScreen(
             DataSection(state, viewModel)
             CommunitySection(context)
             LegalSection(context)
-            AboutSection(versionName)
+            AboutSection(
+                versionName = versionName,
+                onAboutClick = onNavigateToAbout
+            )
         }
 
         LoadingProgress(

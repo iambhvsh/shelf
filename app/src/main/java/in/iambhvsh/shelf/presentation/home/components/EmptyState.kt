@@ -14,8 +14,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun EmptyBookmarkState() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = "┑(￣Д ￣)┍", fontSize = 36.sp)
-        Spacer(Modifier.height(12.dp))
+
         Text(
             text = "Please click + to add a bookmark",
             style = MaterialTheme.typography.bodyLarge,

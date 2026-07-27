@@ -8,9 +8,15 @@ import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.R
 
 @Composable
-fun AboutSection(versionName: String) {
+fun AboutSection(versionName: String, onAboutClick: () -> Unit) {
     Spacer(Modifier.height(12.dp))
     SectionHeader("About")
+    SettingItem(
+        icon = R.drawable.about_icon,
+        title = "About Shelf",
+        subtitle = "The links you love. Beautifully organized.",
+        onClick = onAboutClick
+    )
     SettingItem(
         icon = R.drawable.about_icon,
         title = "App version",
