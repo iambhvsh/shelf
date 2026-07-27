@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version_name: ${{ steps.version.outputs.version_name }}
-      should_release: ${{ steps.check_release.outputs.should_release }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -80,18 +79,8 @@ jobs:
           name: shelf-release-apk
           path: app/build/outputs/apk/release/*.apk
 
-      - name: Check if version.properties changed
-        id: check_release
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          if git diff --name-only HEAD~1 HEAD | grep -qx "version.properties"; then
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Publish to GitHub Releases
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.check_release.outputs.should_release == 'true'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.version_name }}
