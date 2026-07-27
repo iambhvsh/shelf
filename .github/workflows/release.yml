@@ -1,7 +1,5 @@
 name: Build & Release
 
-# Runs on every push. Auto-publishes a GitHub Release only when
-# version.properties changes on main (that's your single version-management file).
 on:
   push:
     branches: [ "**" ]
@@ -85,8 +83,6 @@ jobs:
           name: shelf-release-apk
           path: app/build/outputs/apk/release/*.apk
 
-      # Only auto-release from main, and only when version.properties actually
-      # changed in this push (so pushing unrelated commits doesn't spam releases).
       - name: Check if version.properties changed
         id: check_release
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
