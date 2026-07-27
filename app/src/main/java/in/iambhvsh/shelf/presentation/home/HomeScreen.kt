@@ -108,11 +108,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            TagFilterRow(
-                tags = state.tags,
-                activeTagIds = state.activeTagFilters,
-                onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
-            )
 
             Box(
                 modifier = Modifier

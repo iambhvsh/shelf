@@ -69,7 +69,6 @@ fun BookmarkCard(
 
     var imageFailed by remember { mutableStateOf(false) }
     var faviconFailed by remember { mutableStateOf(false) }
-    var imageAspectRatio by remember { mutableStateOf(1.2f) }
 
     val cardModifier = if (isSelected) {
         modifier
@@ -164,7 +163,7 @@ fun BookmarkCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(imageAspectRatio)
+                .aspectRatio(1.2f)
                 .clip(MaterialTheme.shapes.extraLarge)
                 .background(
                     Brush.verticalGradient(
@@ -182,7 +181,7 @@ fun BookmarkCard(
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = null,
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable {
@@ -190,12 +189,6 @@ fun BookmarkCard(
                         },
                     onError = {
                         imageFailed = true
-                    },
-                    onSuccess = { state ->
-                        val size = state.painter.intrinsicSize
-                        if (size.width.isFinite() && size.width > 0 && size.height > 0) {
-                            imageAspectRatio = size.width / size.height
-                        }
                     }
                 )
 

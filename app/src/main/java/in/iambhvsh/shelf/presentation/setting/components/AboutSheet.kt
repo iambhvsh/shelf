@@ -91,15 +91,15 @@ fun AboutSheet(
             Spacer(modifier = Modifier.height(16.dp))
             
             CreditItem(
-                title = "Bhavesh",
+                title = "Bhavesh Patil (@iambhvsh)",
                 description = "Modified and crafted this beautiful version (Shelf)."
             )
             CreditItem(
-                title = "qeiq",
+                title = "Imam (@qeiq)",
                 description = "Creator of the original Savr app, which provided the amazing open-source foundation."
             )
             CreditItem(
-                title = "Vishal Kumar Singhvi",
+                title = "Vishal Jain (@vishalkumarsinghvi)",
                 description = "Creator of Android-Link-Preview library powering the metadata fetching."
             )
             

@@ -23,6 +23,7 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
     private val parser = LinkMetadataParser()
     private var rawBookmarks: List<Bookmark> = emptyList()
     private var bookmarkJob: Job? = null
+    private var tempBookmarkTagsJob: Job? = null
     private var isFetchingMetadata = false
 
     init {
@@ -76,13 +77,23 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
                         isBodySheet = true
                     )
                 }
+                tempBookmarkTagsJob?.cancel()
+                tempBookmarkTagsJob = viewModelScope.launch {
+                    repository.getTagsForBookmark(events.bookmark.id).collect { resource ->
+                        if (resource is Resource.Success) {
+                            _state.update { it.copy(tempBookmarkTags = resource.data ?: emptyList()) }
+                        }
+                    }
+                }
             }
 
             HomeEvents.BookmarkPreviewDismissClick -> {
+                tempBookmarkTagsJob?.cancel()
                 _state.update {
                     it.copy(
                         isBodySheet = false,
-                        tempBookmark = null
+                        tempBookmark = null,
+                        tempBookmarkTags = emptyList()
                     )
                 }
             }
@@ -191,11 +202,6 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
                         repository.addTagToBookmark(tempBm.id, events.tag.id)
                     } else {
                         repository.removeTagFromBookmark(tempBm.id, events.tag.id)
-                    }
-                    repository.getTagsForBookmark(tempBm.id).collect { resource ->
-                        if (resource is Resource.Success) {
-                            _state.update { it.copy(tempBookmarkTags = resource.data ?: emptyList()) }
-                        }
                     }
                 }
             }

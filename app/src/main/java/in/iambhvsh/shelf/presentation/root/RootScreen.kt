@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,6 +32,7 @@ import `in`.iambhvsh.shelf.presentation.collection.components.CollectionPickerSh
 import `in`.iambhvsh.shelf.presentation.home.HomeEvents
 import `in`.iambhvsh.shelf.presentation.home.HomeScreen
 import `in`.iambhvsh.shelf.presentation.home.HomeViewModel
+import `in`.iambhvsh.shelf.presentation.home.components.TagFilterRow
 import `in`.iambhvsh.shelf.presentation.root.components.DefaultTopBar
 import `in`.iambhvsh.shelf.presentation.root.components.RootBottomBar
 import `in`.iambhvsh.shelf.presentation.root.components.RootFab
@@ -45,6 +47,11 @@ import `in`.iambhvsh.shelf.presentation.setting.SettingViewModel
 import `in`.iambhvsh.shelf.presentation.setting.components.RadioOptionSheet
 import `in`.iambhvsh.shelf.ui.theme.ShelfTheme
 import org.koin.androidx.compose.koinViewModel
+
+private fun fastOutLinearIn(fraction: Float): Float {
+    val easing = CubicBezierEasing(0.4f, 0.0f, 1.0f, 1.0f)
+    return easing.transform(fraction.coerceIn(0f, 1f))
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,7 +120,17 @@ fun RootScreen(
                 }
             },
             topBar = {
-                when {
+                val fraction = scrollBehavior.state.collapsedFraction
+                val topBarColor = androidx.compose.ui.graphics.lerp(
+                    MaterialTheme.colorScheme.surface,
+                    MaterialTheme.colorScheme.surfaceContainer,
+                    fastOutLinearIn(fraction)
+                )
+
+                androidx.compose.foundation.layout.Column(
+                    modifier = Modifier.background(topBarColor)
+                ) {
+                    when {
                     state.isSelectionMode && !isSearching && !isCollectionSearching -> {
                         SelectionTopBar(
                             title = "Selected ${state.selectedIds.size}",
@@ -215,6 +232,14 @@ fun RootScreen(
                             }
                         )
                     }
+                }
+
+                if (currentTab == 0 && !isSearching && !state.isSelectionMode) {
+                    TagFilterRow(
+                        tags = state.tags,
+                        activeTagIds = state.activeTagFilters,
+                        onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
+                    )
                 }
             },
             floatingActionButton = {
