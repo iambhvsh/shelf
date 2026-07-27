@@ -49,10 +49,15 @@ jobs:
       # Plus: KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
       - name: Decode keystore
         id: keystore
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.jks"
-          echo "path=$RUNNER_TEMP/release.jks" >> "$GITHUB_OUTPUT"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "path=$RUNNER_TEMP/release.jks" >> "$GITHUB_OUTPUT"
+          else
+            echo "No keystore provided, skipping."
+          fi
 
       - name: Unit tests
         run: ./gradlew test

@@ -37,7 +37,7 @@ android {
     // Signing is optional locally. In CI, these env vars are populated from
     // GitHub Secrets (see .github/workflows/release.yml). Without them the
     // release build is simply left unsigned.
-    val hasSigningEnv = System.getenv("KEYSTORE_PATH") != null
+    val hasSigningEnv = !System.getenv("KEYSTORE_PATH").isNullOrEmpty()
 
     signingConfigs {
         if (hasSigningEnv) {

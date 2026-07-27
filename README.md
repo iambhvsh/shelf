@@ -2,8 +2,6 @@
   <img src="logo-transparent.png" width="128" height="128" alt="Shelf Logo">
 </p>
 
-<h1 align="center">Shelf</h1>
-
 <p align="center">
   <b>Save links worth keeping. Beautifully simple. Entirely yours.</b>
 </p>
