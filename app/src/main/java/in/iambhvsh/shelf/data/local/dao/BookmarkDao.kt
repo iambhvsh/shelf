@@ -1,6 +1,7 @@
 package `in`.iambhvsh.shelf.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
@@ -21,6 +22,12 @@ interface BookmarkDao {
 
     @Query("SELECT * FROM bookmarks WHERE isHidden = 0")
     fun getBookmarks(): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT * FROM bookmarks")
+    fun getAllBookmarks(): Flow<List<BookmarkEntity>>
+
+    @Delete
+    suspend fun deleteBookmark(bookmarkEntity: BookmarkEntity)
 
     @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND (title LIKE '%' || :searchQuery || '%' OR url LIKE '%' || :searchQuery || '%')")
     fun searchBookmarks(searchQuery: String): Flow<List<BookmarkEntity>>
