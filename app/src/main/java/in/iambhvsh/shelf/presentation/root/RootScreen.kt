@@ -241,6 +241,7 @@ fun RootScreen(
                         onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
                     )
                 }
+                }
             },
             floatingActionButton = {
                 RootFab(
