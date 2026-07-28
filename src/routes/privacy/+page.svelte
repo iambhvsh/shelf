@@ -8,7 +8,7 @@
   <meta property="og:title" content="Privacy Policy — Shelf">
   <meta property="og:description" content="Shelf is a local-first, ad-free bookmark manager. Here's exactly what data it touches.">
   <meta property="og:url" content="https://shelf.iambhvsh.in/privacy">
-  <meta property="og:image" content="https://shelf.iambhvsh.in/assets/images/logo-transparent.webp">
+  <meta property="og:image" content="https://shelf.iambhvsh.in/images/logo-transparent.webp">
 </svelte:head>
 
 <div class="content-page">

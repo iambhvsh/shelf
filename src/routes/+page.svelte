@@ -16,12 +16,12 @@
   <meta property="og:title" content="Shelf - The links you love, entirely yours.">
   <meta property="og:description" content="A fast, ad-free, open-source bookmark manager for Android built entirely on Material 3. No subscriptions, no cloud lock-in.">
   <meta property="og:url" content="https://shelf.iambhvsh.in">
-  <meta property="og:image" content="/assets/images/logo-transparent.webp">
+  <meta property="og:image" content="/images/logo-transparent.webp">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Shelf - The links you love, entirely yours.">
   <meta name="twitter:description" content="A fast, ad-free, open-source bookmark manager for Android built entirely on Material 3. No subscriptions, no cloud lock-in.">
-  <meta name="twitter:image" content="/assets/images/logo-transparent.webp">
+  <meta name="twitter:image" content="/images/logo-transparent.webp">
 
   <link rel="canonical" href="https://shelf.iambhvsh.in">
 </svelte:head>

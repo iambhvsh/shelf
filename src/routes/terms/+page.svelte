@@ -8,7 +8,7 @@
   <meta property="og:title" content="Terms of Service — Shelf">
   <meta property="og:description" content="Shelf is provided as-is under the GPLv3 license. Here are the terms.">
   <meta property="og:url" content="https://shelf.iambhvsh.in/terms">
-  <meta property="og:image" content="https://shelf.iambhvsh.in/assets/images/logo-transparent.webp">
+  <meta property="og:image" content="https://shelf.iambhvsh.in/images/logo-transparent.webp">
 </svelte:head>
 
 <div class="content-page">
