@@ -1,0 +1,579 @@
+/* ==========================================================================
+   FONTS (self-hosted, no external requests — see assets/fonts/)
+   ========================================================================== */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/roboto-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/roboto-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/roboto-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Caprasimo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/caprasimo-400.woff2') format('woff2');
+}
+
+/* ==========================================================================
+   DESIGN TOKENS
+   ========================================================================== */
+:root {
+  --primary: #5A4ED1;
+  --on-primary: #FFFFFF;
+  --primary-container: #E2DFFF;
+  --on-primary-container: #16049D;
+
+  --secondary: #5D5C72;
+  --on-secondary: #FFFFFF;
+  --secondary-container: #E3E0F9;
+  --on-secondary-container: #1A1A2C;
+
+  --tertiary: #78536A;
+  --on-tertiary: #FFFFFF;
+  --tertiary-container: #FFD8EE;
+  --on-tertiary-container: #2E1125;
+
+  --surface: #F7F5FB;
+  --on-surface: #1C1B20;
+  --on-surface-variant: #47464F;
+
+  --surface-container-lowest: #FFFFFF;
+  --surface-container-low: #F1EFF7;
+  --surface-container: #EBE9F1;
+  --surface-container-high: #E5E3EB;
+  --surface-container-highest: #DFDDE5;
+
+  --shape-sm: 8px;
+  --shape-md: 16px;
+  --shape-lg: 24px;
+  --shape-xl: 32px;
+  --shape-full: 9999px;
+}
+
+html[data-theme="dark"] {
+  --primary: #C3C0FF;
+  --on-primary: #2A17A3;
+  --primary-container: #4234B9;
+  --on-primary-container: #E2DFFF;
+
+  --secondary: #C6C4DD;
+  --on-secondary: #2F2E42;
+  --secondary-container: #454459;
+  --on-secondary-container: #E3E0F9;
+
+  --tertiary: #E8B9D4;
+  --on-tertiary: #46263B;
+  --tertiary-container: #5E3C52;
+  --on-tertiary-container: #FFD8EE;
+
+  --surface: #131318;
+  --on-surface: #E5E1E7;
+  --on-surface-variant: #C8C5D0;
+
+  --surface-container-lowest: #0E0E13;
+  --surface-container-low: #1C1B20;
+  --surface-container: #201F24;
+  --surface-container-high: #2A2A2F;
+  --surface-container-highest: #35343A;
+}
+
+/* ==========================================================================
+   RESET / BASE
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: 'Roboto', system-ui, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.display {
+  font-family: 'Caprasimo', serif;
+  font-weight: 400;
+}
+
+.text-primary {
+  color: var(--primary);
+  transition: color 0.3s ease;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 840px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-image: var(--icon-url);
+  mask-image: var(--icon-url);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+/* ==========================================================================
+   RIPPLE (delegated — see assets/js/ripple.js)
+   ========================================================================== */
+.icon-btn, .btn-primary, .m3-card-interactive, .list-item, .m3-text-btn, .footer-link {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.ripple-fx {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple-anim 0.5s linear;
+  background-color: currentColor;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+@keyframes ripple-anim {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   TOP APP BAR
+   ========================================================================== */
+.top-app-bar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 840px;
+  z-index: 50;
+  background: var(--surface);
+  color: var(--on-surface);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  transition: background 0.3s;
+}
+
+.top-app-bar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--surface-container-highest);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s;
+}
+
+.scrolled .top-app-bar::after {
+  opacity: 0.6;
+}
+
+.brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 26px;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  text-decoration: none !important;
+}
+
+.top-app-bar-actions {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* Fixed-width slot so the centered brand logo never shifts, whether it's
+   holding an empty spacer (home) or the back button (any other page). */
+.top-app-bar-left {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.top-app-bar-left [hidden] {
+  display: none;
+}
+
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--shape-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface-variant);
+  background: var(--surface-container);
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.icon-btn:hover {
+  background: var(--surface-container-high);
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: var(--on-primary);
+  height: 48px;
+  padding: 0 24px;
+  border-radius: var(--shape-full);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.1px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s, background 0.2s;
+  margin-top: 8px;
+}
+
+/* ==========================================================================
+   MAIN / HERO
+   ========================================================================== */
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 64px 16px 24px 16px;
+  width: 100%;
+}
+
+.hero-section {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.headline-large {
+  font-size: clamp(38px, 12vw, 64px);
+  line-height: 1.1;
+  color: var(--on-surface);
+  margin-bottom: 4px;
+}
+
+.body-large {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--on-surface-variant);
+  max-width: 500px;
+}
+
+.section-title {
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--primary);
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+/* Simple content page (privacy / terms) */
+.content-page {
+  padding: 48px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.content-page p {
+  color: var(--on-surface-variant);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+/* Full-viewport page (404 and anything else that should own the whole screen) */
+.page-h-screen {
+  min-height: calc(100vh - 64px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 0 16px;
+}
+
+/* ==========================================================================
+   PAGE TRANSITIONS (fade only on the route outlet — no left/right movement)
+   ========================================================================== */
+#app {
+  position: relative;
+}
+
+.page-transition {
+  transition: opacity 220ms ease;
+  will-change: opacity;
+}
+
+.page-exit-left,
+.page-exit-right,
+.page-enter-from-left,
+.page-enter-from-right {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   SCREENSHOTS
+   ========================================================================== */
+.screenshot-gallery {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.screenshot-gallery::-webkit-scrollbar {
+  display: none;
+}
+
+.screenshot-img {
+  aspect-ratio: 9/19.5;
+  height: auto;
+  flex: 0 0 65%;
+  max-width: 260px;
+  border-radius: var(--shape-xl);
+  background-color: var(--surface-container-high);
+  object-fit: cover;
+  scroll-snap-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* ==========================================================================
+   CARD SYSTEM
+   ========================================================================== */
+.m3-card {
+  background: var(--surface-container-low);
+  border-radius: var(--shape-lg);
+  transition: background 0.2s;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  gap: 16px;
+  transition: background 0.2s;
+}
+
+.list-item-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.list-item-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-item-subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.m3-card-padded {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.m3-card-padded .icon {
+  color: var(--primary);
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
+}
+
+.m3-card-padded h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--on-surface);
+}
+
+.m3-card-padded p {
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  line-height: 20px;
+}
+
+.m3-text-btn {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 8px 16px;
+  margin-left: -16px;
+  border-radius: var(--shape-full);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.app-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 16px 24px 16px;
+  background: transparent;
+  margin-top: 24px;
+  width: 100%;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-link {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  text-decoration: none;
+  transition: color 0.2s;
+  padding: 8px 16px;
+  border-radius: var(--shape-sm);
+}
+
+.footer-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  opacity: 0.7;
+}
+
+.giant-footer-logo {
+  width: 100%;
+  text-align: center;
+  font-size: clamp(72px, 25vw, 200px);
+  line-height: 0.8;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+  margin-top: 64px;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (min-width: 600px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  .screenshot-gallery {
+    justify-content: center;
+  }
+  .screenshot-img {
+    flex: 0 0 auto;
+  }
+}

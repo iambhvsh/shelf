@@ -1,0 +1,12 @@
+
+> app@0.0.1 preview
+> vite preview
+
+  ➜  Local:   http://localhost:4173/
+  ➜  Network: use --host to expose
+
+[1;31m[404] GET /YOUR_SCREENSHOT_1_URL.jpg[0m
+
+[1;31m[404] GET /YOUR_SCREENSHOT_2_URL.jpg[0m
+
+[1;31m[404] GET /YOUR_SCREENSHOT_3_URL.jpg[0m
