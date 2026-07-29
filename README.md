@@ -20,8 +20,6 @@ Shelf is designed to do exactly one thing, flawlessly: **drop a link, grab the d
 
 No sign-ups. No cloud lock-in. No trackers. Just you and the links that matter.
 
----
-
 ## Features that feel like magic
 
 **✨ Instant Metadata**  
@@ -66,8 +64,6 @@ You own your bookmarks. Export them to JSON or HTML anytime. Import from your de
 **💾 Peace of mind, built-in**  
 Rest easy with automatic, daily backups saved straight to your device's internal storage and downloads folder. You never lose a thing.
 
----
-
 ## Under the Hood
 
 Crafted with modern Android engineering.
@@ -88,8 +84,6 @@ Crafted with modern Android engineering.
 First and foremost, the core of this application was built by **[qeiq](https://github.com/qeiq)** in their amazing project **[Savr](https://github.com/qeiq/Savr)**. Shelf is a fork of Savr, and without their fantastic open-source codebase, this project wouldn't exist. 
 
 A massive thank you to **Vishal Kumar Singhvi** for [Android-Link-Preview](https://github.com/vishalkumarsinghvi/Android-Link-Preview), which powers the metadata magic.
-
----
 
 ## Open Source
 

@@ -68,7 +68,6 @@ fun SettingItem(
                 )
             }
         },
-        },
         trailingContent = trailing
     )
 }

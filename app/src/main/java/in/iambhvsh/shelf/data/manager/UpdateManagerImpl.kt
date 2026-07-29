@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
-import `in`.iambhvsh.shelf.BuildConfig
 import `in`.iambhvsh.shelf.domain.manager.UpdateManager
 import `in`.iambhvsh.shelf.domain.repository.SettingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -67,7 +66,7 @@ class UpdateManagerImpl(
                         tagName = tagName.substring(1)
                     }
 
-                    val currentVersion = BuildConfig.VERSION_NAME
+                    val currentVersion = context.packageManager.getPackageInfo(context.packageName, 0).versionName
 
                     if (isVersionNewer(currentVersion, tagName)) {
                         val assets = json.getJSONArray("assets")

@@ -251,19 +251,6 @@ class HomeViewModel(
             is HomeEvents.ShowNoteEditor -> {
                 _state.update { it.copy(showNoteEditor = true, noteEditorText = events.initialNote, isBodySheet = false) }
             }
-            
-            is HomeEvents.OnNoteEditorSave -> {
-                _state.update { it.copy(showNoteEditor = false, noteEditorText = null) }
-                events.note?.let { note ->
-                    _state.value.tempBookmark?.let { bookmark ->
-                        viewModelScope.launch {
-                            val updatedBookmark = bookmark.copy(note = note.takeIf { it.isNotBlank() })
-                            repository.updateBookmark(updatedBookmark)
-                            _state.update { it.copy(tempBookmark = null) }
-                        }
-                    }
-                }
-            }
 
             HomeEvents.DismissUpdateSheet -> {
                 _state.update { it.copy(showUpdateSheet = false) }

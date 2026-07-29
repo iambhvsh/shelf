@@ -74,7 +74,7 @@ val shelfModule = module {
     }
 
     viewModel {
-        SettingViewModel(get(), get())
+        SettingViewModel(get(), get(), get())
     }
 
     single {
