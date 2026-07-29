@@ -9,6 +9,10 @@
   }: {
     iconName?: string;
     title: string;
+    /**
+     * Trusted HTML content for the card description.
+     * Must be sanitized before passing if derived from user input.
+     */
     desc: string;
     action?: { label: string; href: string };
   } = $props();
