@@ -15,7 +15,10 @@ interface BookmarkRepository {
     suspend fun getBookmarksWithoutImage(): List<Bookmark>
     suspend fun hideBookmarks(ids: List<Long>)
     suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>>
+    suspend fun searchBookmarksWithTags(text: String, tagIds: List<Long>): Flow<Resource<List<Bookmark>>>
     suspend fun togglePinStatus(id: Long, isPinned: Boolean)
+    suspend fun updateNote(id: Long, note: String?)
+    suspend fun updateReminderTime(id: Long, reminderTime: Long?)
 
     fun getAllTags(): Flow<Resource<List<Tag>>>
     suspend fun insertTag(name: String): Long

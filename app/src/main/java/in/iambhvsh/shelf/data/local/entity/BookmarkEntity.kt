@@ -14,5 +14,7 @@ data class BookmarkEntity(
     val imageUrl: String?,
     val createdAt: Long = System.currentTimeMillis(),
     val isHidden: Boolean = false,
-    val isPinned: Boolean = false
+    val isPinned: Boolean = false,
+    val note: String? = null,
+    val reminderTime: Long? = null
 )

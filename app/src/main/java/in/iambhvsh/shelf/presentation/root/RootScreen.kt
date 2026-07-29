@@ -57,6 +57,7 @@ private fun fastOutLinearIn(fraction: Float): Float {
 @Composable
 fun RootScreen(
     sharedUrl: String? = null,
+    openBookmarkId: Long? = null,
     viewModel: HomeViewModel = koinViewModel(),
     collectionViewModel: CollectionViewModel = koinViewModel(),
     settingViewModel: SettingViewModel = koinViewModel(),
@@ -91,6 +92,19 @@ fun RootScreen(
 
     LaunchedEffect(isSearching) {
         if (isSearching) focusRequester.requestFocus()
+    }
+    
+    LaunchedEffect(state.activeTagFilters) {
+        searchViewModel.onTagsChange(state.activeTagFilters)
+    }
+    
+    LaunchedEffect(openBookmarkId, state.bookmarkData) {
+        if (openBookmarkId != null && state.bookmarkData.isNotEmpty()) {
+            val bookmark = state.bookmarkData.find { it.id == openBookmarkId }
+            if (bookmark != null && !state.isBodySheet) {
+                viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(bookmark))
+            }
+        }
     }
 
     LaunchedEffect(isCollectionSearching) {
@@ -234,12 +248,14 @@ fun RootScreen(
                     }
                 }
 
-                if (currentTab == 0 && !isSearching && !state.isSelectionMode) {
-                    TagFilterRow(
-                        tags = state.tags,
-                        activeTagIds = state.activeTagFilters,
-                        onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
-                    )
+                if (currentTab == 0 && !state.isSelectionMode) {
+                    if (state.tags.isNotEmpty()) {
+                        TagFilterRow(
+                            tags = state.tags,
+                            activeTagIds = state.activeTagFilters,
+                            onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
+                        )
+                    }
                 }
                 }
             },

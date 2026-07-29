@@ -30,6 +30,8 @@ import `in`.iambhvsh.shelf.presentation.home.components.BookmarkList
 import `in`.iambhvsh.shelf.presentation.home.components.BookmarkPreviewSheet
 import `in`.iambhvsh.shelf.presentation.home.components.EmptyBookmarkState
 import `in`.iambhvsh.shelf.presentation.home.components.HomeInputSheet
+import `in`.iambhvsh.shelf.presentation.home.components.NoteEditorSheet
+import `in`.iambhvsh.shelf.presentation.home.components.ReminderPickerSheet
 import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
 import `in`.iambhvsh.shelf.presentation.home.components.PhotoPreview
 import `in`.iambhvsh.shelf.presentation.home.components.TagFilterRow
@@ -170,7 +172,9 @@ fun HomeScreen(
         openInBrowser = { state.tempBookmark?.url?.let { openChromeTab(url = it, context = context) } },
         copyLinkButtonClick = { state.tempBookmark?.url?.let { clipboard.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) } },
         onPinButtonClick = { state.tempBookmark?.let { viewModel.homeEvents(HomeEvents.TogglePin(it)) } },
-        onTagsButtonClick = { viewModel.homeEvents(HomeEvents.ShowTagManager) }
+        onTagsButtonClick = { viewModel.homeEvents(HomeEvents.ShowTagManager) },
+        onNoteButtonClick = { viewModel.homeEvents(HomeEvents.ShowNoteEditor(state.tempBookmark?.note)) },
+        onReminderButtonClick = { viewModel.homeEvents(HomeEvents.ShowReminderPicker) }
     )
     if (state.showTagManager) {
         TagManagerSheet(
@@ -182,7 +186,39 @@ fun HomeScreen(
             onCreateTag = { name ->
                 viewModel.homeEvents(HomeEvents.CreateTag(name))
             },
+            onDeleteTag = { tag ->
+                viewModel.homeEvents(HomeEvents.DeleteTag(tag.id))
+            },
             onDismiss = { viewModel.homeEvents(HomeEvents.HideTagManager) }
+        )
+    }
+
+    if (state.showNoteEditor) {
+        NoteEditorSheet(
+            initialNote = state.noteEditorText,
+            onSave = { note ->
+                state.tempBookmark?.let {
+                    viewModel.homeEvents(HomeEvents.UpdateNote(it.id, note))
+                }
+            },
+            onDismiss = { viewModel.homeEvents(HomeEvents.HideNoteEditor) }
+        )
+    }
+
+    if (state.showReminderPicker) {
+        ReminderPickerSheet(
+            onSetReminder = { timeInMillis ->
+                state.tempBookmark?.let {
+                    viewModel.homeEvents(HomeEvents.SetReminder(it.id, timeInMillis))
+                }
+            },
+            onCancelReminder = {
+                state.tempBookmark?.let {
+                    viewModel.homeEvents(HomeEvents.CancelReminder(it.id))
+                }
+            },
+            hasExistingReminder = state.tempBookmark?.reminderTime != null,
+            onDismiss = { viewModel.homeEvents(HomeEvents.HideReminderPicker) }
         )
     }
 }

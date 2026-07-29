@@ -56,10 +56,22 @@ fun BookmarkCard(
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
     isPinned: Boolean = false,
-    url: String
+    url: String,
+    note: String? = null,
+    reminderTime: Long? = null
 ) {
 
     val host = url.toUri().host.orEmpty()
+    
+    val isVertical = listOf(
+        "instagram.com/reel", "instagram.com/p/", "ig.me",
+        "youtube.com/shorts", 
+        "tiktok.com", 
+        "facebook.com/reel", "fb.watch",
+        "pinterest.com/pin", "pin.it"
+    ).any { url.contains(it, ignoreCase = true) }
+                     
+    val cardAspectRatio = if (isVertical) 9f / 16f else 1.2f
 
     val cleanHost = if (host.startsWith("www.")) {
         host.removePrefix("www.")
@@ -149,6 +161,24 @@ fun BookmarkCard(
                 modifier = Modifier.weight(1f)
             )
 
+            if (note != null) {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Outlined.Edit,
+                    contentDescription = "Has Note",
+                    modifier = Modifier.size(16.dp).padding(end = if (isPinned || reminderTime != null) 4.dp else 0.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (reminderTime != null) {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
+                    contentDescription = "Has Reminder",
+                    modifier = Modifier.size(16.dp).padding(end = if (isPinned) 4.dp else 0.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
             if (isPinned) {
                 Icon(
                     imageVector = Icons.Default.Star,
@@ -163,7 +193,7 @@ fun BookmarkCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1.2f)
+                .aspectRatio(cardAspectRatio)
                 .clip(MaterialTheme.shapes.extraLarge)
                 .background(
                     Brush.verticalGradient(

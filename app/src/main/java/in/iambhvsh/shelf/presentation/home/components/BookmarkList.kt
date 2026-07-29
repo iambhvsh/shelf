@@ -44,7 +44,9 @@ fun BookmarkList(
                 onLongClick = { viewModel.homeEvents(HomeEvents.ToggleSelection(item.id)) },
                 isSelected = item.id in selectedIds,
                 isSelectionMode = isSelectionMode,
-                url = item.url
+                url = item.url,
+                note = item.note,
+                reminderTime = item.reminderTime
             )
         }
     }

@@ -7,6 +7,8 @@ import `in`.iambhvsh.shelf.data.local.repository.BookmarkRepositoryImpl
 import `in`.iambhvsh.shelf.data.local.repository.SettingsRepositoryImpl
 import `in`.iambhvsh.shelf.domain.repository.BookmarkRepository
 import `in`.iambhvsh.shelf.domain.repository.SettingsRepository
+import `in`.iambhvsh.shelf.presentation.reminders.ReminderManager
+import org.koin.android.ext.koin.androidContext
 import `in`.iambhvsh.shelf.presentation.collection.CollectionViewModel
 import `in`.iambhvsh.shelf.presentation.home.HomeViewModel
 import `in`.iambhvsh.shelf.presentation.search.SearchViewModel
@@ -22,7 +24,7 @@ val shelfModule = module {
                 BookmarkDatabase::class.java,
                 "bookmark_db"
             )
-            .addMigrations(BookmarkDatabase.MIGRATION_4_5)
+            .addMigrations(BookmarkDatabase.MIGRATION_4_5, BookmarkDatabase.MIGRATION_5_6)
             .fallbackToDestructiveMigration(true)
             .build()
     }
@@ -39,7 +41,6 @@ val shelfModule = module {
         get<BookmarkDatabase>().tagDao()
     }
 
-    // Repository
     single<SettingsRepository> {
         SettingsRepositoryImpl(get())
     }
@@ -56,8 +57,12 @@ val shelfModule = module {
         BackupManager(get(), get(), get(), get())
     }
 
+    single {
+        ReminderManager(androidContext())
+    }
+
     viewModel {
-        HomeViewModel(get())
+        HomeViewModel(get(), get())
     }
 
     viewModel {

@@ -47,6 +47,8 @@ fun BookmarkGrid(
                 description = item.description,
                 isPinned = item.isPinned,
                 url = item.url,
+                note = item.note,
+                reminderTime = item.reminderTime,
                 photoClickUrl = {
                     viewModel.homeEvents(HomeEvents.PreviewImageClick(url = it))
                     Log.d("Photo Dialog", "HomeScreen: $it")

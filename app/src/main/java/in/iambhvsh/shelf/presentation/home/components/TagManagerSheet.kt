@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ fun TagManagerSheet(
     selectedTags: List<Tag>,
     onToggleTag: (Tag, Boolean) -> Unit,
     onCreateTag: (String) -> Unit,
+    onDeleteTag: (Tag) -> Unit,
     onDismiss: () -> Unit
 ) {
     var newTagName by remember { mutableStateOf("") }
@@ -109,10 +111,20 @@ fun TagManagerSheet(
                                 )
                             },
                             trailingContent = {
-                                Switch(
-                                    checked = isSelected,
-                                    onCheckedChange = { onToggleTag(tag, it) }
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    IconButton(onClick = { onDeleteTag(tag) }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete Tag",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Switch(
+                                        checked = isSelected,
+                                        onCheckedChange = { onToggleTag(tag, it) }
+                                    )
+                                }
                             }
                         )
                     }

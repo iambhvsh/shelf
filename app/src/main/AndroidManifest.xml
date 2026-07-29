@@ -3,10 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <application
         android:name=".App"
         android:allowBackup="true"
+        android:usesCleartextTraffic="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -32,6 +36,11 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".presentation.reminders.ReminderReceiver"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -25,5 +25,8 @@ data class HomeState(
     val tags: List<Tag> = emptyList(),
     val tempBookmarkTags: List<Tag> = emptyList(),
     val showTagManager: Boolean = false,
-    val activeTagFilters: Set<Long> = emptySet()
+    val activeTagFilters: Set<Long> = emptySet(),
+    val showNoteEditor: Boolean = false,
+    val noteEditorText: String? = null,
+    val showReminderPicker: Boolean = false
 )

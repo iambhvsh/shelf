@@ -29,11 +29,24 @@ interface BookmarkDao {
     @Delete
     suspend fun deleteBookmark(bookmarkEntity: BookmarkEntity)
 
-    @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND (title LIKE '%' || :searchQuery || '%' OR url LIKE '%' || :searchQuery || '%')")
+    @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND (title LIKE '%' || :searchQuery || '%' OR url LIKE '%' || :searchQuery || '%' OR description LIKE '%' || :searchQuery || '%' OR note LIKE '%' || :searchQuery || '%')")
     fun searchBookmarks(searchQuery: String): Flow<List<BookmarkEntity>>
+
+    @Query("""
+        SELECT DISTINCT b.* FROM bookmarks b 
+        INNER JOIN bookmark_tag_cross_ref ref ON b.id = ref.bookmarkId
+        WHERE ref.tagId IN (:tagIds) AND b.isHidden = 0 AND (b.title LIKE '%' || :searchQuery || '%' OR b.url LIKE '%' || :searchQuery || '%' OR b.description LIKE '%' || :searchQuery || '%' OR b.note LIKE '%' || :searchQuery || '%')
+    """)
+    fun searchBookmarksWithTags(searchQuery: String, tagIds: List<Long>): Flow<List<BookmarkEntity>>
 
     @Query("UPDATE bookmarks SET isHidden = 1 WHERE id IN (:ids)")
     suspend fun hideBookmarks(ids: List<Long>)
+
+    @Query("UPDATE bookmarks SET note = :note WHERE id = :id")
+    suspend fun updateNote(id: Long, note: String?)
+
+    @Query("UPDATE bookmarks SET reminderTime = :reminderTime WHERE id = :id")
+    suspend fun updateReminderTime(id: Long, reminderTime: Long?)
 
     @Query("UPDATE bookmarks SET isHidden = 0 WHERE id IN (:ids)")
     suspend fun unhideBookmarks(ids: List<Long>)

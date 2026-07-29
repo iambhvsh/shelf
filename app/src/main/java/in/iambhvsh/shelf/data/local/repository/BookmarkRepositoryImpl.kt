@@ -46,6 +46,14 @@ class BookmarkRepositoryImpl(
         dao.updatePinStatus(id, isPinned)
     }
 
+    override suspend fun updateNote(id: Long, note: String?) {
+        dao.updateNote(id, note)
+    }
+
+    override suspend fun updateReminderTime(id: Long, reminderTime: Long?) {
+        dao.updateReminderTime(id, reminderTime)
+    }
+
     override fun getAllTags(): Flow<Resource<List<Tag>>> = flow {
         emit(Resource.Loading())
         try {
@@ -97,6 +105,13 @@ class BookmarkRepositoryImpl(
 
     override suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>> {
         return dao.searchBookmarks(text)
+            .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
+            .onStart { emit(Resource.Loading()) }
+            .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
+    }
+
+    override suspend fun searchBookmarksWithTags(text: String, tagIds: List<Long>): Flow<Resource<List<Bookmark>>> {
+        return dao.searchBookmarksWithTags(text, tagIds)
             .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
             .onStart { emit(Resource.Loading()) }
             .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }

@@ -5,6 +5,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.ColorLens
+import androidx.compose.material.icons.outlined.FolderSpecial
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -74,11 +80,11 @@ fun AboutSheet(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            FeatureItem("✨ Instant Metadata", "Automatically fetches titles, descriptions, and high-quality preview images the moment you save a URL.")
-            FeatureItem("🚀 Share Integration", "Save links instantly from Chrome, Twitter, Reddit, or any other app via the native Android Share Menu.")
-            FeatureItem("🗂️ Clean Organization", "Group your bookmarks into beautifully simple collections without the clutter of nested folders.")
-            FeatureItem("🎨 Fully Customizable", "Built with Material 3. Switch between Light, Dark, or true OLED Black themes, and personalize with 8 curated accent colors.")
-            FeatureItem("🔄 100% Offline & Private", "Your data never leaves your device. Everything is stored in a local database with automatic, daily backups for peace of mind.")
+            FeatureItem(Icons.Outlined.AutoAwesome, "Instant Metadata", "Automatically fetches titles, descriptions, and high-quality preview images the moment you save a URL.")
+            FeatureItem(Icons.Outlined.Share, "Share Integration", "Save links instantly from Chrome, Twitter, Reddit, or any other app via the native Android Share Menu.")
+            FeatureItem(Icons.Outlined.FolderSpecial, "Clean Organization", "Group your bookmarks into beautifully simple collections without the clutter of nested folders.")
+            FeatureItem(Icons.Outlined.ColorLens, "Fully Customizable", "Built with Material 3. Switch between Light, Dark, or true OLED Black themes, and personalize with 8 curated accent colors.")
+            FeatureItem(Icons.Outlined.Security, "100% Offline & Private", "Your data never leaves your device. Everything is stored in a local database with automatic, daily backups for peace of mind.")
             
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -131,23 +137,32 @@ private fun CreditItem(title: String, description: String) {
 }
 
 @Composable
-private fun FeatureItem(title: String, description: String) {
-    Column(
+private fun FeatureItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, description: String) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp)
+            .padding(bottom = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.secondary,
-            fontWeight = FontWeight.Medium
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.size(24.dp).padding(top = 2.dp)
         )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.secondary,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

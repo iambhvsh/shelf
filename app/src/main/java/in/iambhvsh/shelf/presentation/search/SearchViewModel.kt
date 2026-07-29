@@ -17,10 +17,22 @@ class SearchViewModel(
     val state = _state.asStateFlow()
 
     private var searchJob: Job? = null
+    private var activeTagFilters: Set<Long> = emptySet()
+
+    fun onTagsChange(tags: Set<Long>) {
+        if (activeTagFilters != tags) {
+            activeTagFilters = tags
+            performSearch()
+        }
+    }
 
     fun onQueryChange(query: String) {
         _state.update { it.copy(searchQuery = query) }
+        performSearch()
+    }
 
+    private fun performSearch() {
+        val query = _state.value.searchQuery
         searchJob?.cancel()
         if (query.isBlank()) {
             _state.update { it.copy(searchResults = emptyList(), isLoading = false) }
@@ -28,7 +40,12 @@ class SearchViewModel(
         }
 
         searchJob = viewModelScope.launch {
-            repository.searchBookmarks(query).collect { resource ->
+            val flow = if (activeTagFilters.isEmpty()) {
+                repository.searchBookmarks(query)
+            } else {
+                repository.searchBookmarksWithTags(query, activeTagFilters.toList())
+            }
+            flow.collect { resource ->
                 when (resource) {
                     is Resource.Loading -> _state.update { it.copy(isLoading = true) }
                     is Resource.Error -> _state.update { it.copy(isLoading = false, error = resource.errorMessage ?: "Error") }

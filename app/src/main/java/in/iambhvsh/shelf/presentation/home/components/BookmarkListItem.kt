@@ -20,6 +20,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +50,9 @@ fun BookmarkListItem(
     onLongClick: () -> Unit,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
-    url: String
+    url: String,
+    note: String? = null,
+    reminderTime: Long? = null
 ) {
     val host = url.toUri().host.orEmpty()
     val cleanHost = if (host.startsWith("www.")) host.removePrefix("www.") else host
@@ -133,6 +138,25 @@ fun BookmarkListItem(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false)
                 )
+                if (note != null) {
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Has Note",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                if (reminderTime != null) {
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
+                        contentDescription = "Has Reminder",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             Spacer(Modifier.height(2.dp))

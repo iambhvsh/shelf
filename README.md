@@ -30,11 +30,20 @@ Paste a URL, and watch Shelf instantly pull in the title, description, and a hig
 **🚀 Direct Share Integration**  
 Found something interesting in Chrome, Twitter, or Reddit? Just hit "Share" and send it straight to Shelf. It's saved in a split second without even opening the app.
 
-**🗂️ Collections. Perfected.**  
-Group your bookmarks naturally. No messy nested folders—just name a collection, drop your links in, and find them effortlessly later.
+**🗂️ Collections & Tags. Perfected.**  
+Group your bookmarks naturally. No messy nested folders—just name a collection, drop your links in, or add **Tags** to cross-reference and filter them effortlessly.
+
+**📌 Pin & Hide Bookmarks**  
+Pin your most important links to the top for immediate access, or hide specific bookmarks you want to keep completely out of sight.
+
+**✅ Bulk Actions & Sorting**  
+Manage your library efficiently. Select multiple bookmarks to delete or move them to collections at once, and sort them exactly how you like.
 
 **🎨 Designed for your screen**  
-Built with pure Material 3 and tailored for Android. Switch seamlessly between Light, Dark, or true OLED Black themes. Make it yours by choosing from 8 beautifully curated accent colors.
+Built with pure Material 3 and tailored for Android. Switch seamlessly between Light, Dark, or true OLED Black themes. Choose from 8 beautifully curated accent colors, or enable **Dynamic Colors (Material You)** to adapt to your wallpaper.
+
+**🛡️ App Lock Privacy**  
+Keep your saved links for your eyes only. Secure the app using your device's built-in biometrics or PIN lock.
 
 **⚡ Lightning Fast Actions**  
 Configure exactly what happens when you tap a link. Open it directly in your browser, bring up a quick preview card without leaving the app, or instantly copy the URL to your clipboard.

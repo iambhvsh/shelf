@@ -34,6 +34,8 @@ class MainActivity : FragmentActivity() {
             Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)?.trim()
             else -> null
         }
+        
+        val openBookmarkId = intent?.getLongExtra("OPEN_BOOKMARK_ID", -1L)?.takeIf { it != -1L }
 
         val appLockEnabled = settingsRepository.getAppLockEnabled()
         var isAuthenticated by mutableStateOf(!appLockEnabled)
@@ -67,7 +69,7 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             if (isAuthenticated) {
-                RootScreen(sharedUrl = sharedUrl)
+                RootScreen(sharedUrl = sharedUrl, openBookmarkId = openBookmarkId)
             } else {
                 Box(modifier = Modifier.fillMaxSize())
             }

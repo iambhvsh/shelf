@@ -21,7 +21,7 @@ import `in`.iambhvsh.shelf.data.local.entity.BookmarkTagCrossRef
         TagEntity::class,
         BookmarkTagCrossRef::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class BookmarkDatabase : RoomDatabase() {
@@ -38,6 +38,13 @@ abstract class BookmarkDatabase : RoomDatabase() {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `bookmark_tag_cross_ref` (`bookmarkId` INTEGER NOT NULL, `tagId` INTEGER NOT NULL, PRIMARY KEY(`bookmarkId`, `tagId`), FOREIGN KEY(`bookmarkId`) REFERENCES `bookmarks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`tagId`) REFERENCES `tags`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_bookmark_tag_cross_ref_bookmarkId` ON `bookmark_tag_cross_ref` (`bookmarkId`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_bookmark_tag_cross_ref_tagId` ON `bookmark_tag_cross_ref` (`tagId`)")
+            }
+        }
+        
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE bookmarks ADD COLUMN note TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE bookmarks ADD COLUMN reminderTime INTEGER DEFAULT NULL")
             }
         }
     }

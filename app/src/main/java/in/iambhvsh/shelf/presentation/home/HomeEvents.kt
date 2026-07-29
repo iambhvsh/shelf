@@ -27,10 +27,19 @@ sealed class HomeEvents {
     object HideSortSheet : HomeEvents()
     data class TogglePin(val bookmark: Bookmark) : HomeEvents()
     
-    // Tag Events
     object ShowTagManager : HomeEvents()
     object HideTagManager : HomeEvents()
     data class CreateTag(val name: String) : HomeEvents()
     data class ToggleTagForBookmark(val tag: `in`.iambhvsh.shelf.domain.model.Tag, val isChecked: Boolean) : HomeEvents()
     data class ToggleTagFilter(val tagId: Long) : HomeEvents()
+    data class DeleteTag(val tagId: Long) : HomeEvents()
+
+    data class ShowNoteEditor(val initialNote: String?) : HomeEvents()
+    object HideNoteEditor : HomeEvents()
+    data class UpdateNote(val id: Long, val note: String?) : HomeEvents()
+
+    object ShowReminderPicker : HomeEvents()
+    object HideReminderPicker : HomeEvents()
+    data class SetReminder(val id: Long, val timeInMillis: Long) : HomeEvents()
+    data class CancelReminder(val id: Long) : HomeEvents()
 }

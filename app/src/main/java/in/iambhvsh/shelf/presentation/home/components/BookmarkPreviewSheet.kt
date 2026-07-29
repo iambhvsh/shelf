@@ -54,7 +54,9 @@ fun BookmarkPreviewSheet(
     openInBrowser: () -> Unit,
     copyLinkButtonClick: () -> Unit,
     onPinButtonClick: (() -> Unit)? = null,
-    onTagsButtonClick: (() -> Unit)? = null
+    onTagsButtonClick: (() -> Unit)? = null,
+    onNoteButtonClick: (() -> Unit)? = null,
+    onReminderButtonClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     if (!showBottomSheet) return
@@ -97,7 +99,6 @@ fun BookmarkPreviewSheet(
                     .clip(MaterialTheme.shapes.extraLarge)
                     .clickable {
                         onTagsButtonClick()
-                        onDismissRequest()
                     },
                 colors = ListItemDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -109,6 +110,54 @@ fun BookmarkPreviewSheet(
                     Icon(
                         painter = painterResource(R.drawable.bookmark_add),
                         contentDescription = "Manage Tags"
+                    )
+                }
+            )
+        }
+        
+        if (onNoteButtonClick != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        onNoteButtonClick()
+                    },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                headlineContent = {
+                    Text("Personal Note")
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Outlined.Edit,
+                        contentDescription = "Personal Note"
+                    )
+                }
+            )
+        }
+        
+        if (onReminderButtonClick != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        onReminderButtonClick()
+                    },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                headlineContent = {
+                    Text("Remind Me")
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
+                        contentDescription = "Remind Me"
                     )
                 }
             )

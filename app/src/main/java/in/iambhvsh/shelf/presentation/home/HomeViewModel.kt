@@ -15,8 +15,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+import `in`.iambhvsh.shelf.presentation.reminders.ReminderManager
 
-class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
+class HomeViewModel(
+    private val repository: BookmarkRepository,
+    private val reminderManager: ReminderManager
+) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
@@ -182,11 +186,18 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
             }
             
             HomeEvents.ShowTagManager -> {
-                _state.update { it.copy(showTagManager = true) }
+                _state.update { it.copy(showTagManager = true, isBodySheet = false) }
             }
             
             HomeEvents.HideTagManager -> {
-                _state.update { it.copy(showTagManager = false) }
+                tempBookmarkTagsJob?.cancel()
+                _state.update { 
+                    it.copy(
+                        showTagManager = false,
+                        tempBookmark = null,
+                        tempBookmarkTags = emptyList()
+                    ) 
+                }
             }
             
             is HomeEvents.CreateTag -> {
@@ -217,6 +228,51 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
                     state.copy(activeTagFilters = newFilters)
                 }
                 loadBookmarks()
+            }
+            
+            is HomeEvents.DeleteTag -> {
+                viewModelScope.launch {
+                    repository.deleteTag(events.tagId)
+                }
+            }
+            
+            is HomeEvents.ShowNoteEditor -> {
+                _state.update { it.copy(showNoteEditor = true, noteEditorText = events.initialNote, isBodySheet = false) }
+            }
+            
+            is HomeEvents.HideNoteEditor -> {
+                _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
+            }
+            
+            is HomeEvents.UpdateNote -> {
+                viewModelScope.launch {
+                    repository.updateNote(events.id, events.note)
+                    _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
+                }
+            }
+            
+            is HomeEvents.ShowReminderPicker -> {
+                _state.update { it.copy(showReminderPicker = true, isBodySheet = false) }
+            }
+            
+            is HomeEvents.HideReminderPicker -> {
+                _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+            }
+            
+            is HomeEvents.SetReminder -> {
+                viewModelScope.launch {
+                    repository.updateReminderTime(events.id, events.timeInMillis)
+                    reminderManager.scheduleReminder(events.id, events.timeInMillis)
+                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+                }
+            }
+            
+            is HomeEvents.CancelReminder -> {
+                viewModelScope.launch {
+                    repository.updateReminderTime(events.id, null)
+                    reminderManager.cancelReminder(events.id)
+                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+                }
             }
         }
     }
