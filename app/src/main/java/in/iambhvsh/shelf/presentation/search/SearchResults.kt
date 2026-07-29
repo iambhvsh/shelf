@@ -41,6 +41,7 @@ fun SearchResults(
     onBodyClick: ((Bookmark) -> Unit)? = null,
     onPhotoClick: ((String) -> Unit)? = null,
     onLongClick: ((Long) -> Unit)? = null,
+    onNoteClick: ((Bookmark) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val gridState = rememberLazyStaggeredGridState()
@@ -103,9 +104,12 @@ fun SearchResults(
                         photoClickUrl = { onPhotoClick?.invoke(it) },
                         bodyClick = { onBodyClick?.invoke(item) },
                         onLongClick = { onLongClick?.invoke(item.id) },
+                        onNoteClick = { onNoteClick?.invoke(item) },
                         isSelected = item.id in selectedIds,
                         isSelectionMode = isSelectionMode,
-                        url = item.url
+                        url = item.url,
+                        note = item.note,
+                        reminderTime = item.reminderTime
                     )
                 }
             }
@@ -128,9 +132,12 @@ fun SearchResults(
                         photoClickUrl = { onPhotoClick?.invoke(it) },
                         bodyClick = { onBodyClick?.invoke(item) },
                         onLongClick = { onLongClick?.invoke(item.id) },
+                        onNoteClick = { onNoteClick?.invoke(item) },
                         isSelected = item.id in selectedIds,
                         isSelectionMode = isSelectionMode,
-                        url = item.url
+                        url = item.url,
+                        note = item.note,
+                        reminderTime = item.reminderTime
                     )
                 }
             }

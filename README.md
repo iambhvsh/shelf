@@ -51,8 +51,14 @@ Configure exactly what happens when you tap a link. Open it directly in your bro
 **📱 View it your way**  
 Prefer a visual spread or a dense list? Toggle effortlessly between Grid and List view to browse your collection however you like.
 
-**🔍 Search that actually works**  
-Find exactly what you're looking for, the moment you need it. Instant search across titles and URLs.
+**🔍 Full-Text Search**  
+Find exactly what you're looking for, the moment you need it. Instant full-text search across titles, URLs, descriptions, and your personal notes.
+
+**📝 Personal Notes**  
+Add context to your bookmarks with private, inline notes directly on the cards. No more forgetting why you saved a link.
+
+**⏰ Exact Reminders**  
+Schedule notifications to remind you to revisit specific links at exactly the right time.
 
 **🔄 Your data. Your rules.**  
 You own your bookmarks. Export them to JSON or HTML anytime. Import from your desktop browser just as easily. Works completely offline, prioritizing your privacy.

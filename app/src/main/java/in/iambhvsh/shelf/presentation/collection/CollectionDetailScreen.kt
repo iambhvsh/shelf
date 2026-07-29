@@ -146,7 +146,9 @@ fun CollectionDetailScreen(
                             onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(item.id)) },
                             isSelected = item.id in state.detailSelectedIds,
                             isSelectionMode = state.isDetailSelectionMode,
-                            url = item.url
+                            url = item.url,
+                            note = item.note,
+                            reminderTime = item.reminderTime
                         )
                     }
                 }
@@ -177,7 +179,9 @@ fun CollectionDetailScreen(
                             onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(item.id)) },
                             isSelected = item.id in state.detailSelectedIds,
                             isSelectionMode = state.isDetailSelectionMode,
-                            url = item.url
+                            url = item.url,
+                            note = item.note,
+                            reminderTime = item.reminderTime
                         )
                     }
                 }

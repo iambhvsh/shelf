@@ -3,6 +3,7 @@ package `in`.iambhvsh.shelf.ui.theme
 import androidx.compose.ui.graphics.Color
 
 enum class AccentColor(val label: String, val seed: Color) {
+    PERIWINKLE("Periwinkle", Color(0xFF6E69FD)),
     RED("Red", Color(0xFFF44336)),
     ORANGE("Orange", Color(0xFFFF9800)),
     YELLOW("Yellow", Color(0xFFFFEB3B)),

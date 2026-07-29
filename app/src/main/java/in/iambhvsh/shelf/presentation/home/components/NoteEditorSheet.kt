@@ -16,15 +16,20 @@ fun NoteEditorSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var noteText by remember { mutableStateOf(initialNote ?: "") }
 
+    val maxChar = 500
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState
+        sheetState = sheetState,
+        windowInsets = WindowInsets.ime,
+        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .padding(bottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding())
         ) {
             Text(
                 text = "Personal Note",
@@ -34,12 +39,19 @@ fun NoteEditorSheet(
 
             OutlinedTextField(
                 value = noteText,
-                onValueChange = { noteText = it },
+                onValueChange = { if (it.length <= maxChar) noteText = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
                 placeholder = { Text("Write your thoughts, ideas, or context here...") },
-                textStyle = MaterialTheme.typography.bodyLarge
+                textStyle = MaterialTheme.typography.bodyLarge,
+                supportingText = {
+                    Text(
+                        text = "${noteText.length} / $maxChar",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End
+                    )
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))

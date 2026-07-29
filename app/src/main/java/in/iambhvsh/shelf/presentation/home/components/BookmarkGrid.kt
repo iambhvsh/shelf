@@ -56,7 +56,11 @@ fun BookmarkGrid(
                 bodyClick = { handleTap(item, tapAction, context, clipboard, viewModel) },
                 onLongClick = { viewModel.homeEvents(HomeEvents.ToggleSelection(item.id)) },
                 isSelected = item.id in selectedIds,
-                isSelectionMode = isSelectionMode
+                isSelectionMode = isSelectionMode,
+                onNoteClick = { 
+                    viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
+                    viewModel.homeEvents(HomeEvents.ShowNoteEditor(item.note))
+                }
             )
         }
     }

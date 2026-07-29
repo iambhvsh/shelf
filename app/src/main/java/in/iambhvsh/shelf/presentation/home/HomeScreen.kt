@@ -102,7 +102,11 @@ fun HomeScreen(
             isSelectionMode = state.isSelectionMode,
             isLoading = state.isLoading,
             onBodyClick = { item -> handleTap(item, tapAction, context, clipboard, viewModel) },
-            onPhotoClick = { viewModel.homeEvents(HomeEvents.PreviewImageClick(url = it)) }
+            onPhotoClick = { viewModel.homeEvents(HomeEvents.PreviewImageClick(url = it)) },
+            onNoteClick = { item ->
+                viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
+                viewModel.homeEvents(HomeEvents.ShowNoteEditor(item.note))
+            }
         )
     } else {
         Column(

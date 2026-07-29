@@ -46,7 +46,11 @@ fun BookmarkList(
                 isSelectionMode = isSelectionMode,
                 url = item.url,
                 note = item.note,
-                reminderTime = item.reminderTime
+                reminderTime = item.reminderTime,
+                onNoteClick = { 
+                    viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
+                    viewModel.homeEvents(HomeEvents.ShowNoteEditor(item.note))
+                }
             )
         }
     }

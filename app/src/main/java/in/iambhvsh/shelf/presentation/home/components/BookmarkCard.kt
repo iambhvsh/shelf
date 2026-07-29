@@ -57,6 +57,7 @@ fun BookmarkCard(
     onLongClick: () -> Unit,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
+    onNoteClick: () -> Unit = {},
     isPinned: Boolean = false,
     url: String,
     note: String? = null,
@@ -163,14 +164,7 @@ fun BookmarkCard(
                 modifier = Modifier.weight(1f)
             )
 
-            if (note != null) {
-                Icon(
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = "Has Note",
-                    modifier = Modifier.size(16.dp).padding(end = if (isPinned || reminderTime != null) 4.dp else 0.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+
 
             if (reminderTime != null) {
                 Icon(
@@ -284,6 +278,26 @@ fun BookmarkCard(
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis
                     )
+                }
+
+                if (note != null) {
+                    androidx.compose.material3.Surface(
+                        shape = MaterialTheme.shapes.small,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .clickable { onNoteClick() }
+                    ) {
+                        Text(
+                            text = note,
+                            modifier = Modifier.padding(8.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }

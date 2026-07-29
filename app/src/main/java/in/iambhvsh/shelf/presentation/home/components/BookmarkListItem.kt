@@ -51,6 +51,7 @@ fun BookmarkListItem(
     onLongClick: () -> Unit,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
+    onNoteClick: () -> Unit = {},
     url: String,
     note: String? = null,
     reminderTime: Long? = null
@@ -139,16 +140,7 @@ fun BookmarkListItem(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false)
                 )
-                if (note != null) {
-                    Spacer(Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Outlined.Edit,
-                        contentDescription = "Has Note",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
+
                 if (reminderTime != null) {
                     Spacer(Modifier.width(4.dp))
                     Icon(
@@ -196,6 +188,26 @@ fun BookmarkListItem(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+
+            if (note != null) {
+                androidx.compose.material3.Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                        .clickable { onNoteClick() }
+                ) {
+                    Text(
+                        text = note,
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
 
         // Right: image thumbnail
@@ -204,7 +216,7 @@ fun BookmarkListItem(
             AsyncImage(
                 model = imageUrl,
                 contentDescription = null,
-                contentScale = ContentScale.Fit,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .width(150.dp)
                     .aspectRatio(imageAspectRatio)
@@ -216,7 +228,8 @@ fun BookmarkListItem(
                 onSuccess = { state ->
                     val size = state.painter.intrinsicSize
                     if (size.width.isFinite() && size.width > 0 && size.height > 0) {
-                        imageAspectRatio = size.width / size.height
+                        val ratio = size.width / size.height
+                        imageAspectRatio = ratio.coerceIn(1f, 1.77f)
                     }
                 }
             )

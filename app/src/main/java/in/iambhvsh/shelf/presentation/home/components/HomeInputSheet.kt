@@ -13,6 +13,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,8 +39,17 @@ fun HomeInputSheet(
     onSaveClick: () -> Unit
 ) {
     if (showBottomSheet) {
+        val configuration = LocalConfiguration.current
+        val screenHeight = configuration.screenHeightDp.dp
+        val sheetState = rememberModalBottomSheetState()
+
         ModalBottomSheet(
-            onDismissRequest = onDismissRequest
+            onDismissRequest = {
+                onDismissRequest()
+            },
+            sheetState = sheetState,
+            windowInsets = WindowInsets.ime,
+            modifier = Modifier.heightIn(max = screenHeight * 0.9f)
         ) {
             Column(
                 modifier = Modifier

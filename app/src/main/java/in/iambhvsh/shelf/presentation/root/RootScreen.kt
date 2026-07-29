@@ -248,7 +248,7 @@ fun RootScreen(
                     }
                 }
 
-                if (currentTab == 0 && !state.isSelectionMode) {
+                if (currentTab == 0 && !state.isSelectionMode && !isSearching) {
                     if (state.tags.isNotEmpty()) {
                         TagFilterRow(
                             tags = state.tags,

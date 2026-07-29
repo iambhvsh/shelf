@@ -63,9 +63,13 @@ fun BookmarkPreviewSheet(
     val context = LocalContext.current
     if (!showBottomSheet) return
 
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
     ) {
         if (onPinButtonClick != null) {
             ListItem(

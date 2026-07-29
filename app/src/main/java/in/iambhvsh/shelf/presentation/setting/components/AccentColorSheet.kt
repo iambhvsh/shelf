@@ -21,6 +21,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -42,9 +43,13 @@ fun AccentColorSheet(
     onSelect: (AccentColor) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
     ) {
         Text(
             text = "Accent color",
@@ -62,7 +67,7 @@ fun AccentColorSheet(
             rows.forEach { rowColors ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     rowColors.forEach { accent ->
                         AccentSwatch(
@@ -70,6 +75,9 @@ fun AccentColorSheet(
                             selected = accent == current,
                             onClick = { onSelect(accent) }
                         )
+                    }
+                    repeat(4 - rowColors.size) {
+                        Spacer(modifier = Modifier.size(64.dp))
                     }
                 }
             }
