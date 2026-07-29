@@ -59,7 +59,7 @@ class UpdateManagerImpl(
             val response = okHttpClient.newCall(request).execute()
 
             if (response.isSuccessful) {
-                response.body?.string()?.let { responseBody ->
+                response.body.string().let { responseBody ->
                     val json = JSONObject(responseBody)
                     var tagName = json.getString("tag_name")
                     if (tagName.startsWith("v")) {

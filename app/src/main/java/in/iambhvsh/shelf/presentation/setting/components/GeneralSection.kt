@@ -3,9 +3,9 @@ package `in`.iambhvsh.shelf.presentation.setting.components
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.TouchApp
-import androidx.compose.material.icons.outlined.ViewList
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -31,7 +31,7 @@ fun GeneralSection(state: SettingState, viewModel: SettingViewModel) {
     )
     Spacer(Modifier.height(4.dp))
     SettingItem(
-        icon = if (state.viewMode == ViewMode.GRID) Icons.Outlined.GridView else Icons.Outlined.ViewList,
+        icon = if (state.viewMode == ViewMode.GRID) Icons.Outlined.GridView else Icons.AutoMirrored.Outlined.ViewList,
         title = "View mode",
         subtitle = if (state.viewMode == ViewMode.GRID) "Grid" else "List",
         onClick = { viewModel.onEvent(SettingEvents.ShowViewModeSheet) }
