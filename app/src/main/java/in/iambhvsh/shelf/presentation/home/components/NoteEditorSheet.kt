@@ -23,13 +23,13 @@ fun NoteEditorSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        windowInsets = WindowInsets.ime,
         modifier = Modifier.heightIn(max = screenHeight * 0.9f)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .imePadding()
         ) {
             Text(
                 text = "Personal Note",
