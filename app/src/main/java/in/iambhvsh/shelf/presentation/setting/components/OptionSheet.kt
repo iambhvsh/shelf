@@ -32,34 +32,39 @@ fun OptionSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
-        )
-        Column {
-            options.forEach { (label, action) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
-                        .clip(MaterialTheme.shapes.extraLarge)
-                        .clickable(onClick = action)
-                        .padding(horizontal = 16.dp, vertical = 14.dp)
-                ) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
+        Column(
+            modifier = Modifier
+                .heightIn(max = screenHeight * 0.9f)
+                .verticalScroll(androidx.compose.foundation.rememberScrollState())
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
+            )
+            Column {
+                options.forEach { (label, action) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                            .clip(MaterialTheme.shapes.extraLarge)
+                            .clickable(onClick = action)
+                            .padding(horizontal = 16.dp, vertical = 14.dp)
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
+            Spacer(Modifier.height(24.dp))
         }
-        Spacer(Modifier.height(24.dp))
     }
 }

@@ -30,6 +30,7 @@ fun NoteEditorSheet(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .imePadding()
+                .verticalScroll(androidx.compose.foundation.rememberScrollState())
         ) {
             Text(
                 text = "Personal Note",

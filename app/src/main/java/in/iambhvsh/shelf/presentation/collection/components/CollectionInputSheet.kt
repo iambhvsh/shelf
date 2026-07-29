@@ -54,6 +54,7 @@ fun CollectionInputSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
                     .imePadding()
+                    .verticalScroll(androidx.compose.foundation.rememberScrollState())
                     .padding(bottom = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

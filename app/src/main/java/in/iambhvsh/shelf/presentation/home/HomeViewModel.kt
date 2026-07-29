@@ -223,6 +223,7 @@ class HomeViewModel(
                     if (newFilters.contains(events.tagId)) {
                         newFilters.remove(events.tagId)
                     } else {
+                        newFilters.clear()
                         newFilters.add(events.tagId)
                     }
                     state.copy(activeTagFilters = newFilters)

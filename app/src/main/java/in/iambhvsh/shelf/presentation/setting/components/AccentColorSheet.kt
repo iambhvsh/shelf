@@ -45,42 +45,47 @@ fun AccentColorSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        Text(
-            text = "Accent color",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 16.dp)
-        )
-
-        val rows = AccentColor.entries.chunked(4)
-
         Column(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            modifier = Modifier
+                .heightIn(max = screenHeight * 0.9f)
+                .verticalScroll(androidx.compose.foundation.rememberScrollState())
         ) {
-            rows.forEach { rowColors ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    rowColors.forEach { accent ->
-                        AccentSwatch(
-                            accent = accent,
-                            selected = accent == current,
-                            onClick = { onSelect(accent) }
-                        )
-                    }
-                    repeat(4 - rowColors.size) {
-                        Spacer(modifier = Modifier.size(64.dp))
+            Text(
+                text = "Accent color",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 16.dp)
+            )
+
+            val rows = AccentColor.entries.chunked(4)
+
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                rows.forEach { rowColors ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        rowColors.forEach { accent ->
+                            AccentSwatch(
+                                accent = accent,
+                                selected = accent == current,
+                                onClick = { onSelect(accent) }
+                            )
+                        }
+                        repeat(4 - rowColors.size) {
+                            Spacer(modifier = Modifier.size(64.dp))
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.size(24.dp))
+            Spacer(Modifier.size(24.dp))
+        }
     }
 }
 

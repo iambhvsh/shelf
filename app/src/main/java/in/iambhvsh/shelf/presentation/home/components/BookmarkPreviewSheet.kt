@@ -69,9 +69,13 @@ fun BookmarkPreviewSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
+        Column(
+            modifier = Modifier
+                .heightIn(max = screenHeight * 0.9f)
+                .verticalScroll(androidx.compose.foundation.rememberScrollState())
+        ) {
         if (onPinButtonClick != null) {
             ListItem(
                 modifier = Modifier
@@ -219,5 +223,6 @@ fun BookmarkPreviewSheet(
 
 
         Spacer(Modifier.height(24.dp))
+        }
     }
 }

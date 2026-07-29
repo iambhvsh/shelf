@@ -38,25 +38,30 @@ fun <T> RadioOptionSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
-        )
-        Column(Modifier.selectableGroup()) {
-            options.forEach { (label, value) ->
-                RadioOptionRow(
-                    label = label,
-                    selected = value == current,
-                    onClick = { onSelect(value) }
-                )
+        Column(
+            modifier = Modifier
+                .heightIn(max = screenHeight * 0.9f)
+                .verticalScroll(androidx.compose.foundation.rememberScrollState())
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
+            )
+            Column(Modifier.selectableGroup()) {
+                options.forEach { (label, value) ->
+                    RadioOptionRow(
+                        label = label,
+                        selected = value == current,
+                        onClick = { onSelect(value) }
+                    )
+                }
             }
+            Spacer(Modifier.height(24.dp))
         }
-        Spacer(Modifier.height(24.dp))
     }
 }
 
