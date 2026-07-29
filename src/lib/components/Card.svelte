@@ -9,6 +9,10 @@
   }: {
     iconName?: string;
     title: string;
+    /**
+     * Trusted HTML content for the card description.
+     * Must be sanitized before passing if derived from user input.
+     */
     desc: string;
     action?: { label: string; href: string };
   } = $props();
@@ -19,7 +23,8 @@
     <Icon name={iconName} />
   {/if}
   <h3>{title}</h3>
-  <p>{desc}</p>
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+  <p>{@html desc}</p>
   {#if action}
     <a class="m3-text-btn" href={action.href} target="_blank" rel="noopener">
       {action.label}

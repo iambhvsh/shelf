@@ -4,12 +4,12 @@
   const credits = [
     {
       title: 'Savr, by qeiq',
-      desc: 'Shelf is a direct fork of Savr. The core architecture of this application was built by qeiq.',
+      desc: 'First and foremost, the core of this application was built by qeiq in their amazing project Savr. Shelf is a fork of Savr, and without their fantastic open-source codebase, this project wouldn\'t exist.',
       href: 'https://github.com/qeiq/Savr',
     },
     {
       title: 'Android-Link-Preview',
-      desc: "Massive thanks to Vishal Kumar Singhvi for the library that powers Shelf's metadata magic.",
+      desc: 'A massive thank you to Vishal Kumar Singhvi for Android-Link-Preview, which powers the metadata magic.',
       href: 'https://github.com/vishalkumarsinghvi/Android-Link-Preview',
     },
   ];
