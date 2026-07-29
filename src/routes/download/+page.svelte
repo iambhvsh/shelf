@@ -16,9 +16,9 @@
   <link rel="canonical" href="https://shelf.iambhvsh.in/download">
 </svelte:head>
 
-<div class="content-page" style="display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center; min-height: 50vh;">
-  <h1 class="display" style="font-size:32px;color:var(--primary);">Download Shelf</h1>
-  <p style="color:var(--on-surface-variant);font-size:16px; margin-top: 16px; max-width: 500px;">
+<div class="page-h-screen">
+  <h1 class="display" style="font-size:clamp(32px, 8vw, 48px);color:var(--primary);">Download Shelf</h1>
+  <p style="color:var(--on-surface-variant);font-size:clamp(16px, 4vw, 18px); margin-top: 16px; max-width: 500px;">
     Get the latest version of Shelf directly from our GitHub releases.
   </p>
 
