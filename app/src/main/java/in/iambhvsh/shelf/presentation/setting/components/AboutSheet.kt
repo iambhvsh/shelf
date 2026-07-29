@@ -38,13 +38,17 @@ fun AboutSheet(
     ) {
         Column(
             modifier = Modifier
-                .heightIn(max = screenHeight * 0.9f)
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .heightIn(max = screenHeight * 0.9f)
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             Image(
                 painter = painterResource(id = R.drawable.shelf_logo),
                 contentDescription = "Shelf Logo",
@@ -115,6 +119,7 @@ fun AboutSheet(
             )
             
             Spacer(modifier = Modifier.height(24.dp))
+        }
         }
     }
 }

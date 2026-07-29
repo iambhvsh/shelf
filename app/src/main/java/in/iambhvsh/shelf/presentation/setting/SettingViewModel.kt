@@ -16,7 +16,8 @@ import java.util.Locale
 
 class SettingViewModel(
     private val settingsRepository: SettingsRepository,
-    private val backupManager: BackupManager
+    private val backupManager: BackupManager,
+    private val updateManager: `in`.iambhvsh.shelf.domain.manager.UpdateManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -212,6 +213,26 @@ class SettingViewModel(
 
             SettingEvents.HideAboutDialog -> {
                 _state.update { it.copy(showAboutDialog = false) }
+            }
+
+            SettingEvents.CheckForUpdates -> {
+                _state.update { it.copy(isCheckingForUpdates = true) }
+                viewModelScope.launch {
+                    val hasUpdate = updateManager.checkForUpdates(force = true)
+                    _state.update { it.copy(
+                        isCheckingForUpdates = false,
+                        showUpdateSheet = hasUpdate
+                    ) }
+                }
+            }
+
+            SettingEvents.DismissUpdateSheet -> {
+                _state.update { it.copy(showUpdateSheet = false) }
+            }
+
+            SettingEvents.InstallUpdate -> {
+                _state.update { it.copy(showUpdateSheet = false) }
+                updateManager.downloadAndInstallUpdate()
             }
         }
     }

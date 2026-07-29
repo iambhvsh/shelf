@@ -2,10 +2,11 @@ package `in`.iambhvsh.shelf.presentation.setting.components
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import `in`.iambhvsh.shelf.R
 import `in`.iambhvsh.shelf.presentation.setting.SettingEvents
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -21,7 +22,7 @@ fun SecuritySection(
     Spacer(Modifier.height(12.dp))
     SectionHeader("Security")
     SettingItem(
-        icon = R.drawable.privacy_policy_icon,
+        icon = Icons.Outlined.Lock,
         title = "App Lock",
         subtitle = if (state.appLockEnabled) "Enabled (Biometrics)" else "Off",
         trailing = {

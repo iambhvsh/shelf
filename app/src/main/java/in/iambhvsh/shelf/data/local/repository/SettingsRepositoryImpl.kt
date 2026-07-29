@@ -19,6 +19,9 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
         private const val KEY_VIEW_MODE = "view_mode"
         private const val KEY_AUTO_BACKUP = "auto_backup"
         private const val KEY_APP_LOCK = "app_lock"
+        private const val KEY_LAST_UPDATE_CHECK_TIME = "last_update_check_time"
+        private const val KEY_LATEST_AVAILABLE_VERSION = "latest_available_version"
+        private const val KEY_LATEST_RELEASE_URL = "latest_release_url"
     }
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -81,5 +84,29 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun setAppLockEnabled(enabled: Boolean) {
         prefs.edit { putBoolean(KEY_APP_LOCK, enabled) }
+    }
+
+    override fun getLastUpdateCheckTime(): Long {
+        return prefs.getLong(KEY_LAST_UPDATE_CHECK_TIME, 0L)
+    }
+
+    override fun setLastUpdateCheckTime(time: Long) {
+        prefs.edit { putLong(KEY_LAST_UPDATE_CHECK_TIME, time) }
+    }
+
+    override fun getLatestAvailableVersion(): String? {
+        return prefs.getString(KEY_LATEST_AVAILABLE_VERSION, null)
+    }
+
+    override fun setLatestAvailableVersion(version: String?) {
+        prefs.edit { putString(KEY_LATEST_AVAILABLE_VERSION, version) }
+    }
+
+    override fun getLatestReleaseUrl(): String? {
+        return prefs.getString(KEY_LATEST_RELEASE_URL, null)
+    }
+
+    override fun setLatestReleaseUrl(url: String?) {
+        prefs.edit { putString(KEY_LATEST_RELEASE_URL, url) }
     }
 }

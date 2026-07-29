@@ -124,12 +124,13 @@ fun SettingScreen(
             LegalSection(context)
             AboutSection(
                 versionName = versionName,
-                onAboutClick = { viewModel.onEvent(SettingEvents.ShowAboutSheet) }
+                onAboutClick = { viewModel.onEvent(SettingEvents.ShowAboutSheet) },
+                onCheckForUpdatesClick = { viewModel.onEvent(SettingEvents.CheckForUpdates) }
             )
         }
 
         LoadingProgress(
-            isLoading = state.exportState is ExportState.Loading || state.browserExportState is ExportState.Loading
+            isLoading = state.exportState is ExportState.Loading || state.browserExportState is ExportState.Loading || state.isCheckingForUpdates
         )
     }
 
@@ -296,6 +297,13 @@ fun SettingScreen(
         AboutSheet(
             versionName = versionName,
             onDismiss = { viewModel.onEvent(SettingEvents.HideAboutSheet) }
+        )
+    }
+
+    if (state.showUpdateSheet) {
+        `in`.iambhvsh.shelf.presentation.home.components.UpdateSheet(
+            onDismiss = { viewModel.onEvent(SettingEvents.DismissUpdateSheet) },
+            onInstall = { viewModel.onEvent(SettingEvents.InstallUpdate) }
         )
     }
 }

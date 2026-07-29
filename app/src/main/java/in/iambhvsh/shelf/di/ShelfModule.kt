@@ -62,7 +62,7 @@ val shelfModule = module {
     }
 
     viewModel {
-        HomeViewModel(get(), get())
+        HomeViewModel(get(), get(), get())
     }
 
     viewModel {
@@ -75,5 +75,13 @@ val shelfModule = module {
 
     viewModel {
         SettingViewModel(get(), get())
+    }
+
+    single {
+        okhttp3.OkHttpClient()
+    }
+
+    single<`in`.iambhvsh.shelf.domain.manager.UpdateManager> {
+        `in`.iambhvsh.shelf.data.manager.UpdateManagerImpl(get(), get(), get())
     }
 }

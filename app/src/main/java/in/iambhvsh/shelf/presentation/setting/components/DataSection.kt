@@ -2,10 +2,13 @@ package `in`.iambhvsh.shelf.presentation.setting.components
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import `in`.iambhvsh.shelf.R
 import `in`.iambhvsh.shelf.presentation.setting.SettingEvents
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -21,21 +24,21 @@ fun DataSection(
     Spacer(Modifier.height(12.dp))
     SectionHeader("Data")
     SettingItem(
-        icon = R.drawable.backup_db,
+        icon = Icons.Outlined.Upload,
         title = "Export bookmarks",
         subtitle = "JSON or HTML",
         onClick = { viewModel.onEvent(SettingEvents.ShowExportSheet) }
     )
     Spacer(Modifier.height(4.dp))
     SettingItem(
-        icon = R.drawable.import_icon,
+        icon = Icons.Outlined.Download,
         title = "Import bookmarks",
         subtitle = "JSON or HTML",
         onClick = { viewModel.onEvent(SettingEvents.ShowImportSheet) }
     )
     Spacer(Modifier.height(4.dp))
     SettingItem(
-        icon = R.drawable.backup_icon,
+        icon = Icons.Outlined.Backup,
         title = "Auto backup",
         subtitle = if (state.autoBackupEnabled) {
             val time = state.lastBackupTimeText

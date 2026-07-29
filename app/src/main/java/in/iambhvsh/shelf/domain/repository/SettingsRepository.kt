@@ -21,4 +21,10 @@ interface SettingsRepository {
     fun setAutoBackupEnabled(enabled: Boolean)
     fun getAppLockEnabled(): Boolean
     fun setAppLockEnabled(enabled: Boolean)
+    fun getLastUpdateCheckTime(): Long
+    fun setLastUpdateCheckTime(time: Long)
+    fun getLatestAvailableVersion(): String?
+    fun setLatestAvailableVersion(version: String?)
+    fun getLatestReleaseUrl(): String?
+    fun setLatestReleaseUrl(url: String?)
 }

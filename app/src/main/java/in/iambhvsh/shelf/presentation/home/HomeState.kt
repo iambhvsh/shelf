@@ -28,5 +28,6 @@ data class HomeState(
     val activeTagFilters: Set<Long> = emptySet(),
     val showNoteEditor: Boolean = false,
     val noteEditorText: String? = null,
-    val showReminderPicker: Boolean = false
+    val showReminderPicker: Boolean = false,
+    val showUpdateSheet: Boolean = false
 )

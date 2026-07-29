@@ -19,7 +19,8 @@ import `in`.iambhvsh.shelf.presentation.reminders.ReminderManager
 
 class HomeViewModel(
     private val repository: BookmarkRepository,
-    private val reminderManager: ReminderManager
+    private val reminderManager: ReminderManager,
+    private val updateManager: `in`.iambhvsh.shelf.domain.manager.UpdateManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
@@ -35,6 +36,16 @@ class HomeViewModel(
         loadCollections()
         loadTags()
         fetchMissingMetadataOnStart()
+        checkForUpdates()
+    }
+    
+    private fun checkForUpdates() {
+        viewModelScope.launch {
+            val hasUpdate = updateManager.checkForUpdates(force = false)
+            if (hasUpdate) {
+                _state.update { it.copy(showUpdateSheet = true) }
+            }
+        }
     }
 
     fun homeEvents(events: HomeEvents) {
@@ -239,6 +250,28 @@ class HomeViewModel(
             
             is HomeEvents.ShowNoteEditor -> {
                 _state.update { it.copy(showNoteEditor = true, noteEditorText = events.initialNote, isBodySheet = false) }
+            }
+            
+            is HomeEvents.OnNoteEditorSave -> {
+                _state.update { it.copy(showNoteEditor = false, noteEditorText = null) }
+                events.note?.let { note ->
+                    _state.value.tempBookmark?.let { bookmark ->
+                        viewModelScope.launch {
+                            val updatedBookmark = bookmark.copy(note = note.takeIf { it.isNotBlank() })
+                            repository.updateBookmark(updatedBookmark)
+                            _state.update { it.copy(tempBookmark = null) }
+                        }
+                    }
+                }
+            }
+
+            HomeEvents.DismissUpdateSheet -> {
+                _state.update { it.copy(showUpdateSheet = false) }
+            }
+
+            HomeEvents.InstallUpdate -> {
+                _state.update { it.copy(showUpdateSheet = false) }
+                updateManager.downloadAndInstallUpdate()
             }
             
             is HomeEvents.HideNoteEditor -> {

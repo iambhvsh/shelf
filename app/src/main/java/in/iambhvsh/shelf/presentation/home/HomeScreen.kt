@@ -56,6 +56,16 @@ fun HomeScreen(
     val context = LocalContext.current
     val clipboard = LocalClipboard.current
 
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+            contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+            onResult = { }
+        )
+        LaunchedEffect(Unit) {
+            permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     LaunchedEffect(sharedUrl) {
         if (sharedUrl != null) {
             viewModel.homeEvents(HomeEvents.OnTextFieldValueChange(sharedUrl))
@@ -223,6 +233,13 @@ fun HomeScreen(
             },
             hasExistingReminder = state.tempBookmark?.reminderTime != null,
             onDismiss = { viewModel.homeEvents(HomeEvents.HideReminderPicker) }
+        )
+    }
+
+    if (state.showUpdateSheet) {
+        `in`.iambhvsh.shelf.presentation.home.components.UpdateSheet(
+            onDismiss = { viewModel.homeEvents(HomeEvents.DismissUpdateSheet) },
+            onInstall = { viewModel.homeEvents(HomeEvents.InstallUpdate) }
         )
     }
 }

@@ -38,6 +38,9 @@ sealed class HomeEvents {
     object HideNoteEditor : HomeEvents()
     data class UpdateNote(val id: Long, val note: String?) : HomeEvents()
 
+    data object DismissUpdateSheet : HomeEvents()
+    data object InstallUpdate : HomeEvents()
+
     object ShowReminderPicker : HomeEvents()
     object HideReminderPicker : HomeEvents()
     data class SetReminder(val id: Long, val timeInMillis: Long) : HomeEvents()

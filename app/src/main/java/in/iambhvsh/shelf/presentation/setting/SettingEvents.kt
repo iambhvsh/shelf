@@ -37,4 +37,7 @@ sealed class SettingEvents {
     object HideImportSheet : SettingEvents()
     object ShowAboutDialog : SettingEvents()
     object HideAboutDialog : SettingEvents()
+    object CheckForUpdates : SettingEvents()
+    object DismissUpdateSheet : SettingEvents()
+    object InstallUpdate : SettingEvents()
 }

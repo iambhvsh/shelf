@@ -2,13 +2,16 @@ package `in`.iambhvsh.shelf.presentation.setting.components
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ColorLens
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import `in`.iambhvsh.shelf.R
 import `in`.iambhvsh.shelf.presentation.setting.SettingEvents
 import `in`.iambhvsh.shelf.presentation.setting.SettingState
 import `in`.iambhvsh.shelf.presentation.setting.SettingViewModel
@@ -18,7 +21,7 @@ import `in`.iambhvsh.shelf.ui.theme.ThemeMode
 fun ThemeSection(state: SettingState, viewModel: SettingViewModel) {
     SectionHeader("Theme")
     SettingItem(
-        icon = R.drawable.dark_m_icon,
+        icon = Icons.Outlined.DarkMode,
         title = "Theme",
         subtitle = when (state.themeMode) {
             ThemeMode.LIGHT -> "Light"
@@ -31,7 +34,7 @@ fun ThemeSection(state: SettingState, viewModel: SettingViewModel) {
     if (state.isDynamicColorSupported) {
         Spacer(Modifier.height(4.dp))
         SettingItem(
-            icon = R.drawable.dynamic_one,
+            icon = Icons.Outlined.ColorLens,
             title = "Dynamic color",
             subtitle = if (state.dynamicColor) "On" else "Off",
             trailing = {
@@ -50,7 +53,7 @@ fun ThemeSection(state: SettingState, viewModel: SettingViewModel) {
     if (!state.isDynamicColorSupported || !state.dynamicColor) {
         Spacer(Modifier.height(4.dp))
         SettingItem(
-            icon = R.drawable.dynamic_one,
+            icon = Icons.Outlined.Palette,
             title = "Accent color",
             subtitle = state.accentColor.label,
             onClick = { viewModel.onEvent(SettingEvents.ShowAccentColorSheet) }
