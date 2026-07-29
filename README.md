@@ -5,6 +5,9 @@
 
   <br>
   
+  <a href="https://shelf.iambhvsh.in">
+    <img alt="Website" src="https://img.shields.io/badge/Website-shelf.iambhvsh.in-1c1c1e?style=for-the-badge&logo=googlechrome"/>
+  </a>
   <a href="https://github.com/iambhvsh/shelf/releases/latest/download/shelf-release.apk">
     <img alt="Download APK" src="https://img.shields.io/github/v/release/iambhvsh/shelf?label=Download%20APK&style=for-the-badge&color=1c1c1e&logo=android"/>
   </a>

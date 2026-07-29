@@ -42,7 +42,7 @@ fun AboutSheet(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 24.dp)
                     .padding(bottom = 24.dp),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.shelf_logo),
@@ -55,12 +55,14 @@ fun AboutSheet(
                 Text(
                     text = "Shelf",
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
                 Text(
                     text = "v$versionName",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -68,7 +70,8 @@ fun AboutSheet(
                 Text(
                     text = "The links you love. Beautifully organized.\n\nShelf is a privacy-first, lightning-fast bookmark manager designed to do exactly one thing flawlessly: drop a link, grab the details, and move on. No sign-ups, no cloud lock-in, and absolutely no trackers.",
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -76,7 +79,8 @@ fun AboutSheet(
                 Text(
                     text = "Credits",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 
@@ -110,19 +114,22 @@ private fun CreditItem(title: String, description: String, url: String) {
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.small)
             .clickable { uriHandler.openUri(url) }
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = description,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
         )
     }
 }

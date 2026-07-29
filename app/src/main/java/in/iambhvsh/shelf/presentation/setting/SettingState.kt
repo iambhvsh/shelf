@@ -35,7 +35,7 @@ data class SettingState(
     val showTapActionSheet: Boolean = false,
     val dynamicColor: Boolean = true,
     val isDynamicColorSupported: Boolean = false,
-    val accentColor: AccentColor = AccentColor.BLUE,
+    val accentColor: AccentColor = AccentColor.PERIWINKLE,
     val showAccentColorSheet: Boolean = false,
     val viewMode: ViewMode = ViewMode.GRID,
     val showViewModeSheet: Boolean = false,

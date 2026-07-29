@@ -22,7 +22,7 @@ private val PureBlack = Color(0xFF000000)
 fun ShelfTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = true,
-    accentColor: AccentColor = AccentColor.BLUE,
+    accentColor: AccentColor = AccentColor.PERIWINKLE,
     content: @Composable () -> Unit
 ) {
     val isDark = when (themeMode) {

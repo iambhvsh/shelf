@@ -53,8 +53,8 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
     }
 
     override fun getAccentColor(): AccentColor {
-        val ordinal = prefs.getInt(KEY_ACCENT_COLOR, AccentColor.BLUE.ordinal)
-        return AccentColor.entries.getOrElse(ordinal) { AccentColor.BLUE }
+        val ordinal = prefs.getInt(KEY_ACCENT_COLOR, AccentColor.PERIWINKLE.ordinal)
+        return AccentColor.entries.getOrElse(ordinal) { AccentColor.PERIWINKLE }
     }
 
     override fun setAccentColor(color: AccentColor) {
