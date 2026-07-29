@@ -66,7 +66,7 @@ class UpdateManagerImpl(
                         tagName = tagName.substring(1)
                     }
 
-                    val currentVersion = context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                    val currentVersion = context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
 
                     if (isVersionNewer(currentVersion, tagName)) {
                         val assets = json.getJSONArray("assets")
