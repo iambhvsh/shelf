@@ -134,6 +134,13 @@ fun SettingScreen(
         )
     }
 
+    if (state.showNoUpdateToast) {
+        LaunchedEffect(Unit) {
+            android.widget.Toast.makeText(context, "You are already on the latest version", android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.onEvent(SettingEvents.ResetNoUpdateToast)
+        }
+    }
+
     if (state.showThemeSheet) {
         RadioOptionSheet(
             title = "Choose Theme",

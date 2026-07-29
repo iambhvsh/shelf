@@ -221,7 +221,8 @@ class SettingViewModel(
                     val hasUpdate = updateManager.checkForUpdates(force = true)
                     _state.update { it.copy(
                         isCheckingForUpdates = false,
-                        showUpdateSheet = hasUpdate
+                        showUpdateSheet = hasUpdate,
+                        showNoUpdateToast = !hasUpdate
                     ) }
                 }
             }
@@ -233,6 +234,10 @@ class SettingViewModel(
             SettingEvents.InstallUpdate -> {
                 _state.update { it.copy(showUpdateSheet = false) }
                 updateManager.downloadAndInstallUpdate()
+            }
+
+            SettingEvents.ResetNoUpdateToast -> {
+                _state.update { it.copy(showNoUpdateToast = false) }
             }
         }
     }

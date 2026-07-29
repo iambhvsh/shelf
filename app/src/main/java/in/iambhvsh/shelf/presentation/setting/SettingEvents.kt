@@ -40,4 +40,5 @@ sealed class SettingEvents {
     object CheckForUpdates : SettingEvents()
     object DismissUpdateSheet : SettingEvents()
     object InstallUpdate : SettingEvents()
+    object ResetNoUpdateToast : SettingEvents()
 }

@@ -52,5 +52,6 @@ data class SettingState(
     val showAboutSheet: Boolean = false,
     val showAboutDialog: Boolean = false,
     val showUpdateSheet: Boolean = false,
-    val isCheckingForUpdates: Boolean = false
+    val isCheckingForUpdates: Boolean = false,
+    val showNoUpdateToast: Boolean = false
 )
