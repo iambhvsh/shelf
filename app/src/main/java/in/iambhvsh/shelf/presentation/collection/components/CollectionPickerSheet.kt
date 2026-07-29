@@ -43,10 +43,9 @@ fun CollectionPickerSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        Column {
+        Column(modifier = Modifier.heightIn(max = screenHeight * 0.9f)) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

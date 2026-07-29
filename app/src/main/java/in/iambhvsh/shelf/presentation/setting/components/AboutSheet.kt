@@ -34,11 +34,11 @@ fun AboutSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
             modifier = Modifier
+                .heightIn(max = screenHeight * 0.9f)
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 24.dp)

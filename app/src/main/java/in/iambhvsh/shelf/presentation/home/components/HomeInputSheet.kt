@@ -49,11 +49,11 @@ fun HomeInputSheet(
             onDismissRequest = {
                 onDismissRequest()
             },
-            sheetState = sheetState,
-            modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+            sheetState = sheetState
         ) {
             Column(
                 modifier = Modifier
+                    .heightIn(max = screenHeight * 0.9f)
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
                     .imePadding()

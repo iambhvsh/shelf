@@ -22,11 +22,11 @@ fun NoteEditorSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+        sheetState = sheetState
     ) {
         Column(
             modifier = Modifier
+                .heightIn(max = screenHeight * 0.9f)
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .imePadding()

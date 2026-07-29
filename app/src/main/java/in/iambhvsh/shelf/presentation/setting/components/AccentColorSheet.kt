@@ -33,10 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.iambhvsh.shelf.ui.theme.AccentColor
 
-/**
- * Google Material You-style accent color picker: 7 swatches laid out as a
- * 3x3 grid, with the 7th (last) swatch centered alone on the third row.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccentColorSheet(

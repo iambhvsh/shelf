@@ -36,10 +36,9 @@ fun TagManagerSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.heightIn(max = screenHeight * 0.9f)
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        Column(modifier = Modifier.padding(bottom = 24.dp)) {
+        Column(modifier = Modifier.heightIn(max = screenHeight * 0.9f).padding(bottom = 24.dp)) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
