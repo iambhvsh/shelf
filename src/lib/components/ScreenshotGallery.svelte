@@ -1,8 +1,8 @@
 <script lang="ts">
   const screenshots = [
-    { src: '/images/screenshots/screenshot-1.webp', alt: 'Shelf app home screen' },
-    { src: '/images/screenshots/screenshot-2.webp', alt: 'Shelf app collections view' },
-    { src: '/images/screenshots/screenshot-3.webp', alt: 'Shelf app settings and themes' },
+    { src: '/screenshots/screenshot-1.webp', alt: 'Shelf app home screen' },
+    { src: '/screenshots/screenshot-2.webp', alt: 'Shelf app collections view' },
+    { src: '/screenshots/screenshot-3.webp', alt: 'Shelf app settings and themes' },
   ];
 </script>
 

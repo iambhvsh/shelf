@@ -2,25 +2,44 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#F7F5FB">
+  <title>Shelf</title>
+
+  <meta name="author" content="iambhvsh">
+  <meta name="keywords" content="bookmark manager, read it later, save for later, reading list, offline reader, article saver, save links, organize bookmarks, web clipper, distraction-free reading, save web pages for offline, keep articles for later, open source android, FOSS, privacy focused apps, no tracking, offline apps, no ads, iambhvsh, shelf app">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Shelf">
+  <meta property="og:image" content="/og-image.png">
+  <meta property="og:image:alt" content="Shelf App Logo">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:creator" content="@iambhvsh">
+  <meta name="twitter:image" content="/og-image.png">
+  <meta name="twitter:image:alt" content="Shelf App Logo">
 
   <script>
     (function () {
       try {
         var saved = localStorage.getItem('shelf-theme');
         var theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
-      } catch (_e) {}
+        document.documentElement.dataset.theme = theme;
+      } catch (e) {
+        console.error('Failed to set theme from localStorage', e);
+      }
     })();
   </script>
 
   <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
   %sveltekit.head%
 </head>
 
 <body data-sveltekit-preload-data="hover" data-sveltekit-router="false">
-  %sveltekit.body%
+  <div style="display: contents">
+    %sveltekit.body%
+  </div>
 </body>
 </html>

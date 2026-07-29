@@ -7,23 +7,42 @@
 </script>
 
 <svelte:head>
-  <title>Shelf - The open-source bookmark manager for Android</title>
-  <meta name="description" content="Shelf is a fast, open-source, ad-free bookmark manager for Android built entirely on Material 3. Drop a link, grab the details, and move on.">
-  <meta name="keywords" content="bookmark manager, Android app, open-source bookmark app, Material 3 app, link organizer, offline bookmarks, Jetpack Compose app">
-  <meta name="robots" content="index, follow">
+  <title>Shelf - The links you love, entirely yours.</title>
+  <meta name="description" content="The links you love, entirely yours. A beautiful, ad-free bookmark manager for Android crafted by iambhvsh. Save your links. Keep your privacy. Built for you on Material 3.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
-  <meta property="og:type" content="website">
   <meta property="og:title" content="Shelf - The links you love, entirely yours.">
-  <meta property="og:description" content="A fast, ad-free, open-source bookmark manager for Android built entirely on Material 3. No subscriptions, no cloud lock-in.">
+  <meta property="og:description" content="The links you love, entirely yours. A beautiful, ad-free bookmark manager for Android crafted by iambhvsh. Save your links. Keep your privacy. Built for you on Material 3.">
   <meta property="og:url" content="https://shelf.iambhvsh.in">
-  <meta property="og:image" content="/images/logo-transparent.webp">
 
-  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Shelf - The links you love, entirely yours.">
-  <meta name="twitter:description" content="A fast, ad-free, open-source bookmark manager for Android built entirely on Material 3. No subscriptions, no cloud lock-in.">
-  <meta name="twitter:image" content="/images/logo-transparent.webp">
+  <meta name="twitter:description" content="The links you love, entirely yours. A beautiful, ad-free bookmark manager for Android crafted by iambhvsh. Save your links. Keep your privacy. Built for you on Material 3.">
 
   <link rel="canonical" href="https://shelf.iambhvsh.in">
+
+  <!-- Structured Data for SEO -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Shelf",
+      "operatingSystem": "Android",
+      "applicationCategory": "UtilitiesApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "iambhvsh",
+        "url": "https://iambhvsh.in"
+      },
+      "description": "The links you love, entirely yours. A beautiful, ad-free bookmark manager for Android crafted by iambhvsh. Save your links. Keep your privacy. Built for you on Material 3.",
+      "image": "https://shelf.iambhvsh.in/og-image.png",
+      "url": "https://shelf.iambhvsh.in"
+    }
+  </script>
 </svelte:head>
 
 <Hero />

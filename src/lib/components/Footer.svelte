@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   const footerLinks = [
     { label: 'Source Code', href: 'https://github.com/iambhvsh/shelf', external: true },
     { label: 'Report Issue', href: 'https://github.com/iambhvsh/shelf/issues', external: true },
@@ -9,6 +11,21 @@
   ];
 
   const currentYear = new Date().getFullYear();
+  let version = '1.0.12';
+
+  onMount(async () => {
+    try {
+      const response = await fetch('https://api.github.com/repos/iambhvsh/shelf/releases/latest');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.tag_name) {
+          version = data.tag_name.replace(/^v/, '');
+        }
+      }
+    } catch (e) {
+      console.error('Could not fetch latest release version.', e);
+    }
+  });
 </script>
 
 <footer class="app-footer">
@@ -24,8 +41,8 @@
       </a>
     {/each}
     <div class="footer-meta">
-      <span>Version 1.0.0 • Open Source</span>
-      <span>© {currentYear} bhvsh. All rights reserved.</span>
+      <span>Version {version} • Open Source</span>
+      <span>© {currentYear} Bhavesh Patil. All rights reserved.</span>
     </div>
   </div>
   <div class="giant-footer-logo display">Shelf</div>
