@@ -34,8 +34,8 @@ Found something interesting in Chrome, Twitter, or Reddit? Just hit "Share" and 
 **🗂️ Collections & Tags. Perfected.**  
 Group your bookmarks naturally. No messy nested folders—just name a collection, drop your links in, or add **Tags** to cross-reference and filter them effortlessly.
 
-**📌 Pin & Hide Bookmarks**  
-Pin your most important links to the top for immediate access, or hide specific bookmarks you want to keep completely out of sight.
+**📌 Pin Bookmarks**  
+Pin your most important links to the top for immediate access.
 
 **✅ Bulk Actions & Sorting**  
 Manage your library efficiently. Select multiple bookmarks to delete or move them to collections at once, and sort them exactly how you like.
@@ -44,7 +44,7 @@ Manage your library efficiently. Select multiple bookmarks to delete or move the
 Built with pure Material 3 and tailored for Android. Switch seamlessly between Light, Dark, or true OLED Black themes. Choose from 8 beautifully curated accent colors, or enable **Dynamic Colors (Material You)** to adapt to your wallpaper.
 
 **🛡️ App Lock Privacy**  
-Keep your saved links for your eyes only. Secure the app using your device's built-in biometrics or PIN lock.
+Keep your saved links for your eyes only. Secure the app using your device's built-in biometrics.
 
 **⚡ Lightning Fast Actions**  
 Configure exactly what happens when you tap a link. Open it directly in your browser, bring up a quick preview card without leaving the app, or instantly copy the URL to your clipboard.
@@ -79,8 +79,6 @@ Crafted with modern Android engineering.
 | **Database** | Room |
 | **Networking** | OkHttp, Jsoup |
 | **Images** | Coil |
-
----
 
 ## Acknowledgements
 
