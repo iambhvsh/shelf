@@ -24,6 +24,8 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -163,7 +165,7 @@ fun BookmarkCard(
 
             if (note != null) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Outlined.Edit,
+                    imageVector = Icons.Outlined.Edit,
                     contentDescription = "Has Note",
                     modifier = Modifier.size(16.dp).padding(end = if (isPinned || reminderTime != null) 4.dp else 0.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -172,7 +174,7 @@ fun BookmarkCard(
 
             if (reminderTime != null) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
+                    imageVector = Icons.Outlined.Notifications,
                     contentDescription = "Has Reminder",
                     modifier = Modifier.size(16.dp).padding(end = if (isPinned) 4.dp else 0.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant

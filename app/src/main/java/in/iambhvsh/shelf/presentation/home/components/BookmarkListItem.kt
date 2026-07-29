@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -151,7 +152,7 @@ fun BookmarkListItem(
                 if (reminderTime != null) {
                     Spacer(Modifier.width(4.dp))
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
+                        imageVector = Icons.Outlined.Notifications,
                         contentDescription = "Has Reminder",
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant

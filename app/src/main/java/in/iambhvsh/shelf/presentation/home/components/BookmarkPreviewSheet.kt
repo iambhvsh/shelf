@@ -23,6 +23,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -132,7 +134,7 @@ fun BookmarkPreviewSheet(
                 },
                 leadingContent = {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Outlined.Edit,
+                        imageVector = Icons.Outlined.Edit,
                         contentDescription = "Personal Note"
                     )
                 }
@@ -156,7 +158,7 @@ fun BookmarkPreviewSheet(
                 },
                 leadingContent = {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
+                        imageVector = Icons.Outlined.Notifications,
                         contentDescription = "Remind Me"
                     )
                 }
