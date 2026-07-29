@@ -1,9 +1,11 @@
 <script lang="ts">
   const techStack = [
-    { title: 'Language', subtitle: 'Kotlin' },
-    { title: 'UI Toolkit', subtitle: 'Jetpack Compose + Material 3' },
+    { title: 'Language', subtitle: 'Kotlin 💜' },
+    { title: 'UI', subtitle: 'Jetpack Compose + Material 3' },
     { title: 'Architecture', subtitle: 'MVI + StateFlow' },
-    { title: 'Storage & Networking', subtitle: 'Room Database, OkHttp, Jsoup' },
+    { title: 'Database', subtitle: 'Room' },
+    { title: 'Networking', subtitle: 'OkHttp, Jsoup' },
+    { title: 'Images', subtitle: 'Coil' },
   ];
 </script>
 

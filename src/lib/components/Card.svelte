@@ -19,7 +19,8 @@
     <Icon name={iconName} />
   {/if}
   <h3>{title}</h3>
-  <p>{desc}</p>
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+  <p>{@html desc}</p>
   {#if action}
     <a class="m3-text-btn" href={action.href} target="_blank" rel="noopener">
       {action.label}
