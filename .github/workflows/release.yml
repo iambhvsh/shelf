@@ -3,12 +3,22 @@ name: Build & Release
 on:
   push:
     branches: [ "**" ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -28,6 +38,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -53,19 +65,13 @@ jobs:
             echo "No keystore provided, skipping."
           fi
 
-      - name: Unit tests
-        run: ./gradlew test
-
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
-
-      - name: Build release APK
+      - name: Build and Test (Debug & Release)
         env:
           KEYSTORE_PATH: ${{ steps.keystore.outputs.path }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew assembleRelease
+        run: ./gradlew test assembleDebug assembleRelease
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
