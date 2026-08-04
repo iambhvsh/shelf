@@ -52,7 +52,18 @@ class UpdateManagerImpl(
             val lastCheckTime = settingsRepository.getLastUpdateCheckTime()
 
             if (!force && (currentTime - lastCheckTime < CHECK_INTERVAL_MS)) {
-                return@withContext settingsRepository.getLatestAvailableVersion() != null
+                val cachedVersion = settingsRepository.getLatestAvailableVersion()
+                if (cachedVersion != null) {
+                    val currentVersion = context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
+                    if (isVersionNewer(currentVersion, cachedVersion)) {
+                        return@withContext true
+                    } else {
+                        settingsRepository.setLatestAvailableVersion(null)
+                        settingsRepository.setLatestReleaseUrl(null)
+                        return@withContext false
+                    }
+                }
+                return@withContext false
             }
 
             val request = Request.Builder().url(API_URL).build()
@@ -138,6 +149,24 @@ class UpdateManagerImpl(
     }
 
     private fun installUpdate() {
+        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val query = DownloadManager.Query().setFilterById(downloadId)
+        val cursor = downloadManager.query(query)
+        var isSuccess = false
+        if (cursor != null && cursor.moveToFirst()) {
+            val statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+            if (statusIndex >= 0) {
+                val status = cursor.getInt(statusIndex)
+                isSuccess = (status == DownloadManager.STATUS_SUCCESSFUL)
+            }
+            cursor.close()
+        }
+
+        if (!isSuccess) {
+            Toast.makeText(context, "Download failed or was cancelled.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APK_FILE_NAME)
         if (!file.exists()) {
             Toast.makeText(context, "Update file not found.", Toast.LENGTH_SHORT).show()
@@ -166,10 +195,6 @@ class UpdateManagerImpl(
             val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, flags)
             session.commit(pendingIntent.intentSender)
             session.close()
-
-            if (file.exists()) {
-                file.delete()
-            }
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(context, "Failed to start installation.", Toast.LENGTH_SHORT).show()
