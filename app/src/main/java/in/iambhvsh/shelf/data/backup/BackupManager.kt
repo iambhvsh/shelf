@@ -109,23 +109,51 @@ class BackupManager(
 
     @SuppressLint("NewApi")
     private fun writeToDownloads(jsonString: String) {
-        val collectionUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI
-        val selection = "${MediaStore.Downloads.DISPLAY_NAME} = ?"
-        val selectionArgs = arrayOf(FILE_NAME)
-        context.contentResolver.delete(collectionUri, selection, selectionArgs)
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Downloads.DISPLAY_NAME, FILE_NAME)
-            put(MediaStore.Downloads.MIME_TYPE, "application/json")
-            put(MediaStore.Downloads.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/Shelf")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Downloads.IS_PENDING, 0)
+        try {
+            val collectionUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI
+            val selection = """
+                ${MediaStore.Downloads.DISPLAY_NAME} = ?
+                AND
+                ${MediaStore.Downloads.RELATIVE_PATH} = ?
+            """.trimIndent()
+            val selectionArgs = arrayOf(
+                FILE_NAME,
+                "${Environment.DIRECTORY_DOWNLOADS}/Shelf/"
+            )
+            
+            var existingUri: android.net.Uri? = null
+            context.contentResolver.query(
+                collectionUri,
+                arrayOf(MediaStore.Downloads._ID),
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Downloads._ID))
+                    existingUri = android.content.ContentUris.withAppendedId(collectionUri, id)
+                }
             }
-        }
-        val uri = context.contentResolver.insert(collectionUri, contentValues)
-        uri?.let {
-            context.contentResolver.openOutputStream(it)?.use { output ->
-                output.write(jsonString.toByteArray())
+
+            val uri = existingUri ?: run {
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, FILE_NAME)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/json")
+                    put(MediaStore.Downloads.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/Shelf")
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        put(MediaStore.Downloads.IS_PENDING, 0)
+                    }
+                }
+                context.contentResolver.insert(collectionUri, contentValues)
             }
+
+            uri?.let {
+                context.contentResolver.openOutputStream(it)?.use { output ->
+                    output.write(jsonString.toByteArray())
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
