@@ -19,6 +19,7 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
         private const val KEY_VIEW_MODE = "view_mode"
         private const val KEY_AUTO_BACKUP = "auto_backup"
         private const val KEY_APP_LOCK = "app_lock"
+        private const val KEY_APP_LOCK_USE_PIN = "app_lock_use_pin"
         private const val KEY_LAST_UPDATE_CHECK_TIME = "last_update_check_time"
         private const val KEY_LATEST_AVAILABLE_VERSION = "latest_available_version"
         private const val KEY_LATEST_RELEASE_URL = "latest_release_url"
@@ -84,6 +85,14 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun setAppLockEnabled(enabled: Boolean) {
         prefs.edit { putBoolean(KEY_APP_LOCK, enabled) }
+    }
+
+    override fun getAppLockUsePinEnabled(): Boolean {
+        return prefs.getBoolean(KEY_APP_LOCK_USE_PIN, false)
+    }
+
+    override fun setAppLockUsePinEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_APP_LOCK_USE_PIN, enabled) }
     }
 
     override fun getLastUpdateCheckTime(): Long {

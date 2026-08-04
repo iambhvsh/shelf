@@ -43,6 +43,7 @@ data class SettingState(
     val lastBackupTimeText: String = "",
     val showAutoBackupInfoDialog: Boolean = false,
     val appLockEnabled: Boolean = false,
+    val appLockUsePinEnabled: Boolean = false,
     val exportState: ExportState = ExportState.Idle,
     val importState: ImportState = ImportState.Idle,
     val browserImportState: BrowserImportState = BrowserImportState.Idle,

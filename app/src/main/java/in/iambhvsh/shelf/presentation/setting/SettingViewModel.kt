@@ -29,7 +29,8 @@ class SettingViewModel(
             accentColor = settingsRepository.getAccentColor(),
             viewMode = settingsRepository.getViewMode(),
             autoBackupEnabled = settingsRepository.getAutoBackupEnabled(),
-            appLockEnabled = settingsRepository.getAppLockEnabled()
+            appLockEnabled = settingsRepository.getAppLockEnabled(),
+            appLockUsePinEnabled = settingsRepository.getAppLockUsePinEnabled()
         )
     )
     val state = _state.asStateFlow()
@@ -166,6 +167,11 @@ class SettingViewModel(
             is SettingEvents.ToggleAppLock -> {
                 settingsRepository.setAppLockEnabled(event.enabled)
                 _state.update { it.copy(appLockEnabled = event.enabled) }
+            }
+
+            is SettingEvents.ToggleAppLockUsePin -> {
+                settingsRepository.setAppLockUsePinEnabled(event.enabled)
+                _state.update { it.copy(appLockUsePinEnabled = event.enabled) }
             }
 
             is SettingEvents.ImportBrowserBookmarks -> {

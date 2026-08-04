@@ -25,6 +25,7 @@ sealed class SettingEvents {
     object ConfirmAutoBackupEnable : SettingEvents()
     object DismissAutoBackupInfoDialog : SettingEvents()
     data class ToggleAppLock(val enabled: Boolean) : SettingEvents()
+    data class ToggleAppLockUsePin(val enabled: Boolean) : SettingEvents()
     data class ImportBrowserBookmarks(val html: String) : SettingEvents()
     object DismissBrowserImportResult : SettingEvents()
     object ShowAboutSheet : SettingEvents()

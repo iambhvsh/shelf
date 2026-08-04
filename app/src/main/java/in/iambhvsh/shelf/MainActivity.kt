@@ -15,6 +15,7 @@ import org.koin.android.ext.android.inject
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.core.content.ContextCompat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,7 @@ class MainActivity : FragmentActivity() {
         val openBookmarkId = intent?.getLongExtra("OPEN_BOOKMARK_ID", -1L)?.takeIf { it != -1L }
 
         val appLockEnabled = settingsRepository.getAppLockEnabled()
+        val usePin = settingsRepository.getAppLockUsePinEnabled()
         var isAuthenticated by mutableStateOf(!appLockEnabled)
 
         if (appLockEnabled) {
@@ -57,14 +59,22 @@ class MainActivity : FragmentActivity() {
                     }
                 })
 
-            val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Unlock Shelf")
-                .setSubtitle("Use your fingerprint to access bookmarks")
-                .setAllowedAuthenticators(BIOMETRIC_STRONG or BIOMETRIC_WEAK)
-                .setNegativeButtonText("Cancel")
-                .build()
+            val authenticators = if (usePin) {
+                BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL
+            } else {
+                BIOMETRIC_STRONG or BIOMETRIC_WEAK
+            }
 
-            biometricPrompt.authenticate(promptInfo)
+            val promptInfoBuilder = BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Unlock Shelf")
+                .setSubtitle(if (usePin) "Use your fingerprint or PIN to access bookmarks" else "Use your fingerprint to access bookmarks")
+                .setAllowedAuthenticators(authenticators)
+
+            if (!usePin) {
+                promptInfoBuilder.setNegativeButtonText("Cancel")
+            }
+
+            biometricPrompt.authenticate(promptInfoBuilder.build())
         }
 
         setContent {

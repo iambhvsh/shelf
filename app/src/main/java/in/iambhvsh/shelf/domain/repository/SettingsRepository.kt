@@ -21,6 +21,8 @@ interface SettingsRepository {
     fun setAutoBackupEnabled(enabled: Boolean)
     fun getAppLockEnabled(): Boolean
     fun setAppLockEnabled(enabled: Boolean)
+    fun getAppLockUsePinEnabled(): Boolean
+    fun setAppLockUsePinEnabled(enabled: Boolean)
     fun getLastUpdateCheckTime(): Long
     fun setLastUpdateCheckTime(time: Long)
     fun getLatestAvailableVersion(): String?

@@ -37,4 +37,23 @@ fun SecuritySection(
         },
         onClick = { viewModel.onEvent(SettingEvents.ToggleAppLock(!state.appLockEnabled)) }
     )
+    
+    androidx.compose.animation.AnimatedVisibility(visible = state.appLockEnabled) {
+        SettingItem(
+            icon = androidx.compose.material.icons.Icons.Outlined.Lock,
+            title = "Use PIN",
+            subtitle = if (state.appLockUsePinEnabled) "PIN fallback enabled" else "Fingerprint only",
+            trailing = {
+                Switch(
+                    checked = state.appLockUsePinEnabled,
+                    onCheckedChange = { viewModel.onEvent(SettingEvents.ToggleAppLockUsePin(it)) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+            },
+            onClick = { viewModel.onEvent(SettingEvents.ToggleAppLockUsePin(!state.appLockUsePinEnabled)) }
+        )
+    }
 }
