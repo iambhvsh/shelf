@@ -36,12 +36,19 @@ class UpdateManagerImpl(
 
     private var downloadId: Long = -1
 
+    private var isReceiverRegistered = false
+
     private val downloadReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
             if (id == downloadId) {
                 installUpdate()
-                context.unregisterReceiver(this)
+                try {
+                    context.unregisterReceiver(this)
+                    isReceiverRegistered = false
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
     }
@@ -113,17 +120,20 @@ class UpdateManagerImpl(
         val downloadUrl = settingsRepository.getLatestReleaseUrl() ?: return
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(
-                    downloadReceiver,
-                    IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-                    Context.RECEIVER_EXPORTED
-                )
-            } else {
-                context.registerReceiver(
-                    downloadReceiver,
-                    IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-                )
+            if (!isReceiverRegistered) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    context.registerReceiver(
+                        downloadReceiver,
+                        IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                        Context.RECEIVER_EXPORTED
+                    )
+                } else {
+                    context.registerReceiver(
+                        downloadReceiver,
+                        IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+                    )
+                }
+                isReceiverRegistered = true
             }
 
             val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APK_FILE_NAME)

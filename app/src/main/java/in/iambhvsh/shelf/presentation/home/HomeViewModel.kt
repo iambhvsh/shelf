@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Job
 import `in`.iambhvsh.shelf.presentation.reminders.ReminderManager
 
@@ -173,12 +175,15 @@ class HomeViewModel(
             }
 
             is HomeEvents.SetSortOrder -> {
-                _state.update {
-                    it.copy(
-                        sortOrder = events.sortOrder,
-                        showSortSheet = false,
-                        bookmarkData = sortBookmarks(rawBookmarks, events.sortOrder)
-                    )
+                viewModelScope.launch {
+                    val sorted = sortBookmarks(rawBookmarks, events.sortOrder)
+                    _state.update {
+                        it.copy(
+                            sortOrder = events.sortOrder,
+                            showSortSheet = false,
+                            bookmarkData = sorted
+                        )
+                    }
                 }
             }
 
@@ -420,10 +425,11 @@ class HomeViewModel(
                         val items = data.data ?: emptyList()
                         rawBookmarks = items
                         val sortOrder = _state.value.sortOrder
+                        val sortedItems = sortBookmarks(items, sortOrder)
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                bookmarkData = sortBookmarks(items, sortOrder)
+                                bookmarkData = sortedItems
                             )
                         }
                     }
@@ -451,8 +457,8 @@ class HomeViewModel(
         }
     }
 
-    private fun sortBookmarks(bookmarks: List<Bookmark>, sortOrder: SortOrder): List<Bookmark> {
-        return when (sortOrder) {
+    private suspend fun sortBookmarks(bookmarks: List<Bookmark>, sortOrder: SortOrder): List<Bookmark> = withContext(Dispatchers.Default) {
+        when (sortOrder) {
             SortOrder.DATE_NEWEST -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenByDescending { it.createdAt })
             SortOrder.DATE_OLDEST -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenBy { it.createdAt })
             SortOrder.TITLE_ASC -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenBy { it.title?.lowercase() })

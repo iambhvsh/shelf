@@ -12,6 +12,7 @@ interface BookmarkRepository {
     fun getAllBookmarks(): Flow<Resource<List<Bookmark>>>
     fun getBookmarks(): Flow<Resource<List<Bookmark>>>
     fun getBookmarksByTags(tagIds: List<Long>): Flow<Resource<List<Bookmark>>>
+    suspend fun existsByUrl(url: String): Boolean
     suspend fun getBookmarksWithoutImage(): List<Bookmark>
     suspend fun hideBookmarks(ids: List<Long>)
     suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>>

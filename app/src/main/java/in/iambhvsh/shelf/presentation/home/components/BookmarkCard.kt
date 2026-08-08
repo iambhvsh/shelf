@@ -64,22 +64,26 @@ fun BookmarkCard(
     reminderTime: Long? = null
 ) {
 
-    val host = url.toUri().host.orEmpty()
+    val host = remember(url) { url.toUri().host.orEmpty() }
     
-    val isVertical = listOf(
-        "instagram.com/reel", "instagram.com/p/", "ig.me",
-        "youtube.com/shorts", 
-        "tiktok.com", 
-        "facebook.com/reel", "fb.watch",
-        "pinterest.com/pin", "pin.it"
-    ).any { url.contains(it, ignoreCase = true) }
+    val isVertical = remember(url) {
+        listOf(
+            "instagram.com/reel", "instagram.com/p/", "ig.me",
+            "youtube.com/shorts", 
+            "tiktok.com", 
+            "facebook.com/reel", "fb.watch",
+            "pinterest.com/pin", "pin.it"
+        ).any { url.contains(it, ignoreCase = true) }
+    }
                      
     val cardAspectRatio = if (isVertical) 9f / 16f else 1.2f
 
-    val cleanHost = if (host.startsWith("www.")) {
-        host.removePrefix("www.")
-    } else {
-        host
+    val cleanHost = remember(host) {
+        if (host.startsWith("www.")) {
+            host.removePrefix("www.")
+        } else {
+            host
+        }
     }
 
     var imageFailed by remember { mutableStateOf(false) }

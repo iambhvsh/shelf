@@ -136,6 +136,10 @@ class BookmarkRepositoryImpl(
             .catch { emit(Resource.Error(it.localizedMessage ?: "Unknown Error")) }
     }
 
+    override suspend fun existsByUrl(url: String): Boolean {
+        return dao.existsByUrl(url)
+    }
+
     override suspend fun createCollection(name: String): Long {
         return collectionDao.insertCollection(
             CollectionEntity(name = name)

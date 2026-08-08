@@ -8,12 +8,7 @@ import kotlinx.coroutines.withContext
     companion object {
         private val AGENTS = arrayOf(
             "WhatsApp/2.24.8.76 A",
-            "Mozilla/5.0",
-            "facebookexternalhit/1.1", // Simple Facebook crawler - often faster
-            "Twitterbot/1.0", // Twitter's crawler - good for onelink and other services
-            "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36"
         )
     }
 

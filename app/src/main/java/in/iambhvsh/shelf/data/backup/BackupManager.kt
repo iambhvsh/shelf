@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -74,14 +75,17 @@ class BackupManager(
                 bookmarkDao.getBookmarks(),
                 collectionDao.getAllCollections()
             ) { bookmarks, collections ->
-                val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt) }
-                val backupCollections = collections.mapNotNull { collection ->
-                    val urls = collectionDao.getBookmarkUrlsForCollection(collection.id)
-                    if (collection.name.isNotBlank()) BackupCollection(name = collection.name, bookmarkUrls = urls) else null
-                }
-                BackupData(bookmarks = backupBookmarks, collections = backupCollections)
+                Pair(bookmarks, collections)
             }
                 .debounce(500)
+                .map { (bookmarks, collections) ->
+                    val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt) }
+                    val backupCollections = collections.mapNotNull { collection ->
+                        val urls = collectionDao.getBookmarkUrlsForCollection(collection.id)
+                        if (collection.name.isNotBlank()) BackupCollection(name = collection.name, bookmarkUrls = urls) else null
+                    }
+                    BackupData(bookmarks = backupBookmarks, collections = backupCollections)
+                }
                 .collect { data ->
                     val jsonString = json.encodeToString(data)
                     writeToBothLocations(jsonString)

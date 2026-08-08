@@ -56,8 +56,8 @@ fun BookmarkListItem(
     note: String? = null,
     reminderTime: Long? = null
 ) {
-    val host = url.toUri().host.orEmpty()
-    val cleanHost = if (host.startsWith("www.")) host.removePrefix("www.") else host
+    val host = remember(url) { url.toUri().host.orEmpty() }
+    val cleanHost = remember(host) { if (host.startsWith("www.")) host.removePrefix("www.") else host }
 
     var imageFailed by remember { mutableStateOf(false) }
     var faviconFailed by remember { mutableStateOf(false) }
@@ -166,7 +166,7 @@ fun BookmarkListItem(
             }
 
             // Description
-            val desc = description.takeUnless { it.isNullOrBlank() } ?: title
+            val desc = remember(description, title) { description.takeUnless { it.isNullOrBlank() } ?: title }
             if (desc != null) {
                 Text(
                     text = desc,
