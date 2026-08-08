@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -239,7 +240,7 @@ fun BookmarkPreviewSheet(
             },
             leadingContent = {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Outlined.Share,
+                    imageVector = Icons.Outlined.Share,
                     contentDescription = "Share Link"
                 )
             }
