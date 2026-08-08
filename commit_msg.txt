@@ -1,5 +1,0 @@
-Release v1.0.17 (18)
-
-- Version bumped to 1.0.17
-- Added Share Link feature
-- Updated documentation
