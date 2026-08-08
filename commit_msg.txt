@@ -1,0 +1,5 @@
+Sync website features with latest app capabilities
+
+- Added Seamless In-App Updates feature
+- Updated Instant Metadata copy
+- Updated Lightning Fast Actions copy
