@@ -26,7 +26,10 @@ No sign-ups. No cloud lock-in. No trackers. Just you and the links that matter.
 ## Features that feel like magic
 
 **✨ Instant Metadata**  
-Paste a URL, and watch Shelf instantly pull in the title, description, and a high-quality preview image. It just works.
+Paste a URL, and watch Shelf instantly pull in the title, description, and a high-quality preview image. Intelligent background crawling bypasses simple anti-bot protections to ensure you always get a rich preview.
+
+**🔄 Seamless In-App Updates**  
+Shelf actively checks for new GitHub releases in the background and installs them seamlessly over-the-air, keeping you on the latest version without the hassle.
 
 **🚀 Direct Share Integration**  
 Found something interesting in Chrome, Twitter, or Reddit? Just hit "Share" and send it straight to Shelf. It's saved in a split second without even opening the app.
@@ -47,7 +50,7 @@ Built with pure Material 3 and tailored for Android. Switch seamlessly between L
 Keep your saved links for your eyes only. Secure the app using your device's built-in biometrics.
 
 **⚡ Lightning Fast Actions**  
-Configure exactly what happens when you tap a link. Open it directly in your browser, bring up a quick preview card without leaving the app, or instantly copy the URL to your clipboard.
+Configure exactly what happens when you tap a link. Open it directly in your browser, bring up a quick preview card without leaving the app, instantly copy the URL to your clipboard, or share it out via the native Android Share sheet.
 
 **📱 View it your way**  
 Prefer a visual spread or a dense list? Toggle effortlessly between Grid and List view to browse your collection however you like.

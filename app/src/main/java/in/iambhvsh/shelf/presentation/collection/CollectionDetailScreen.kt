@@ -200,6 +200,16 @@ fun CollectionDetailScreen(
             state.tempBookmark?.url?.let {
                 clipboardManager.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it))
             }
+        },
+        onShareButtonClick = {
+            state.tempBookmark?.url?.let { url ->
+                val shareIntent = android.content.Intent().apply {
+                    action = android.content.Intent.ACTION_SEND
+                    putExtra(android.content.Intent.EXTRA_TEXT, url)
+                    type = "text/plain"
+                }
+                context.startActivity(android.content.Intent.createChooser(shareIntent, "Share Link"))
+            }
         }
     )
 }

@@ -185,6 +185,16 @@ fun HomeScreen(
         onDismissRequest = { viewModel.homeEvents(HomeEvents.BookmarkPreviewDismissClick) },
         openInBrowser = { state.tempBookmark?.url?.let { openChromeTab(url = it, context = context) } },
         copyLinkButtonClick = { state.tempBookmark?.url?.let { clipboard.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) } },
+        onShareButtonClick = {
+            state.tempBookmark?.url?.let { url ->
+                val shareIntent = android.content.Intent().apply {
+                    action = android.content.Intent.ACTION_SEND
+                    putExtra(android.content.Intent.EXTRA_TEXT, url)
+                    type = "text/plain"
+                }
+                context.startActivity(android.content.Intent.createChooser(shareIntent, "Share Link"))
+            }
+        },
         onPinButtonClick = { state.tempBookmark?.let { viewModel.homeEvents(HomeEvents.TogglePin(it)) } },
         onTagsButtonClick = { viewModel.homeEvents(HomeEvents.ShowTagManager) },
         onNoteButtonClick = { viewModel.homeEvents(HomeEvents.ShowNoteEditor(state.tempBookmark?.note)) },

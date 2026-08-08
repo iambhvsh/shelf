@@ -57,6 +57,7 @@ fun BookmarkPreviewSheet(
     onDismissRequest: () -> Unit,
     openInBrowser: () -> Unit,
     copyLinkButtonClick: () -> Unit,
+    onShareButtonClick: () -> Unit,
     onPinButtonClick: (() -> Unit)? = null,
     onTagsButtonClick: (() -> Unit)? = null,
     onNoteButtonClick: (() -> Unit)? = null,
@@ -218,6 +219,28 @@ fun BookmarkPreviewSheet(
                 Icon(
                     painter = painterResource(R.drawable.copy_icon),
                     contentDescription = "Copy Link"
+                )
+            }
+        )
+        ListItem(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.extraLarge)
+                .clickable {
+                    onShareButtonClick()
+                    onDismissRequest()
+                },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            headlineContent = {
+                Text("Share Link")
+            },
+            leadingContent = {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Outlined.Share,
+                    contentDescription = "Share Link"
                 )
             }
         )

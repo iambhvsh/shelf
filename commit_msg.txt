@@ -1,0 +1,8 @@
+Feature: Add native 'Share Link' option and update documentation
+
+Changelog:
+- Feature: Added native Android Share out intent to BookmarkPreviewSheet, accessible from both Home and Collection screens.
+- Docs: Highlighted intelligent metadata crawling bypass capabilities in README.
+- Docs: Documented seamless over-the-air in-app updates feature in README.
+- Docs: Highlighted the new Share link feature under Lightning Fast Actions.
+- Meta: Added CHANGELOG.md for release notes.
