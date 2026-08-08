@@ -98,7 +98,14 @@ jobs:
             echo "Release $tag already exists, skipping."
             exit 0
           fi
+          
+          if [ -f "CHANGELOG.md" ]; then
+            awk '/^## \[/{if (p) exit; p=1; next} p' CHANGELOG.md | sed '/^[[:space:]]*$/d' > release_notes.txt
+          else
+            echo "No changelog found." > release_notes.txt
+          fi
+          
           gh release create "$tag" "dist/shelf-release.apk" \
             --title "Shelf $VERSION" \
-            --generate-notes
+            --notes-file release_notes.txt
 
