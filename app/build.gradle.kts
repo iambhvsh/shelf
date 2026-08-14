@@ -88,7 +88,8 @@ android {
 }
 
 tasks.whenTaskAdded {
-    if (name == "preBuild" || (name.contains("generate") && name.endsWith("Assets"))) {
+    val taskName = name.lowercase()
+    if (taskName.contains("assets") || taskName.contains("lint") || taskName == "prebuild") {
         dependsOn(copyChangelog)
     }
 }
