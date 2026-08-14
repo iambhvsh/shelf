@@ -79,9 +79,13 @@ fun CollectionDetailScreen(
         viewModel.onEvent(CollectionEvents.ClearDetailSelection)
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.backToCollections()
+    LaunchedEffect(collectionId) {
+        if (state.selectedCollection?.id != collectionId) {
+            // Find the collection from state.collections or just select it
+            val collection = state.collections.find { it.id == collectionId }
+            if (collection != null) {
+                viewModel.onEvent(CollectionEvents.SelectCollection(collection))
+            }
         }
     }
 
@@ -192,6 +196,7 @@ fun CollectionDetailScreen(
 
     BookmarkPreviewSheet(
         showBottomSheet = state.isDetailBodySheet,
+        isPinned = state.tempBookmark?.isPinned ?: false,
         onDismissRequest = { viewModel.onEvent(CollectionEvents.DismissDetailBodySheet) },
         openInBrowser = {
             state.tempBookmark?.url?.let { openChromeTab(url = it, context = context) }
@@ -210,6 +215,70 @@ fun CollectionDetailScreen(
                 }
                 context.startActivity(android.content.Intent.createChooser(shareIntent, "Share Link"))
             }
-        }
+        },
+        onPinButtonClick = { state.tempBookmark?.let { viewModel.onEvent(CollectionEvents.TogglePin(it)) } },
+        onTagsButtonClick = { viewModel.onEvent(CollectionEvents.ShowTagManager) },
+        onNoteButtonClick = { viewModel.onEvent(CollectionEvents.ShowNoteEditor(state.tempBookmark?.note)) },
+        onReminderButtonClick = { viewModel.onEvent(CollectionEvents.ShowReminderPicker) },
+        onRenameButtonClick = { viewModel.onEvent(CollectionEvents.ShowRenameBookmarkDialog(state.tempBookmark?.title)) }
     )
+
+    if (state.showRenameBookmarkDialog) {
+        `in`.iambhvsh.shelf.presentation.home.components.RenameSheet(
+            initialText = state.renameBookmarkDialogText ?: "",
+            title = "Rename Bookmark",
+            onDismissRequest = { viewModel.onEvent(CollectionEvents.HideRenameBookmarkDialog) },
+            onSaveClick = { newTitle ->
+                state.tempBookmark?.let {
+                    viewModel.onEvent(CollectionEvents.UpdateBookmarkTitle(it.id, newTitle))
+                }
+            }
+        )
+    }
+
+    if (state.showTagManager) {
+        `in`.iambhvsh.shelf.presentation.home.components.TagManagerSheet(
+            tags = state.tags,
+            selectedTags = state.tempBookmarkTags,
+            onToggleTag = { tag, isChecked ->
+                viewModel.onEvent(CollectionEvents.ToggleTagForBookmark(tag, isChecked))
+            },
+            onCreateTag = { name ->
+                viewModel.onEvent(CollectionEvents.CreateTag(name))
+            },
+            onDeleteTag = { tag ->
+                viewModel.onEvent(CollectionEvents.DeleteTag(tag.id))
+            },
+            onDismiss = { viewModel.onEvent(CollectionEvents.HideTagManager) }
+        )
+    }
+
+    if (state.showNoteEditor) {
+        `in`.iambhvsh.shelf.presentation.home.components.NoteEditorSheet(
+            initialNote = state.noteEditorText,
+            onSave = { note ->
+                state.tempBookmark?.let {
+                    viewModel.onEvent(CollectionEvents.UpdateNote(it.id, note))
+                }
+            },
+            onDismiss = { viewModel.onEvent(CollectionEvents.HideNoteEditor) }
+        )
+    }
+
+    if (state.showReminderPicker) {
+        `in`.iambhvsh.shelf.presentation.home.components.ReminderPickerSheet(
+            onSetReminder = { timeInMillis ->
+                state.tempBookmark?.let {
+                    viewModel.onEvent(CollectionEvents.SetReminder(it.id, timeInMillis))
+                }
+            },
+            onCancelReminder = {
+                state.tempBookmark?.let {
+                    viewModel.onEvent(CollectionEvents.CancelReminder(it.id))
+                }
+            },
+            hasExistingReminder = state.tempBookmark?.reminderTime != null,
+            onDismiss = { viewModel.onEvent(CollectionEvents.HideReminderPicker) }
+        )
+    }
 }

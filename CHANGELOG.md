@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.20] - 2026-08-15
+
+### Added
+- **Rename Support:** You can now rename links and collections! For links, tap the bookmark to access the new "Rename" option in the preview sheet. For collections, long press a collection to enter selection mode, then tap the edit icon in the top bar.
+- **Collection Features Parity:** The bookmark preview sheet inside collections is now completely on par with the home screen. You can add tags, notes, reminders, pin, and rename directly from within the collection view.
+
+### Fixed
+- **Disappearing Bookmarks:** Fixed a bug where returning from the collection details screen back to the home screen, and then returning again, would cause the collection list to disappear. 
+- **Settings Streamlined:** Simplified the settings screen by consolidating the Community and Legal sections under "About Shelf" for a cleaner, unified look.
+- **Under-the-hood:** Addressed a minor linting issue regarding system broadcast receivers in the updater on Android 14.
+
 ## [1.0.19] - 2026-08-15
 
 ### Added

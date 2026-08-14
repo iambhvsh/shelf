@@ -28,6 +28,9 @@ interface CollectionDao {
     @Delete
     suspend fun deleteCollection(collection: CollectionEntity)
 
+    @Query("UPDATE collections SET name = :name WHERE id = :id")
+    suspend fun updateName(id: Long, name: String)
+
     @Query("""
         SELECT c.id, c.name, c.createdAt, COUNT(bcc.collectionId) AS bookmarkCount,
                (SELECT GROUP_CONCAT(b.imageUrl, '|||')

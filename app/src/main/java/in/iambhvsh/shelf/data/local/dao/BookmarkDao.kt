@@ -67,6 +67,9 @@ interface BookmarkDao {
     @Query("UPDATE bookmarks SET isHidden = 0, title = :title, description = :description, imageUrl = :imageUrl, createdAt = :createdAt WHERE id = :id")
     suspend fun unhideBookmark(id: Long, title: String?, description: String?, imageUrl: String?, createdAt: Long)
 
+    @Query("UPDATE bookmarks SET title = :title WHERE id = :id")
+    suspend fun updateTitle(id: Long, title: String?)
+
     @Query("UPDATE bookmarks SET imageUrl = :imageUrl WHERE id = :id")
     suspend fun updateImageUrl(id: Long, imageUrl: String?)
 

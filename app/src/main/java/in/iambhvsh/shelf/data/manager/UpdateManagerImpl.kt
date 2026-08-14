@@ -121,18 +121,12 @@ class UpdateManagerImpl(
 
         try {
             if (!isReceiverRegistered) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    context.registerReceiver(
-                        downloadReceiver,
-                        IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-                        Context.RECEIVER_EXPORTED
-                    )
-                } else {
-                    context.registerReceiver(
-                        downloadReceiver,
-                        IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-                    )
-                }
+                androidx.core.content.ContextCompat.registerReceiver(
+                    context,
+                    downloadReceiver,
+                    android.content.IntentFilter(android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                    androidx.core.content.ContextCompat.RECEIVER_EXPORTED
+                )
                 isReceiverRegistered = true
             }
 

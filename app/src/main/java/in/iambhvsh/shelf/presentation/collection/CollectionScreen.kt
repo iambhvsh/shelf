@@ -92,4 +92,18 @@ fun CollectionScreen(
         onTextChange = { viewModel.onEvent(CollectionEvents.InputNameChanged(it)) },
         onSaveClick = { viewModel.onEvent(CollectionEvents.CreateCollection) }
     )
+
+    if (state.showRenameCollectionDialog) {
+        `in`.iambhvsh.shelf.presentation.home.components.RenameSheet(
+            initialText = state.renameCollectionDialogText ?: "",
+            title = "Rename Collection",
+            onDismissRequest = { viewModel.onEvent(CollectionEvents.HideRenameCollectionDialog) },
+            onSaveClick = { newName ->
+                val id = state.selectedIds.firstOrNull()
+                if (id != null) {
+                    viewModel.onEvent(CollectionEvents.UpdateCollectionName(id, newName))
+                }
+            }
+        )
+    }
 }

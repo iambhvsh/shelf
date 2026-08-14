@@ -54,6 +54,10 @@ class BookmarkRepositoryImpl(
         dao.updateReminderTime(id, reminderTime)
     }
 
+    override suspend fun updateBookmarkTitle(id: Long, title: String?) {
+        dao.updateTitle(id, title)
+    }
+
     override fun getAllTags(): Flow<Resource<List<Tag>>> = flow {
         emit(Resource.Loading())
         try {
@@ -144,6 +148,10 @@ class BookmarkRepositoryImpl(
         return collectionDao.insertCollection(
             CollectionEntity(name = name)
         )
+    }
+
+    override suspend fun updateCollectionName(id: Long, name: String) {
+        collectionDao.updateName(id, name)
     }
 
     override suspend fun deleteCollection(collection: Collection) {

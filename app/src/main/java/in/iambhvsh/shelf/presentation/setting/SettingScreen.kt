@@ -120,9 +120,8 @@ fun SettingScreen(
             GeneralSection(state, viewModel)
             SecuritySection(state, viewModel)
             DataSection(state, viewModel)
-            CommunitySection(context)
-            LegalSection(context)
             AboutSection(
+                context = context,
                 versionName = versionName,
                 onChangelogClick = { viewModel.onEvent(SettingEvents.ShowChangelogSheet) },
                 onAboutClick = { viewModel.onEvent(SettingEvents.ShowAboutSheet) },

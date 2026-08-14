@@ -19,10 +19,13 @@ class CollectionViewModel(
     private val _state = MutableStateFlow(CollectionState())
     val state = _state.asStateFlow()
     private var collectionJob: Job? = null
+    private var tagsJob: Job? = null
+    private var tempBookmarkTagsJob: Job? = null
     private var rawCollectionBookmarks: List<Bookmark> = emptyList()
 
     init {
         loadCollections()
+        loadTags()
     }
 
     fun onEvent(event: CollectionEvents) {
@@ -90,10 +93,19 @@ class CollectionViewModel(
 
             is CollectionEvents.ShowDetailBodySheet -> {
                 _state.update { it.copy(tempBookmark = event.bookmark, isDetailBodySheet = true) }
+                tempBookmarkTagsJob?.cancel()
+                tempBookmarkTagsJob = viewModelScope.launch {
+                    repository.getTagsForBookmark(event.bookmark.id).collect { resource ->
+                        if (resource is Resource.Success) {
+                            _state.update { it.copy(tempBookmarkTags = resource.data ?: emptyList()) }
+                        }
+                    }
+                }
             }
 
             CollectionEvents.DismissDetailBodySheet -> {
-                _state.update { it.copy(tempBookmark = null, isDetailBodySheet = false) }
+                tempBookmarkTagsJob?.cancel()
+                _state.update { it.copy(tempBookmark = null, isDetailBodySheet = false, tempBookmarkTags = emptyList()) }
             }
 
             is CollectionEvents.ToggleDetailSelection -> {
@@ -149,6 +161,128 @@ class CollectionViewModel(
 
             CollectionEvents.HideSortSheet -> {
                 _state.update { it.copy(showSortSheet = false) }
+            }
+
+            is CollectionEvents.ShowRenameCollectionDialog -> {
+                _state.update { it.copy(showRenameCollectionDialog = true, renameCollectionDialogText = event.initialName) }
+            }
+
+            CollectionEvents.HideRenameCollectionDialog -> {
+                _state.update { it.copy(showRenameCollectionDialog = false, renameCollectionDialogText = null) }
+            }
+
+            is CollectionEvents.UpdateCollectionName -> {
+                val newName = event.name.trim()
+                if (newName.isBlank()) return // Validation: do not save empty
+                
+                viewModelScope.launch {
+                    val currentCollection = _state.value.collections.find { it.id == event.id }
+                    if (currentCollection != null && currentCollection.name != newName) {
+                        repository.updateCollectionName(event.id, newName)
+                    }
+                    _state.update { it.copy(showRenameCollectionDialog = false, renameCollectionDialogText = null) }
+                }
+            }
+
+            is CollectionEvents.TogglePin -> {
+                viewModelScope.launch {
+                    repository.togglePinStatus(event.bookmark.id, !event.bookmark.isPinned)
+                }
+            }
+
+            is CollectionEvents.ShowRenameBookmarkDialog -> {
+                _state.update { it.copy(showRenameBookmarkDialog = true, renameBookmarkDialogText = event.initialTitle, isDetailBodySheet = false) }
+            }
+
+            CollectionEvents.HideRenameBookmarkDialog -> {
+                _state.update { it.copy(showRenameBookmarkDialog = false, renameBookmarkDialogText = null, tempBookmark = null) }
+            }
+
+            is CollectionEvents.UpdateBookmarkTitle -> {
+                val newTitle = event.title.trim()
+                if (newTitle.isBlank()) return // Validation: do not save empty
+                
+                viewModelScope.launch {
+                    val currentBm = _state.value.tempBookmark
+                    if (currentBm != null && currentBm.title != newTitle) {
+                        repository.updateBookmarkTitle(event.id, newTitle)
+                    }
+                    _state.update { it.copy(showRenameBookmarkDialog = false, renameBookmarkDialogText = null, tempBookmark = null) }
+                }
+            }
+
+            CollectionEvents.ShowTagManager -> {
+                _state.update { it.copy(showTagManager = true, isDetailBodySheet = false) }
+            }
+
+            CollectionEvents.HideTagManager -> {
+                _state.update { 
+                    it.copy(
+                        showTagManager = false,
+                        tempBookmark = null,
+                        tempBookmarkTags = emptyList()
+                    ) 
+                }
+            }
+
+            is CollectionEvents.CreateTag -> {
+                viewModelScope.launch {
+                    repository.insertTag(event.name)
+                }
+            }
+
+            is CollectionEvents.ToggleTagForBookmark -> {
+                val tempBm = _state.value.tempBookmark ?: return
+                viewModelScope.launch {
+                    if (event.isChecked) {
+                        repository.addTagToBookmark(tempBm.id, event.tag.id)
+                    } else {
+                        repository.removeTagFromBookmark(tempBm.id, event.tag.id)
+                    }
+                }
+            }
+
+            is CollectionEvents.DeleteTag -> {
+                viewModelScope.launch {
+                    repository.deleteTag(event.tagId)
+                }
+            }
+
+            is CollectionEvents.ShowNoteEditor -> {
+                _state.update { it.copy(showNoteEditor = true, noteEditorText = event.initialNote, isDetailBodySheet = false) }
+            }
+
+            CollectionEvents.HideNoteEditor -> {
+                _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
+            }
+
+            is CollectionEvents.UpdateNote -> {
+                viewModelScope.launch {
+                    repository.updateNote(event.id, event.note)
+                    _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
+                }
+            }
+
+            CollectionEvents.ShowReminderPicker -> {
+                _state.update { it.copy(showReminderPicker = true, isDetailBodySheet = false) }
+            }
+
+            CollectionEvents.HideReminderPicker -> {
+                _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+            }
+
+            is CollectionEvents.SetReminder -> {
+                viewModelScope.launch {
+                    repository.updateReminderTime(event.id, event.timeInMillis)
+                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+                }
+            }
+
+            is CollectionEvents.CancelReminder -> {
+                viewModelScope.launch {
+                    repository.updateReminderTime(event.id, null)
+                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+                }
             }
         }
     }
@@ -230,6 +364,17 @@ class CollectionViewModel(
             SortOrder.DATE_OLDEST -> bookmarks.sortedBy { it.createdAt }
             SortOrder.TITLE_ASC -> bookmarks.sortedBy { it.title?.lowercase() }
             SortOrder.TITLE_DESC -> bookmarks.sortedByDescending { it.title?.lowercase() }
+        }
+    }
+
+    private fun loadTags() {
+        tagsJob?.cancel()
+        tagsJob = viewModelScope.launch {
+            repository.getAllTags().collect { resource ->
+                if (resource is Resource.Success) {
+                    _state.update { it.copy(tags = resource.data ?: emptyList()) }
+                }
+            }
         }
     }
 }

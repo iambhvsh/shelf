@@ -45,4 +45,8 @@ sealed class HomeEvents {
     object HideReminderPicker : HomeEvents()
     data class SetReminder(val id: Long, val timeInMillis: Long) : HomeEvents()
     data class CancelReminder(val id: Long) : HomeEvents()
+
+    data class ShowRenameDialog(val initialTitle: String?) : HomeEvents()
+    object HideRenameDialog : HomeEvents()
+    data class UpdateBookmarkTitle(val id: Long, val title: String) : HomeEvents()
 }

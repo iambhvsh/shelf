@@ -20,5 +20,15 @@ data class CollectionState(
     val tempBookmark: Bookmark? = null,
     val isDetailBodySheet: Boolean = false,
     val sortOrder: SortOrder = SortOrder.DATE_NEWEST,
-    val showSortSheet: Boolean = false
+    val showSortSheet: Boolean = false,
+    val showRenameCollectionDialog: Boolean = false,
+    val renameCollectionDialogText: String? = null,
+    val showRenameBookmarkDialog: Boolean = false,
+    val renameBookmarkDialogText: String? = null,
+    val tags: List<`in`.iambhvsh.shelf.domain.model.Tag> = emptyList(),
+    val tempBookmarkTags: List<`in`.iambhvsh.shelf.domain.model.Tag> = emptyList(),
+    val showTagManager: Boolean = false,
+    val showNoteEditor: Boolean = false,
+    val noteEditorText: String? = null,
+    val showReminderPicker: Boolean = false
 )

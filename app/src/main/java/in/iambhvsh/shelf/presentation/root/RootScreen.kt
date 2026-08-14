@@ -168,6 +168,15 @@ fun RootScreen(
                             onSelectAll = { collectionViewModel.onEvent(CollectionEvents.SelectAll) },
                             onDeselectAll = { collectionViewModel.onEvent(CollectionEvents.DeselectAll) },
                             onDelete = { collectionViewModel.onEvent(CollectionEvents.DeleteSelected) },
+                            onRename = if (collectionState.selectedIds.size == 1) {
+                                {
+                                    val id = collectionState.selectedIds.first()
+                                    val collection = collectionState.collections.find { it.id == id }
+                                    if (collection != null) {
+                                        collectionViewModel.onEvent(CollectionEvents.ShowRenameCollectionDialog(collection.name))
+                                    }
+                                }
+                            } else null,
                             scrollBehavior = scrollBehavior
                         )
                     }

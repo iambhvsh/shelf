@@ -20,6 +20,7 @@ interface BookmarkRepository {
     suspend fun togglePinStatus(id: Long, isPinned: Boolean)
     suspend fun updateNote(id: Long, note: String?)
     suspend fun updateReminderTime(id: Long, reminderTime: Long?)
+    suspend fun updateBookmarkTitle(id: Long, title: String?)
 
     fun getAllTags(): Flow<Resource<List<Tag>>>
     suspend fun insertTag(name: String): Long
@@ -30,6 +31,7 @@ interface BookmarkRepository {
     fun getBookmarksForTag(tagId: Long): Flow<Resource<List<Long>>>
 
     suspend fun createCollection(name: String): Long
+    suspend fun updateCollectionName(id: Long, name: String)
     suspend fun deleteCollection(collection: Collection)
     fun getAllCollections(): Flow<Resource<List<Collection>>>
     fun getBookmarksInCollection(collectionId: Long): Flow<Resource<List<Bookmark>>>

@@ -7,6 +7,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -44,6 +46,7 @@ fun SelectionTopBar(
     onDeselectAll: () -> Unit,
     onDelete: () -> Unit,
     onAddToCollection: (() -> Unit)? = null,
+    onRename: (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     LargeTopAppBar(
@@ -81,6 +84,14 @@ fun SelectionTopBar(
                         painter = painterResource(R.drawable.bookmark_add),
                         contentDescription = "Add to collection",
                         modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+            if (onRename != null) {
+                IconButton(onClick = onRename) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Rename"
                     )
                 }
             }

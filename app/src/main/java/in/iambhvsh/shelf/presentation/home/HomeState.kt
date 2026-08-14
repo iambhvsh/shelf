@@ -29,5 +29,7 @@ data class HomeState(
     val showNoteEditor: Boolean = false,
     val noteEditorText: String? = null,
     val showReminderPicker: Boolean = false,
-    val showUpdateSheet: Boolean = false
+    val showUpdateSheet: Boolean = false,
+    val showRenameDialog: Boolean = false,
+    val renameDialogText: String? = null
 )

@@ -300,6 +300,27 @@ class HomeViewModel(
                     _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
                 }
             }
+            
+            is HomeEvents.ShowRenameDialog -> {
+                _state.update { it.copy(showRenameDialog = true, renameDialogText = events.initialTitle, isBodySheet = false) }
+            }
+            
+            HomeEvents.HideRenameDialog -> {
+                _state.update { it.copy(showRenameDialog = false, renameDialogText = null, tempBookmark = null) }
+            }
+            
+            is HomeEvents.UpdateBookmarkTitle -> {
+                val newTitle = events.title.trim()
+                if (newTitle.isBlank()) return // Validation: do not save empty
+                
+                viewModelScope.launch {
+                    val currentBm = _state.value.tempBookmark
+                    if (currentBm != null && currentBm.title != newTitle) {
+                        repository.updateBookmarkTitle(events.id, newTitle)
+                    }
+                    _state.update { it.copy(showRenameDialog = false, renameDialogText = null, tempBookmark = null) }
+                }
+            }
         }
     }
 

@@ -26,4 +26,28 @@ sealed class CollectionEvents {
     data class SetSortOrder(val sortOrder: SortOrder) : CollectionEvents()
     object ShowSortSheet : CollectionEvents()
     object HideSortSheet : CollectionEvents()
+
+    data class ShowRenameCollectionDialog(val initialName: String?) : CollectionEvents()
+    object HideRenameCollectionDialog : CollectionEvents()
+    data class UpdateCollectionName(val id: Long, val name: String) : CollectionEvents()
+
+    data class TogglePin(val bookmark: Bookmark) : CollectionEvents()
+    data class ShowRenameBookmarkDialog(val initialTitle: String?) : CollectionEvents()
+    object HideRenameBookmarkDialog : CollectionEvents()
+    data class UpdateBookmarkTitle(val id: Long, val title: String) : CollectionEvents()
+
+    object ShowTagManager : CollectionEvents()
+    object HideTagManager : CollectionEvents()
+    data class CreateTag(val name: String) : CollectionEvents()
+    data class ToggleTagForBookmark(val tag: `in`.iambhvsh.shelf.domain.model.Tag, val isChecked: Boolean) : CollectionEvents()
+    data class DeleteTag(val tagId: Long) : CollectionEvents()
+
+    data class ShowNoteEditor(val initialNote: String?) : CollectionEvents()
+    object HideNoteEditor : CollectionEvents()
+    data class UpdateNote(val id: Long, val note: String?) : CollectionEvents()
+
+    object ShowReminderPicker : CollectionEvents()
+    object HideReminderPicker : CollectionEvents()
+    data class SetReminder(val id: Long, val timeInMillis: Long) : CollectionEvents()
+    data class CancelReminder(val id: Long) : CollectionEvents()
 }

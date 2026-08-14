@@ -198,8 +198,23 @@ fun HomeScreen(
         onPinButtonClick = { state.tempBookmark?.let { viewModel.homeEvents(HomeEvents.TogglePin(it)) } },
         onTagsButtonClick = { viewModel.homeEvents(HomeEvents.ShowTagManager) },
         onNoteButtonClick = { viewModel.homeEvents(HomeEvents.ShowNoteEditor(state.tempBookmark?.note)) },
-        onReminderButtonClick = { viewModel.homeEvents(HomeEvents.ShowReminderPicker) }
+        onReminderButtonClick = { viewModel.homeEvents(HomeEvents.ShowReminderPicker) },
+        onRenameButtonClick = { viewModel.homeEvents(HomeEvents.ShowRenameDialog(state.tempBookmark?.title)) }
     )
+    
+    if (state.showRenameDialog) {
+        `in`.iambhvsh.shelf.presentation.home.components.RenameSheet(
+            initialText = state.renameDialogText ?: "",
+            title = "Rename Bookmark",
+            onDismissRequest = { viewModel.homeEvents(HomeEvents.HideRenameDialog) },
+            onSaveClick = { newTitle ->
+                state.tempBookmark?.let {
+                    viewModel.homeEvents(HomeEvents.UpdateBookmarkTitle(it.id, newTitle))
+                }
+            }
+        )
+    }
+
     if (state.showTagManager) {
         TagManagerSheet(
             tags = state.tags,

@@ -62,7 +62,8 @@ fun BookmarkPreviewSheet(
     onPinButtonClick: (() -> Unit)? = null,
     onTagsButtonClick: (() -> Unit)? = null,
     onNoteButtonClick: (() -> Unit)? = null,
-    onReminderButtonClick: (() -> Unit)? = null
+    onReminderButtonClick: (() -> Unit)? = null,
+    onRenameButtonClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     if (!showBottomSheet) return
@@ -172,6 +173,31 @@ fun BookmarkPreviewSheet(
                     Icon(
                         imageVector = Icons.Outlined.Notifications,
                         contentDescription = "Remind Me"
+                    )
+                }
+            )
+        }
+        
+        if (onRenameButtonClick != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        onRenameButtonClick()
+                        onDismissRequest()
+                    },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                headlineContent = {
+                    Text("Rename")
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Rename"
                     )
                 }
             )
