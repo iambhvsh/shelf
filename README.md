@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="logo-transparent.png" width="128" alt="Shelf Logo">
+  <img src="/assets/logo.png" width="128" alt="Shelf Logo">
 
   <h4>The links you love. Beautifully organized. Entirely yours.</h4>
 

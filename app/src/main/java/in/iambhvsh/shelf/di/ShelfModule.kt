@@ -61,6 +61,10 @@ val shelfModule = module {
         ReminderManager(androidContext())
     }
 
+    single {
+        `in`.iambhvsh.shelf.presentation.setting.ChangelogLoader(androidContext())
+    }
+
     viewModel {
         HomeViewModel(get(), get(), get())
     }
@@ -74,7 +78,7 @@ val shelfModule = module {
     }
 
     viewModel {
-        SettingViewModel(get(), get(), get())
+        SettingViewModel(get(), get(), get(), get())
     }
 
     single {

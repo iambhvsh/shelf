@@ -3,6 +3,7 @@ package `in`.iambhvsh.shelf.presentation.setting.components
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Verified
@@ -13,11 +14,18 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AboutSection(
     versionName: String,
+    onChangelogClick: () -> Unit,
     onAboutClick: () -> Unit,
     onCheckForUpdatesClick: () -> Unit
 ) {
     Spacer(Modifier.height(12.dp))
     SectionHeader("About")
+    SettingItem(
+        icon = Icons.Outlined.History,
+        title = "Changelog",
+        subtitle = "See what's new in the latest versions",
+        onClick = onChangelogClick
+    )
     SettingItem(
         icon = Icons.Outlined.Info,
         title = "About Shelf",

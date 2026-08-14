@@ -124,6 +124,7 @@ fun SettingScreen(
             LegalSection(context)
             AboutSection(
                 versionName = versionName,
+                onChangelogClick = { viewModel.onEvent(SettingEvents.ShowChangelogSheet) },
                 onAboutClick = { viewModel.onEvent(SettingEvents.ShowAboutSheet) },
                 onCheckForUpdatesClick = { viewModel.onEvent(SettingEvents.CheckForUpdates) }
             )
@@ -297,6 +298,13 @@ fun SettingScreen(
         AutoBackupInfoDialog(
             onEnable = { viewModel.onEvent(SettingEvents.ConfirmAutoBackupEnable) },
             onDismiss = { viewModel.onEvent(SettingEvents.DismissAutoBackupInfoDialog) }
+        )
+    }
+
+    if (state.showChangelogSheet) {
+        `in`.iambhvsh.shelf.presentation.setting.components.ChangelogSheet(
+            changelogText = state.changelogText,
+            onDismiss = { viewModel.onEvent(SettingEvents.HideChangelogSheet) }
         )
     }
 

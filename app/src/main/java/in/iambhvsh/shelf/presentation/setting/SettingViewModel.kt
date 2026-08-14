@@ -17,7 +17,8 @@ import java.util.Locale
 class SettingViewModel(
     private val settingsRepository: SettingsRepository,
     private val backupManager: BackupManager,
-    private val updateManager: `in`.iambhvsh.shelf.domain.manager.UpdateManager
+    private val updateManager: `in`.iambhvsh.shelf.domain.manager.UpdateManager,
+    private val changelogLoader: ChangelogLoader
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -244,6 +245,20 @@ class SettingViewModel(
 
             SettingEvents.ResetNoUpdateToast -> {
                 _state.update { it.copy(showNoUpdateToast = false) }
+            }
+
+            SettingEvents.ShowChangelogSheet -> {
+                _state.update { it.copy(showChangelogSheet = true) }
+                if (_state.value.changelogText.isEmpty()) {
+                    viewModelScope.launch {
+                        val text = changelogLoader.load()
+                        _state.update { it.copy(changelogText = text) }
+                    }
+                }
+            }
+            
+            SettingEvents.HideChangelogSheet -> {
+                _state.update { it.copy(showChangelogSheet = false) }
             }
         }
     }

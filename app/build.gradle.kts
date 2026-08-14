@@ -8,6 +8,12 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
+val copyChangelog = tasks.register<Copy>("copyChangelog") {
+    from(rootProject.file("CHANGELOG.md"))
+    into(layout.buildDirectory.dir("generated/assets/changelog"))
+    rename { "changelog.md" }
+}
+
 val versionProps = Properties().apply {
     val file = rootProject.file("version.properties")
     if (file.exists()) load(FileInputStream(file))
@@ -73,6 +79,18 @@ android {
     buildFeatures {
         compose = true
     }
+    
+    sourceSets {
+        getByName("main") {
+            assets.srcDir("build/generated/assets/changelog")
+        }
+    }
+}
+
+tasks.whenTaskAdded {
+    if (name.contains("generate") && name.endsWith("Assets")) {
+        dependsOn(copyChangelog)
+    }
 }
 
 dependencies {
@@ -116,7 +134,11 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose")
 
     implementation("androidx.browser:browser:1.10.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     implementation("com.materialkolor:material-kolor:5.0.0")
     implementation(libs.androidx.biometric)
+
+    implementation("com.mikepenz:multiplatform-markdown-renderer:0.13.0")
+    implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.13.0")
 }
