@@ -150,6 +150,7 @@ fun SearchTopBar(
 @Composable
 fun DefaultTopBar(
     currentTab: Int,
+    collectionName: String? = null,
     showSearchButton: Boolean,
     showSortButton: Boolean,
     scrollBehavior: TopAppBarScrollBehavior,
@@ -159,9 +160,11 @@ fun DefaultTopBar(
     LargeTopAppBar(
         scrollBehavior = scrollBehavior,
         title = {
-            Text(
-                if (currentTab == 0) "Shelf"
-                else bottomAppBarItems[currentTab].title
+            androidx.compose.material3.Text(
+                text = if (currentTab == 0) "Shelf"
+                else collectionName ?: bottomAppBarItems[currentTab].title,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         },
         actions = {

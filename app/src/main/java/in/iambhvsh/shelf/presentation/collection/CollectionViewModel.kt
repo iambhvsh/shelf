@@ -104,8 +104,13 @@ class CollectionViewModel(
             }
 
             CollectionEvents.DismissDetailBodySheet -> {
-                tempBookmarkTagsJob?.cancel()
-                _state.update { it.copy(tempBookmark = null, isDetailBodySheet = false, tempBookmarkTags = emptyList()) }
+                val s = _state.value
+                if (s.showRenameBookmarkDialog || s.showTagManager || s.showNoteEditor || s.showReminderPicker) {
+                    _state.update { it.copy(isDetailBodySheet = false) }
+                } else {
+                    tempBookmarkTagsJob?.cancel()
+                    _state.update { it.copy(tempBookmark = null, isDetailBodySheet = false, tempBookmarkTags = emptyList()) }
+                }
             }
 
             is CollectionEvents.ToggleDetailSelection -> {
@@ -360,10 +365,10 @@ class CollectionViewModel(
 
     private fun sortBookmarks(bookmarks: List<Bookmark>, sortOrder: SortOrder): List<Bookmark> {
         return when (sortOrder) {
-            SortOrder.DATE_NEWEST -> bookmarks.sortedByDescending { it.createdAt }
-            SortOrder.DATE_OLDEST -> bookmarks.sortedBy { it.createdAt }
-            SortOrder.TITLE_ASC -> bookmarks.sortedBy { it.title?.lowercase() }
-            SortOrder.TITLE_DESC -> bookmarks.sortedByDescending { it.title?.lowercase() }
+            SortOrder.DATE_NEWEST -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenByDescending { it.createdAt })
+            SortOrder.DATE_OLDEST -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenBy { it.createdAt })
+            SortOrder.TITLE_ASC -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenBy { it.title?.lowercase() })
+            SortOrder.TITLE_DESC -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenByDescending { it.title?.lowercase() })
         }
     }
 

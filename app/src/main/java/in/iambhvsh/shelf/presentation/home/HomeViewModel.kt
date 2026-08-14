@@ -105,13 +105,18 @@ class HomeViewModel(
             }
 
             HomeEvents.BookmarkPreviewDismissClick -> {
-                tempBookmarkTagsJob?.cancel()
-                _state.update {
-                    it.copy(
-                        isBodySheet = false,
-                        tempBookmark = null,
-                        tempBookmarkTags = emptyList()
-                    )
+                val s = _state.value
+                if (s.showRenameDialog || s.showTagManager || s.showNoteEditor || s.showReminderPicker) {
+                    _state.update { it.copy(isBodySheet = false) }
+                } else {
+                    tempBookmarkTagsJob?.cancel()
+                    _state.update {
+                        it.copy(
+                            isBodySheet = false,
+                            tempBookmark = null,
+                            tempBookmarkTags = emptyList()
+                        )
+                    }
                 }
             }
 

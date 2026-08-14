@@ -232,6 +232,7 @@ fun RootScreen(
                             currentTab == 0 || (currentTab == 1 && collectionState.selectedCollection != null)
                         DefaultTopBar(
                             currentTab = currentTab,
+                            collectionName = collectionState.selectedCollection?.name,
                             showSearchButton = showSearchButton,
                             showSortButton = showSortButton,
                             scrollBehavior = scrollBehavior,

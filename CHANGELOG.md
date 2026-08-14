@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.21] - 2026-08-15
+
+### Fixed
+- **Dialog Data Loss:** Resolved a critical bug where opening any dialog (like Rename, Tags, Notes, Reminders) from the bookmark preview sheet would immediately "forget" which bookmark was selected, preventing changes from saving.
+- **Collection Pinning Sorting:** Pinned bookmarks inside a collection now properly float to the very top, matching the behavior on the Home tab.
+- **Collection Titles:** When viewing a collection, the top app bar now beautifully displays the collection's name (with an ellipsis for long names) instead of a generic title.
+
 ## [1.0.20] - 2026-08-15
 
 ### Added
