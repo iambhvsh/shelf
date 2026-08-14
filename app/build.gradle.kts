@@ -88,7 +88,7 @@ android {
 }
 
 tasks.whenTaskAdded {
-    if (name.contains("generate") && name.endsWith("Assets")) {
+    if (name == "preBuild" || (name.contains("generate") && name.endsWith("Assets"))) {
         dependsOn(copyChangelog)
     }
 }
