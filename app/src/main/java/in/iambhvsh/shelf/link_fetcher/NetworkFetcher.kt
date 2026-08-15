@@ -34,7 +34,7 @@ class NetworkFetcher {
 
                 val finalUrl = response.request.url.toString()
                 
-                response.body?.byteStream()?.use { stream ->
+                response.body.byteStream().use { stream ->
                     Jsoup.parse(stream, null, finalUrl)
                 }
             }

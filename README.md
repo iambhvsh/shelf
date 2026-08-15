@@ -11,6 +11,9 @@
   <a href="https://github.com/iambhvsh/shelf/releases/latest/download/shelf-release.apk">
     <img alt="Download APK" src="https://img.shields.io/github/v/release/iambhvsh/shelf?label=Download%20APK&style=for-the-badge&color=1c1c1e&logo=android"/>
   </a>
+  <a href="https://rookieenough.github.io/Orion-Data/redirect.html?id=shelf">
+    <img alt="Orion Store" src="https://img.shields.io/badge/Orion%20Store-Get%20it%20here-1c1c1e?style=for-the-badge&logo=github"/>
+  </a>
 </div>
 
 <br>

@@ -26,21 +26,6 @@ fun AboutSection(
     onCheckForUpdatesClick: () -> Unit
 ) {
     Spacer(Modifier.height(12.dp))
-    SectionHeader("About")
-    SettingItem(
-        icon = Icons.Outlined.Info,
-        title = "About Shelf",
-        subtitle = "The links you love. Beautifully organized.",
-        onClick = onAboutClick
-    )
-    SettingItem(
-        icon = Icons.Outlined.AutoAwesome,
-        title = "Changelog",
-        subtitle = "See what's new in the latest versions",
-        onClick = onChangelogClick
-    )
-
-    Spacer(Modifier.height(12.dp))
     SectionHeader("Support")
     SettingItem(
         icon = Icons.Outlined.BugReport,
@@ -67,10 +52,24 @@ fun AboutSection(
     )
 
     Spacer(Modifier.height(12.dp))
+    SectionHeader("About")
+    SettingItem(
+        icon = Icons.Outlined.Info,
+        title = "About Shelf",
+        subtitle = "The links you love. Beautifully organized.",
+        onClick = onAboutClick
+    )
+    SettingItem(
+        icon = Icons.Outlined.AutoAwesome,
+        title = "Changelog",
+        subtitle = "See what's new in the latest versions",
+        onClick = onChangelogClick
+    )
     SettingItem(
         icon = Icons.Outlined.Update,
         title = "Check for updates",
         subtitle = versionName,
         onClick = onCheckForUpdatesClick
     )
+    Spacer(Modifier.height(24.dp))
 }

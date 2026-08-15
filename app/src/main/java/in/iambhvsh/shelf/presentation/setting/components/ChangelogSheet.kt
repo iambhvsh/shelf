@@ -59,7 +59,9 @@ fun ChangelogSheet(
                 val cleanText = changelogText
                     .replaceFirst(Regex("(?s)^.*?## "), "## ")
                     .replace(Regex("\\r?\\n## "), "\n---\n\n\n## ")
+                    .replace(Regex("(## [^\n]+)"), "$1\n")
                     .replace(Regex("\\r?\\n### "), "\n\n### ")
+                    .replace(Regex("\\r?\\n- "), "\n\n- ")
                 
                 Markdown(
                     content = cleanText,
@@ -67,16 +69,16 @@ fun ChangelogSheet(
                         h2 = MaterialTheme.typography.titleLarge.copy(
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
-                            lineHeight = 32.sp
+                            lineHeight = 40.sp
                         ),
                         h3 = MaterialTheme.typography.titleLarge.copy(
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 18.sp,
-                            lineHeight = 22.sp
+                            lineHeight = 28.sp
                         ),
                         text = MaterialTheme.typography.bodyMedium.copy(
-                            lineHeight = 24.sp
+                            lineHeight = 28.sp
                         )
                     ),
                     components = markdownComponents(

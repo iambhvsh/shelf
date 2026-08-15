@@ -82,7 +82,7 @@ android {
     
     sourceSets {
         getByName("main") {
-            assets.srcDir("build/generated/assets/changelog")
+            assets.srcDirs("build/generated/assets/changelog")
         }
     }
 }

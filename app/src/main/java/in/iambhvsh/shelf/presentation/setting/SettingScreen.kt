@@ -129,6 +129,7 @@ fun SettingScreen(
             )
         }
 
+
         LoadingProgress(
             isLoading = state.exportState is ExportState.Loading || state.browserExportState is ExportState.Loading || state.isCheckingForUpdates
         )

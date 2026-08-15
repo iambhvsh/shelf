@@ -2,7 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.23] - 2026-08-15
+
+### Fixed
+- **Compiler Warning:** Removed unnecessary safe call on non-null `ResponseBody` in `NetworkFetcher`.
+- **Build Warning:** Replaced deprecated `srcDir()` with `srcDirs()` in build configuration.
+- **Changelog Spacing:** Improved spacing below version titles and between list items in the changelog sheet.
+- **Settings Order:** Reordered settings sections — Support and Legal now appear above the About group for a more logical flow.
+
+### Added
+- **Orion Store:** Shelf is now listed on the [Orion Store](https://rookieenough.github.io/Orion-Data/redirect.html?id=shelf).
+
 ## [1.0.22] - 2026-08-15
+
 
 ### Fixed
 - **Bookmark Renaming:** Fixed an issue where renaming a bookmark from the preview sheet would not save the new title due to state being cleared too early.
