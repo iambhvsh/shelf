@@ -288,7 +288,11 @@ class BackupManager(
 
         for (b in backupData.bookmarks) {
             if (b.url !in existingUrls) {
-                bookmarkDao.insertWithReturn(BookmarkEntity(url = b.url, title = b.title, description = b.description, imageUrl = b.imageUrl, createdAt = b.createdAt))
+                var imgUrl = b.imageUrl
+                if (imgUrl != null && imgUrl.contains("scontent") && imgUrl.contains("instagram")) {
+                    imgUrl = null
+                }
+                bookmarkDao.insertWithReturn(BookmarkEntity(url = b.url, title = b.title, description = b.description, imageUrl = imgUrl, createdAt = b.createdAt))
             }
         }
 

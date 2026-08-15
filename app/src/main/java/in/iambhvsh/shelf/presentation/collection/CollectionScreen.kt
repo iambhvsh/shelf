@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.LaunchedEffect
 import `in`.iambhvsh.shelf.presentation.collection.components.CollectionCard
 import `in`.iambhvsh.shelf.presentation.collection.components.CollectionInputSheet
 import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
@@ -34,6 +35,15 @@ fun CollectionScreen(
     viewModel: CollectionViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    LaunchedEffect(state.toastMessage) {
+        state.toastMessage?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.onEvent(CollectionEvents.ClearToast)
+        }
+    }
 
     BackHandler(enabled = state.isSelectionMode) {
         viewModel.onEvent(CollectionEvents.ClearSelection)

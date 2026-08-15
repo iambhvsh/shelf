@@ -99,6 +99,13 @@ fun HomeScreen(
         }
     }
 
+    LaunchedEffect(state.toastMessage) {
+        state.toastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.homeEvents(HomeEvents.ClearToast)
+        }
+    }
+
     BackHandler(enabled = state.isSelectionMode) {
         viewModel.homeEvents(HomeEvents.ClearSelection)
     }
@@ -199,7 +206,11 @@ fun HomeScreen(
         onTagsButtonClick = { viewModel.homeEvents(HomeEvents.ShowTagManager) },
         onNoteButtonClick = { viewModel.homeEvents(HomeEvents.ShowNoteEditor(state.tempBookmark?.note)) },
         onReminderButtonClick = { viewModel.homeEvents(HomeEvents.ShowReminderPicker) },
-        onRenameButtonClick = { viewModel.homeEvents(HomeEvents.ShowRenameDialog(state.tempBookmark?.title)) }
+        onRenameButtonClick = { 
+            state.tempBookmark?.let {
+                viewModel.homeEvents(HomeEvents.ShowRenameDialog(it.id, it.title)) 
+            }
+        }
     )
     
     if (state.showRenameDialog) {
@@ -208,8 +219,8 @@ fun HomeScreen(
             title = "Rename Bookmark",
             onDismissRequest = { viewModel.homeEvents(HomeEvents.HideRenameDialog) },
             onSaveClick = { newTitle ->
-                state.tempBookmark?.let {
-                    viewModel.homeEvents(HomeEvents.UpdateBookmarkTitle(it.id, newTitle))
+                state.renameDialogBookmarkId?.let { id ->
+                    viewModel.homeEvents(HomeEvents.UpdateBookmarkTitle(id, newTitle))
                 }
             }
         )

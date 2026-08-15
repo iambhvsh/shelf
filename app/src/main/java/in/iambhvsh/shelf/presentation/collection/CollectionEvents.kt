@@ -10,6 +10,7 @@ sealed class CollectionEvents {
     object HideCreateDialog : CollectionEvents()
     object CreateCollection : CollectionEvents()
     data class SelectCollection(val collection: Collection) : CollectionEvents()
+    object ClearSelectedCollection : CollectionEvents()
     data class ToggleSelection(val id: Long) : CollectionEvents()
     object SelectAll : CollectionEvents()
     object DeselectAll : CollectionEvents()
@@ -32,7 +33,7 @@ sealed class CollectionEvents {
     data class UpdateCollectionName(val id: Long, val name: String) : CollectionEvents()
 
     data class TogglePin(val bookmark: Bookmark) : CollectionEvents()
-    data class ShowRenameBookmarkDialog(val initialTitle: String?) : CollectionEvents()
+    data class ShowRenameBookmarkDialog(val id: Long, val initialTitle: String?) : CollectionEvents()
     object HideRenameBookmarkDialog : CollectionEvents()
     data class UpdateBookmarkTitle(val id: Long, val title: String) : CollectionEvents()
 
@@ -50,4 +51,5 @@ sealed class CollectionEvents {
     object HideReminderPicker : CollectionEvents()
     data class SetReminder(val id: Long, val timeInMillis: Long) : CollectionEvents()
     data class CancelReminder(val id: Long) : CollectionEvents()
+    object ClearToast : CollectionEvents()
 }

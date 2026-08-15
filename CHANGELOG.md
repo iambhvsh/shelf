@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.22] - 2026-08-15
+
+### Fixed
+- **Bookmark Renaming:** Fixed an issue where renaming a bookmark from the preview sheet would not save the new title due to state being cleared too early.
+- **Top Bar Titles:** The top bar title now correctly resets to "Collections" when returning from a collection folder.
+- **Smooth Navigation:** Navigation between tabs and opening/closing collections now features a much smoother cross-fade transition.
+- **Changelog UI:** Improved the changelog design to be visually appealing, full-width, and appropriately spaced.
+- **Settings Clarity:** Revamped the Settings icons with carefully selected unique outlines, avoiding repetition and grouping related options nicely.
+- **Backup Imports (Instagram links):** Fixed a bug where importing older backups would display placeholders for Instagram reels; expired CDN links are now purged on import, allowing the app to automatically fetch fresh thumbnails upon startup!
+
 ## [1.0.21] - 2026-08-15
 
 ### Fixed

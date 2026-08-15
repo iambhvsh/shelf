@@ -307,11 +307,11 @@ class HomeViewModel(
             }
             
             is HomeEvents.ShowRenameDialog -> {
-                _state.update { it.copy(showRenameDialog = true, renameDialogText = events.initialTitle, isBodySheet = false) }
+                _state.update { it.copy(showRenameDialog = true, renameDialogText = events.initialTitle, renameDialogBookmarkId = events.id, isBodySheet = false) }
             }
             
             HomeEvents.HideRenameDialog -> {
-                _state.update { it.copy(showRenameDialog = false, renameDialogText = null, tempBookmark = null) }
+                _state.update { it.copy(showRenameDialog = false, renameDialogText = null, renameDialogBookmarkId = null, tempBookmark = null) }
             }
             
             is HomeEvents.UpdateBookmarkTitle -> {
@@ -319,12 +319,13 @@ class HomeViewModel(
                 if (newTitle.isBlank()) return // Validation: do not save empty
                 
                 viewModelScope.launch {
-                    val currentBm = _state.value.tempBookmark
-                    if (currentBm != null && currentBm.title != newTitle) {
-                        repository.updateBookmarkTitle(events.id, newTitle)
-                    }
-                    _state.update { it.copy(showRenameDialog = false, renameDialogText = null, tempBookmark = null) }
+                    repository.updateBookmarkTitle(events.id, newTitle)
+                    _state.update { it.copy(showRenameDialog = false, renameDialogText = null, renameDialogBookmarkId = null, tempBookmark = null, toastMessage = "Bookmark renamed") }
                 }
+            }
+            
+            HomeEvents.ClearToast -> {
+                _state.update { it.copy(toastMessage = null) }
             }
         }
     }
@@ -338,7 +339,8 @@ class HomeViewModel(
                 _state.update {
                     it.copy(
                         selectedIds = emptySet(),
-                        isSelectionMode = false
+                        isSelectionMode = false,
+                        toastMessage = "Deleted bookmark" + if (ids.size > 1) "s" else ""
                     )
                 }
             } catch (e: Exception) {
@@ -413,11 +415,13 @@ class HomeViewModel(
         if (ids.isEmpty()) return
         viewModelScope.launch {
             repository.addBookmarksToCollection(ids, collectionId)
+            val collectionName = _state.value.collections.find { it.id == collectionId }?.name ?: "Collection"
             _state.update {
                 it.copy(
                     showCollectionPicker = false,
                     selectedIds = emptySet(),
-                    isSelectionMode = false
+                    isSelectionMode = false,
+                    toastMessage = "Added to $collectionName"
                 )
             }
         }
@@ -458,6 +462,7 @@ class HomeViewModel(
                                 bookmarkData = sortedItems
                             )
                         }
+                        fetchMissingMetadataOnStart()
                     }
                 }
             }

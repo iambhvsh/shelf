@@ -3,14 +3,13 @@ package `in`.iambhvsh.shelf.presentation.setting.components
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material.icons.outlined.Verified
+import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.BugReport
-import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Policy
+import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,47 +28,49 @@ fun AboutSection(
     Spacer(Modifier.height(12.dp))
     SectionHeader("About")
     SettingItem(
-        icon = Icons.Outlined.History,
-        title = "Changelog",
-        subtitle = "See what's new in the latest versions",
-        onClick = onChangelogClick
-    )
-    SettingItem(
         icon = Icons.Outlined.Info,
         title = "About Shelf",
         subtitle = "The links you love. Beautifully organized.",
         onClick = onAboutClick
     )
     SettingItem(
-        icon = Icons.Outlined.Star,
-        title = "Star on GitHub",
-        onClick = { openChromeTab("https://github.com/iambhvsh/shelf", context) }
+        icon = Icons.Outlined.AutoAwesome,
+        title = "Changelog",
+        subtitle = "See what's new in the latest versions",
+        onClick = onChangelogClick
     )
+
+    Spacer(Modifier.height(12.dp))
+    SectionHeader("Support")
     SettingItem(
         icon = Icons.Outlined.BugReport,
         title = "Report Issue",
         onClick = { openChromeTab("https://github.com/iambhvsh/shelf/issues", context) }
     )
     SettingItem(
-        icon = Icons.Outlined.Shield,
+        icon = Icons.Outlined.Star,
+        title = "Star on GitHub",
+        onClick = { openChromeTab("https://github.com/iambhvsh/shelf", context) }
+    )
+
+    Spacer(Modifier.height(12.dp))
+    SectionHeader("Legal")
+    SettingItem(
+        icon = Icons.Outlined.Policy,
         title = "Privacy Policy",
         onClick = { openChromeTab("https://shelf.iambhvsh.in/privacy", context) }
     )
     SettingItem(
-        icon = Icons.Outlined.Description,
+        icon = Icons.Outlined.Gavel,
         title = "Terms & Conditions",
         onClick = { openChromeTab("https://shelf.iambhvsh.in/terms", context) }
     )
+
+    Spacer(Modifier.height(12.dp))
     SettingItem(
-        icon = Icons.Outlined.Verified,
-        title = "App version",
-        subtitle = versionName,
-        onClick = { }
-    )
-    SettingItem(
-        icon = Icons.Outlined.SystemUpdate,
+        icon = Icons.Outlined.Update,
         title = "Check for updates",
-        subtitle = "Install latest version from GitHub",
+        subtitle = versionName,
         onClick = onCheckForUpdatesClick
     )
 }

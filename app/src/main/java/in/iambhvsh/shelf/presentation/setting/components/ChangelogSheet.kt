@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.compose.components.markdownComponents
@@ -54,27 +55,34 @@ fun ChangelogSheet(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // Strip the first "# Changelog" line and add separators before versions
+                // Strip everything before the first "## " and add separators before subsequent versions
                 val cleanText = changelogText
-                    .replaceFirst(Regex("# Changelog\\r?\\n?"), "")
-                    .replaceFirst(Regex("\\r?\\n?All notable changes to this project will be documented in this file.\\r?\\n?"), "")
-                    .replace(Regex("\\r?\\n## "), "\n---\n## ")
+                    .replaceFirst(Regex("(?s)^.*?## "), "## ")
+                    .replace(Regex("\\r?\\n## "), "\n---\n\n\n## ")
+                    .replace(Regex("\\r?\\n### "), "\n\n### ")
                 
                 Markdown(
                     content = cleanText,
                     typography = markdownTypography(
                         h2 = MaterialTheme.typography.titleLarge.copy(
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 32.sp
                         ),
-                        h3 = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.primary
+                        h3 = MaterialTheme.typography.titleLarge.copy(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 18.sp,
+                            lineHeight = 22.sp
+                        ),
+                        text = MaterialTheme.typography.bodyMedium.copy(
+                            lineHeight = 24.sp
                         )
                     ),
                     components = markdownComponents(
                         horizontalRule = {
                             WavyDivider(
-                                modifier = Modifier.padding(vertical = 16.dp),
+                                modifier = Modifier.padding(top = 28.dp, bottom = 48.dp),
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             )
                         }
@@ -101,7 +109,7 @@ fun WavyDivider(
             
             moveTo(0f, amplitudePx)
             
-            val count = ceil(size.width / periodPx).toInt() + 1
+            val count = ceil(size.width / halfPeriod).toInt() + 1
             for (i in 0 until count) {
                 relativeQuadraticTo(
                     dx1 = halfPeriod / 2f,

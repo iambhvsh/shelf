@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Pin
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -40,7 +41,7 @@ fun SecuritySection(
     
     androidx.compose.animation.AnimatedVisibility(visible = state.appLockEnabled) {
         SettingItem(
-            icon = androidx.compose.material.icons.Icons.Outlined.Lock,
+            icon = Icons.Outlined.Pin,
             title = "Use PIN",
             subtitle = if (state.appLockUsePinEnabled) "PIN fallback enabled" else "Fingerprint only",
             trailing = {

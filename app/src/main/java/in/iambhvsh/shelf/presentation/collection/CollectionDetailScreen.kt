@@ -59,6 +59,11 @@ fun CollectionDetailScreen(
     val itemCount = state.collectionBookmarks.size
     var prevCount by rememberSaveable { mutableIntStateOf(itemCount) }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.onEvent(CollectionEvents.ClearSelectedCollection)
+        }
+    }
 
     LaunchedEffect(itemCount) {
         if (itemCount > prevCount && itemCount > 0) {
@@ -72,6 +77,13 @@ fun CollectionDetailScreen(
         if (itemCount > 0) {
             if (viewMode == ViewMode.GRID) gridState.scrollToItem(0)
             else listState.scrollToItem(0)
+        }
+    }
+
+    LaunchedEffect(state.toastMessage) {
+        state.toastMessage?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.onEvent(CollectionEvents.ClearToast)
         }
     }
 
@@ -220,7 +232,11 @@ fun CollectionDetailScreen(
         onTagsButtonClick = { viewModel.onEvent(CollectionEvents.ShowTagManager) },
         onNoteButtonClick = { viewModel.onEvent(CollectionEvents.ShowNoteEditor(state.tempBookmark?.note)) },
         onReminderButtonClick = { viewModel.onEvent(CollectionEvents.ShowReminderPicker) },
-        onRenameButtonClick = { viewModel.onEvent(CollectionEvents.ShowRenameBookmarkDialog(state.tempBookmark?.title)) }
+        onRenameButtonClick = { 
+            state.tempBookmark?.let {
+                viewModel.onEvent(CollectionEvents.ShowRenameBookmarkDialog(it.id, it.title)) 
+            }
+        }
     )
 
     if (state.showRenameBookmarkDialog) {
@@ -229,8 +245,8 @@ fun CollectionDetailScreen(
             title = "Rename Bookmark",
             onDismissRequest = { viewModel.onEvent(CollectionEvents.HideRenameBookmarkDialog) },
             onSaveClick = { newTitle ->
-                state.tempBookmark?.let {
-                    viewModel.onEvent(CollectionEvents.UpdateBookmarkTitle(it.id, newTitle))
+                state.renameBookmarkDialogId?.let { id ->
+                    viewModel.onEvent(CollectionEvents.UpdateBookmarkTitle(id, newTitle))
                 }
             }
         )

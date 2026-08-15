@@ -1,4 +1,5 @@
 # Android Studio / IntelliJ
+.kotlin/
 *.iml
 .idea/caches/
 .idea/libraries/

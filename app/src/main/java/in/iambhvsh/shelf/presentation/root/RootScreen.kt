@@ -41,6 +41,8 @@ import `in`.iambhvsh.shelf.presentation.root.components.SelectionTopBar
 import `in`.iambhvsh.shelf.presentation.search.SearchViewModel
 import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
 import `in`.iambhvsh.shelf.presentation.setting.BrowserImportState
+import `in`.iambhvsh.shelf.navigation.AppRoute
+import androidx.compose.runtime.mutableStateListOf
 import `in`.iambhvsh.shelf.presentation.setting.ImportState
 import `in`.iambhvsh.shelf.presentation.setting.SettingScreen
 import `in`.iambhvsh.shelf.presentation.setting.SettingViewModel
@@ -71,6 +73,14 @@ fun RootScreen(
     var isSearching by remember { mutableStateOf(false) }
     var isCollectionSearching by remember { mutableStateOf(false) }
     var collectionSearchQuery by remember { mutableStateOf("") }
+    
+    val backStacks: List<MutableList<AppRoute>> = remember {
+        listOf(
+            mutableStateListOf<AppRoute>(AppRoute.Home),
+            mutableStateListOf<AppRoute>(AppRoute.Collections),
+            mutableStateListOf<AppRoute>(AppRoute.Settings)
+        )
+    }
     val pendingSharedUrl = remember { mutableStateOf(sharedUrl) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -226,13 +236,15 @@ fun RootScreen(
                     }
 
                     else -> {
+                        val isCollectionDetail = currentTab == 1 && backStacks[1].lastOrNull() is AppRoute.CollectionDetail
+                        val collectionName = if (isCollectionDetail) collectionState.selectedCollection?.name else null
                         val showSortButton =
                             currentTab == 0 || (currentTab == 1 && collectionState.selectedCollection != null)
                         val showSearchButton =
                             currentTab == 0 || (currentTab == 1 && collectionState.selectedCollection != null)
                         DefaultTopBar(
                             currentTab = currentTab,
-                            collectionName = collectionState.selectedCollection?.name,
+                            collectionName = collectionName,
                             showSearchButton = showSearchButton,
                             showSortButton = showSortButton,
                             scrollBehavior = scrollBehavior,
@@ -286,6 +298,7 @@ fun RootScreen(
                     .fillMaxSize(),
                 currentTab = currentTab,
                 onTabChange = { currentTab = it },
+                backStacks = backStacks,
                 homeScreen = {
                     val url = pendingSharedUrl.value
                     if (url != null) pendingSharedUrl.value = null

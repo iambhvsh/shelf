@@ -25,10 +25,12 @@ data class CollectionState(
     val renameCollectionDialogText: String? = null,
     val showRenameBookmarkDialog: Boolean = false,
     val renameBookmarkDialogText: String? = null,
+    val renameBookmarkDialogId: Long? = null,
     val tags: List<`in`.iambhvsh.shelf.domain.model.Tag> = emptyList(),
     val tempBookmarkTags: List<`in`.iambhvsh.shelf.domain.model.Tag> = emptyList(),
     val showTagManager: Boolean = false,
     val showNoteEditor: Boolean = false,
     val noteEditorText: String? = null,
-    val showReminderPicker: Boolean = false
+    val showReminderPicker: Boolean = false,
+    val toastMessage: String? = null
 )

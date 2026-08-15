@@ -50,6 +50,11 @@ class CollectionViewModel(
                 selectCollection(event.collection)
             }
 
+            CollectionEvents.ClearSelectedCollection -> {
+                collectionJob?.cancel()
+                _state.update { it.copy(selectedCollection = null, collectionBookmarks = emptyList(), isDetailSelectionMode = false, detailSelectedIds = emptySet()) }
+            }
+
             is CollectionEvents.ToggleSelection -> {
                 val current = _state.value
                 val newSelected = if (event.id in current.selectedIds) {
@@ -185,7 +190,7 @@ class CollectionViewModel(
                     if (currentCollection != null && currentCollection.name != newName) {
                         repository.updateCollectionName(event.id, newName)
                     }
-                    _state.update { it.copy(showRenameCollectionDialog = false, renameCollectionDialogText = null) }
+                    _state.update { it.copy(showRenameCollectionDialog = false, renameCollectionDialogText = null, toastMessage = "Collection renamed") }
                 }
             }
 
@@ -196,11 +201,11 @@ class CollectionViewModel(
             }
 
             is CollectionEvents.ShowRenameBookmarkDialog -> {
-                _state.update { it.copy(showRenameBookmarkDialog = true, renameBookmarkDialogText = event.initialTitle, isDetailBodySheet = false) }
+                _state.update { it.copy(showRenameBookmarkDialog = true, renameBookmarkDialogText = event.initialTitle, renameBookmarkDialogId = event.id, isDetailBodySheet = false) }
             }
 
             CollectionEvents.HideRenameBookmarkDialog -> {
-                _state.update { it.copy(showRenameBookmarkDialog = false, renameBookmarkDialogText = null, tempBookmark = null) }
+                _state.update { it.copy(showRenameBookmarkDialog = false, renameBookmarkDialogText = null, renameBookmarkDialogId = null, tempBookmark = null) }
             }
 
             is CollectionEvents.UpdateBookmarkTitle -> {
@@ -208,11 +213,8 @@ class CollectionViewModel(
                 if (newTitle.isBlank()) return // Validation: do not save empty
                 
                 viewModelScope.launch {
-                    val currentBm = _state.value.tempBookmark
-                    if (currentBm != null && currentBm.title != newTitle) {
-                        repository.updateBookmarkTitle(event.id, newTitle)
-                    }
-                    _state.update { it.copy(showRenameBookmarkDialog = false, renameBookmarkDialogText = null, tempBookmark = null) }
+                    repository.updateBookmarkTitle(event.id, newTitle)
+                    _state.update { it.copy(showRenameBookmarkDialog = false, renameBookmarkDialogText = null, renameBookmarkDialogId = null, tempBookmark = null, toastMessage = "Bookmark renamed") }
                 }
             }
 
@@ -289,6 +291,10 @@ class CollectionViewModel(
                     _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
                 }
             }
+            
+            CollectionEvents.ClearToast -> {
+                _state.update { it.copy(toastMessage = null) }
+            }
         }
     }
 
@@ -330,7 +336,7 @@ class CollectionViewModel(
         if (selected.isEmpty()) return
         viewModelScope.launch {
             selected.forEach { repository.deleteCollection(it) }
-            _state.update { it.copy(selectedIds = emptySet(), isSelectionMode = false) }
+            _state.update { it.copy(selectedIds = emptySet(), isSelectionMode = false, toastMessage = "Deleted collection" + if (selected.size > 1) "s" else "") }
         }
     }
 
@@ -338,6 +344,7 @@ class CollectionViewModel(
         viewModelScope.launch {
             val collection = _state.value.collections.find { it.id == collectionId } ?: return@launch
             repository.deleteCollection(collection)
+            _state.update { it.copy(toastMessage = "Deleted collection") }
             backToCollections()
         }
     }
@@ -347,7 +354,7 @@ class CollectionViewModel(
         if (ids.isEmpty()) return
         viewModelScope.launch {
             ids.forEach { repository.removeBookmarkFromCollection(it, collectionId) }
-            _state.update { it.copy(detailSelectedIds = emptySet(), isDetailSelectionMode = false) }
+            _state.update { it.copy(detailSelectedIds = emptySet(), isDetailSelectionMode = false, toastMessage = "Removed from collection") }
         }
     }
 
