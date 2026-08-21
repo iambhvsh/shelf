@@ -26,6 +26,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ModalBottomSheet
@@ -53,6 +55,7 @@ import `in`.iambhvsh.shelf.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookmarkPreviewSheet(
+    bookmark: `in`.iambhvsh.shelf.domain.model.Bookmark? = null,
     showBottomSheet: Boolean,
     isPinned: Boolean = false,
     onDismissRequest: () -> Unit,
@@ -63,7 +66,8 @@ fun BookmarkPreviewSheet(
     onTagsButtonClick: (() -> Unit)? = null,
     onNoteButtonClick: (() -> Unit)? = null,
     onReminderButtonClick: (() -> Unit)? = null,
-    onRenameButtonClick: (() -> Unit)? = null
+    onRenameButtonClick: (() -> Unit)? = null,
+    onDeleteButtonClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     if (!showBottomSheet) return
@@ -80,6 +84,172 @@ fun BookmarkPreviewSheet(
                 .heightIn(max = screenHeight * 0.9f)
                 .verticalScroll(androidx.compose.foundation.rememberScrollState())
         ) {
+        if (bookmark != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge),
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                ),
+                headlineContent = {
+                    Text(bookmark.title ?: bookmark.url, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                },
+                supportingContent = {
+                    Text(bookmark.url, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                },
+                leadingContent = {
+                    if (bookmark.imageUrl != null) {
+                        AsyncImage(
+                            model = bookmark.imageUrl,
+                            contentDescription = "Bookmark Image",
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(MaterialTheme.shapes.medium),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = (bookmark.title ?: bookmark.url).take(1).uppercase(),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                    }
+                }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        ListItem(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.extraLarge)
+                .clickable {
+                    openInBrowser()
+                    onDismissRequest()
+                },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            headlineContent = {
+                Text("Open Link")
+            },
+            leadingContent = {
+                Icon(
+                    painter = painterResource(R.drawable.open_in_browser),
+                    contentDescription = "Open Link"
+                )
+            }
+        )
+
+        ListItem(
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.extraLarge)
+                .clickable {
+                    copyLinkButtonClick()
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                        Toast.makeText(context, "Link copied", Toast.LENGTH_SHORT).show()
+                    }
+                    onDismissRequest()
+                },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            headlineContent = {
+                Text("Copy Link")
+            },
+            leadingContent = {
+                Icon(
+                    painter = painterResource(R.drawable.copy_icon),
+                    contentDescription = "Copy Link"
+                )
+            }
+        )
+
+        ListItem(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.extraLarge)
+                .clickable {
+                    onShareButtonClick()
+                    onDismissRequest()
+                },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            headlineContent = {
+                Text("Share Link")
+            },
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Share,
+                    contentDescription = "Share Link"
+                )
+            }
+        )
+
+        if (onRenameButtonClick != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        onRenameButtonClick()
+                        onDismissRequest()
+                    },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                headlineContent = {
+                    Text("Edit Bookmark")
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Edit Bookmark"
+                    )
+                }
+            )
+        }
+
+        if (onTagsButtonClick != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        onTagsButtonClick()
+                    },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                headlineContent = {
+                    Text("Edit Tags")
+                },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.bookmark_add),
+                        contentDescription = "Edit Tags"
+                    )
+                }
+            )
+        }
+        
         if (onPinButtonClick != null) {
             ListItem(
                 modifier = Modifier
@@ -94,61 +264,13 @@ fun BookmarkPreviewSheet(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                 ),
                 headlineContent = {
-                    Text(if (isPinned) "Unpin" else "Pin")
+                    Text(if (isPinned) "Unpin from top" else "Pin to top")
                 },
                 leadingContent = {
                     Icon(
                         imageVector = if (isPinned) Icons.Default.Star else Icons.Outlined.StarBorder,
-                        contentDescription = "Pin Bookmark",
+                        contentDescription = "Pin to top",
                         tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            )
-        }
-        
-        if (onTagsButtonClick != null) {
-            ListItem(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.extraLarge)
-                    .clickable {
-                        onTagsButtonClick()
-                    },
-                colors = ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                ),
-                headlineContent = {
-                    Text("Manage Tags")
-                },
-                leadingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.bookmark_add),
-                        contentDescription = "Manage Tags"
-                    )
-                }
-            )
-        }
-        
-        if (onNoteButtonClick != null) {
-            ListItem(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.extraLarge)
-                    .clickable {
-                        onNoteButtonClick()
-                    },
-                colors = ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                ),
-                headlineContent = {
-                    Text("Personal Note")
-                },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.Edit,
-                        contentDescription = "Personal Note"
                     )
                 }
             )
@@ -178,99 +300,55 @@ fun BookmarkPreviewSheet(
             )
         }
         
-        if (onRenameButtonClick != null) {
+        if (onNoteButtonClick != null) {
             ListItem(
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
                     .fillMaxWidth()
                     .clip(MaterialTheme.shapes.extraLarge)
                     .clickable {
-                        onRenameButtonClick()
+                        onNoteButtonClick()
+                    },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                headlineContent = {
+                    Text("Add Note")
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.EditNote,
+                        contentDescription = "Add Note"
+                    )
+                }
+            )
+        }
+        
+        if (onDeleteButtonClick != null) {
+            ListItem(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        onDeleteButtonClick()
                         onDismissRequest()
                     },
                 colors = ListItemDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                 ),
                 headlineContent = {
-                    Text("Rename")
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
                 },
                 leadingContent = {
                     Icon(
-                        imageVector = Icons.Outlined.Edit,
-                        contentDescription = "Rename"
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             )
         }
-        ListItem(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.extraLarge)
-                .clickable {
-                    openInBrowser()
-                    onDismissRequest()
-                },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
-            headlineContent = {
-                Text("Open In Browser")
-            },
-            leadingContent = {
-                Icon(
-                    painter = painterResource(R.drawable.open_in_browser),
-                    contentDescription = "Copy Link"
-                )
-            }
-        )
-        ListItem(
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.extraLarge)
-                .clickable {
-                    copyLinkButtonClick()
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                        Toast.makeText(context, "Link copied", Toast.LENGTH_SHORT).show()
-                    }
-                    onDismissRequest()
-                },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
-            headlineContent = {
-                Text("Copy Link")
-            },
-            leadingContent = {
-                Icon(
-                    painter = painterResource(R.drawable.copy_icon),
-                    contentDescription = "Copy Link"
-                )
-            }
-        )
-        ListItem(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.extraLarge)
-                .clickable {
-                    onShareButtonClick()
-                    onDismissRequest()
-                },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
-            headlineContent = {
-                Text("Share Link")
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.Share,
-                    contentDescription = "Share Link"
-                )
-            }
-        )
 
 
         Spacer(Modifier.height(24.dp))

@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
+import `in`.iambhvsh.shelf.presentation.home.components.DeleteConfirmationDialog
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.ui.Alignment
@@ -55,6 +56,8 @@ fun HomeScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val clipboard = LocalClipboard.current
+
+    var bookmarkToDelete by remember { androidx.compose.runtime.mutableStateOf<Bookmark?>(null) }
 
     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
         val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -187,6 +190,7 @@ fun HomeScreen(
     )
 
     BookmarkPreviewSheet(
+        bookmark = state.tempBookmark,
         showBottomSheet = state.isBodySheet,
         isPinned = state.tempBookmark?.isPinned ?: false,
         onDismissRequest = { viewModel.homeEvents(HomeEvents.BookmarkPreviewDismissClick) },
@@ -208,20 +212,37 @@ fun HomeScreen(
         onReminderButtonClick = { viewModel.homeEvents(HomeEvents.ShowReminderPicker) },
         onRenameButtonClick = { 
             state.tempBookmark?.let {
-                viewModel.homeEvents(HomeEvents.ShowRenameDialog(it.id, it.title)) 
+                viewModel.homeEvents(HomeEvents.ShowEditDialog(it)) 
+            }
+        },
+        onDeleteButtonClick = {
+            state.tempBookmark?.let {
+                bookmarkToDelete = it
             }
         }
     )
     
-    if (state.showRenameDialog) {
-        `in`.iambhvsh.shelf.presentation.home.components.RenameSheet(
-            initialText = state.renameDialogText ?: "",
-            title = "Rename Bookmark",
-            onDismissRequest = { viewModel.homeEvents(HomeEvents.HideRenameDialog) },
-            onSaveClick = { newTitle ->
-                state.renameDialogBookmarkId?.let { id ->
-                    viewModel.homeEvents(HomeEvents.UpdateBookmarkTitle(id, newTitle))
-                }
+    if (bookmarkToDelete != null) {
+        DeleteConfirmationDialog(
+            title = "Delete Bookmark",
+            text = "Are you sure you want to permanently delete this bookmark?",
+            onConfirm = {
+                viewModel.homeEvents(HomeEvents.DeleteBookmark(bookmarkToDelete!!))
+                bookmarkToDelete = null
+            },
+            onDismiss = {
+                bookmarkToDelete = null
+            }
+        )
+    }
+    
+    val bookmarkToEdit = state.tempBookmark
+    if (state.showRenameDialog && bookmarkToEdit != null) {
+        `in`.iambhvsh.shelf.presentation.home.components.EditBookmarkSheet(
+            bookmark = bookmarkToEdit,
+            onDismissRequest = { viewModel.homeEvents(HomeEvents.HideEditDialog) },
+            onSaveClick = { newTitle, newDescription ->
+                viewModel.homeEvents(HomeEvents.UpdateBookmarkDetails(bookmarkToEdit.id, newTitle, newDescription))
             }
         )
     }

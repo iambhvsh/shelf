@@ -74,6 +74,9 @@ fun RootScreen(
     var isCollectionSearching by remember { mutableStateOf(false) }
     var collectionSearchQuery by remember { mutableStateOf("") }
     
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var pendingDeleteAction: (() -> Unit)? by remember { mutableStateOf(null) }
+    
     val backStacks: List<MutableList<AppRoute>> = remember {
         listOf(
             mutableStateListOf<AppRoute>(AppRoute.Home),
@@ -108,12 +111,9 @@ fun RootScreen(
         searchViewModel.onTagsChange(state.activeTagFilters)
     }
     
-    LaunchedEffect(openBookmarkId, state.bookmarkData) {
-        if (openBookmarkId != null && state.bookmarkData.isNotEmpty()) {
-            val bookmark = state.bookmarkData.find { it.id == openBookmarkId }
-            if (bookmark != null && !state.isBodySheet) {
-                viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(bookmark))
-            }
+    LaunchedEffect(openBookmarkId) {
+        if (openBookmarkId != null && !state.isBodySheet) {
+            viewModel.homeEvents(HomeEvents.OpenBookmarkById(openBookmarkId))
         }
     }
 
@@ -163,7 +163,10 @@ fun RootScreen(
                             onClose = { viewModel.homeEvents(HomeEvents.ClearSelection) },
                             onSelectAll = { viewModel.homeEvents(HomeEvents.SelectAll) },
                             onDeselectAll = { viewModel.homeEvents(HomeEvents.DeselectAll) },
-                            onDelete = { viewModel.homeEvents(HomeEvents.DeleteSelected) },
+                            onDelete = { 
+                                pendingDeleteAction = { viewModel.homeEvents(HomeEvents.DeleteSelected) }
+                                showDeleteConfirmDialog = true
+                            },
                             onAddToCollection = { viewModel.homeEvents(HomeEvents.ShowCollectionPicker) },
                             scrollBehavior = scrollBehavior
                         )
@@ -177,7 +180,10 @@ fun RootScreen(
                             onClose = { collectionViewModel.onEvent(CollectionEvents.ClearSelection) },
                             onSelectAll = { collectionViewModel.onEvent(CollectionEvents.SelectAll) },
                             onDeselectAll = { collectionViewModel.onEvent(CollectionEvents.DeselectAll) },
-                            onDelete = { collectionViewModel.onEvent(CollectionEvents.DeleteSelected) },
+                            onDelete = { 
+                                pendingDeleteAction = { collectionViewModel.onEvent(CollectionEvents.DeleteSelected) }
+                                showDeleteConfirmDialog = true
+                            },
                             onRename = if (collectionState.selectedIds.size == 1) {
                                 {
                                     val id = collectionState.selectedIds.first()
@@ -288,7 +294,13 @@ fun RootScreen(
                     collectionState = collectionState,
                     isSearching = isSearching,
                     onHomeFabClick = { viewModel.homeEvents(HomeEvents.FabClick) },
-                    onCollectionFabClick = { collectionViewModel.onEvent(CollectionEvents.ShowCreateDialog) }
+                    onCollectionFabClick = { 
+                        if (collectionState.selectedCollection == null) {
+                            collectionViewModel.onEvent(CollectionEvents.ShowCreateDialog) 
+                        } else {
+                            collectionViewModel.onEvent(CollectionEvents.ShowAddBookmarkDialog)
+                        }
+                    }
                 )
             }
         ) { innerPadding ->
@@ -378,6 +390,22 @@ fun RootScreen(
                 current = collectionState.sortOrder,
                 onSelect = { collectionViewModel.onEvent(CollectionEvents.SetSortOrder(it)) },
                 onDismiss = { collectionViewModel.onEvent(CollectionEvents.HideSortSheet) }
+            )
+        }
+
+        if (showDeleteConfirmDialog) {
+            `in`.iambhvsh.shelf.presentation.home.components.DeleteConfirmationDialog(
+                title = "Delete Selected",
+                text = "Are you sure you want to permanently delete these items?",
+                onConfirm = {
+                    pendingDeleteAction?.invoke()
+                    showDeleteConfirmDialog = false
+                    pendingDeleteAction = null
+                },
+                onDismiss = {
+                    showDeleteConfirmDialog = false
+                    pendingDeleteAction = null
+                }
             )
         }
     }

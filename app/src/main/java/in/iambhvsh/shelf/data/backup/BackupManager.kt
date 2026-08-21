@@ -9,12 +9,16 @@ import android.provider.MediaStore
 import `in`.iambhvsh.shelf.data.local.BackupBookmark
 import `in`.iambhvsh.shelf.data.local.BackupCollection
 import `in`.iambhvsh.shelf.data.local.BackupData
+import `in`.iambhvsh.shelf.data.local.BackupTag
 import `in`.iambhvsh.shelf.link_fetcher.LinkMetadataParser
 import `in`.iambhvsh.shelf.data.local.dao.BookmarkDao
 import `in`.iambhvsh.shelf.data.local.dao.CollectionDao
+import `in`.iambhvsh.shelf.data.local.dao.TagDao
 import `in`.iambhvsh.shelf.data.local.entity.BookmarkCollectionCrossRef
+import `in`.iambhvsh.shelf.data.local.entity.BookmarkTagCrossRef
 import `in`.iambhvsh.shelf.data.local.entity.BookmarkEntity
 import `in`.iambhvsh.shelf.data.local.entity.CollectionEntity
+import `in`.iambhvsh.shelf.data.local.entity.TagEntity
 import `in`.iambhvsh.shelf.domain.repository.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +42,7 @@ import kotlinx.coroutines.FlowPreview
 class BackupManager(
     private val bookmarkDao: BookmarkDao,
     private val collectionDao: CollectionDao,
+    private val tagDao: TagDao,
     private val settingsRepository: SettingsRepository,
     private val context: Context
 ) {
@@ -79,12 +84,30 @@ class BackupManager(
             }
                 .debounce(500)
                 .map { (bookmarks, collections) ->
-                    val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt) }
+                    val allTags = tagDao.getAllTagsOnce()
+                    val backupTags = allTags.map { BackupTag(it.name) }
+                    
+                    val backupBookmarks = bookmarks.map { bookmark ->
+                        val tagEntities = tagDao.getTagsForBookmarkOnce(bookmark.id)
+                        val tagNames = tagEntities.map { it.name }
+                        BackupBookmark(
+                            url = bookmark.url,
+                            title = bookmark.title,
+                            description = bookmark.description,
+                            imageUrl = bookmark.imageUrl,
+                            createdAt = bookmark.createdAt,
+                            isHidden = bookmark.isHidden,
+                            isPinned = bookmark.isPinned,
+                            note = bookmark.note,
+                            reminderTime = bookmark.reminderTime,
+                            tags = tagNames
+                        )
+                    }
                     val backupCollections = collections.mapNotNull { collection ->
                         val urls = collectionDao.getBookmarkUrlsForCollection(collection.id)
                         if (collection.name.isNotBlank()) BackupCollection(name = collection.name, bookmarkUrls = urls) else null
                     }
-                    BackupData(bookmarks = backupBookmarks, collections = backupCollections)
+                    BackupData(bookmarks = backupBookmarks, collections = backupCollections, tags = backupTags)
                 }
                 .collect { data ->
                     val jsonString = json.encodeToString(data)
@@ -170,13 +193,31 @@ class BackupManager(
         val bookmarks = bookmarkDao.getBookmarksOnce()
         val collections = collectionDao.getAllCollectionsRaw().first()
 
-        val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt) }
+        val backupBookmarks = bookmarks.map { bookmark ->
+            val tagEntities = tagDao.getTagsForBookmarkOnce(bookmark.id)
+            val tagNames = tagEntities.map { it.name }
+            BackupBookmark(
+                url = bookmark.url,
+                title = bookmark.title,
+                description = bookmark.description,
+                imageUrl = bookmark.imageUrl,
+                createdAt = bookmark.createdAt,
+                isHidden = bookmark.isHidden,
+                isPinned = bookmark.isPinned,
+                note = bookmark.note,
+                reminderTime = bookmark.reminderTime,
+                tags = tagNames
+            )
+        }
         val backupCollections = collections.mapNotNull { collection ->
             val urls = collectionDao.getBookmarkUrlsForCollection(collection.id)
             if (collection.name.isNotBlank()) BackupCollection(name = collection.name, bookmarkUrls = urls) else null
         }
 
-        val data = BackupData(bookmarks = backupBookmarks, collections = backupCollections)
+        val allTags = tagDao.getAllTagsOnce()
+        val backupTags = allTags.map { BackupTag(it.name) }
+
+        val data = BackupData(bookmarks = backupBookmarks, collections = backupCollections, tags = backupTags)
         return json.encodeToString(data)
     }
 
@@ -284,6 +325,16 @@ class BackupManager(
     suspend fun importFromJson(jsonString: String) {
         val backupData = json.decodeFromString<BackupData>(jsonString)
 
+        val existingTags = tagDao.getAllTagsOnce().associateBy { it.name }
+        val tagNameToId = existingTags.mapValues { it.value.id }.toMutableMap()
+        
+        for (t in backupData.tags) {
+            if (!tagNameToId.containsKey(t.name)) {
+                val tagId = tagDao.insertTag(TagEntity(name = t.name))
+                tagNameToId[t.name] = tagId
+            }
+        }
+
         val existingUrls = bookmarkDao.getBookmarksOnce().map { it.url }.toSet()
 
         for (b in backupData.bookmarks) {
@@ -292,7 +343,26 @@ class BackupManager(
                 if (imgUrl != null && imgUrl.contains("scontent") && imgUrl.contains("instagram")) {
                     imgUrl = null
                 }
-                bookmarkDao.insertWithReturn(BookmarkEntity(url = b.url, title = b.title, description = b.description, imageUrl = imgUrl, createdAt = b.createdAt))
+                val bookmarkId = bookmarkDao.insertWithReturn(
+                    BookmarkEntity(
+                        url = b.url, 
+                        title = b.title, 
+                        description = b.description, 
+                        imageUrl = imgUrl, 
+                        createdAt = b.createdAt,
+                        isHidden = b.isHidden,
+                        isPinned = b.isPinned,
+                        note = b.note,
+                        reminderTime = b.reminderTime
+                    )
+                )
+                
+                b.tags.forEach { tagName ->
+                    val tagId = tagNameToId[tagName]
+                    if (tagId != null) {
+                        tagDao.addTagToBookmark(BookmarkTagCrossRef(bookmarkId, tagId))
+                    }
+                }
             }
         }
 

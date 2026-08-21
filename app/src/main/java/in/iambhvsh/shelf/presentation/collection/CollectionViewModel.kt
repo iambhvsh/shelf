@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import `in`.iambhvsh.shelf.link_fetcher.LinkMetadataParser
 
 class CollectionViewModel(
     private val repository: BookmarkRepository
@@ -22,6 +23,7 @@ class CollectionViewModel(
     private var tagsJob: Job? = null
     private var tempBookmarkTagsJob: Job? = null
     private var rawCollectionBookmarks: List<Bookmark> = emptyList()
+    private val parser = LinkMetadataParser()
 
     init {
         loadCollections()
@@ -94,6 +96,24 @@ class CollectionViewModel(
 
             is CollectionEvents.DeleteCollectionById -> {
                 deleteCollectionById(event.collectionId)
+            }
+
+            is CollectionEvents.DeleteBookmark -> {
+                viewModelScope.launch {
+                    try {
+                        repository.hideBookmarks(listOf(event.bookmark.id))
+                        _state.update {
+                            it.copy(
+                                toastMessage = "Deleted bookmark",
+                                isDetailBodySheet = false,
+                                tempBookmark = null,
+                                tempBookmarkTags = emptyList()
+                            )
+                        }
+                    } catch (e: Exception) {
+                        _state.update { it.copy(error = e.message ?: "Delete failed") }
+                    }
+                }
             }
 
             is CollectionEvents.ShowDetailBodySheet -> {
@@ -200,21 +220,21 @@ class CollectionViewModel(
                 }
             }
 
-            is CollectionEvents.ShowRenameBookmarkDialog -> {
-                _state.update { it.copy(showRenameBookmarkDialog = true, renameBookmarkDialogText = event.initialTitle, renameBookmarkDialogId = event.id, isDetailBodySheet = false) }
+            is CollectionEvents.ShowEditDialog -> {
+                _state.update { it.copy(showRenameBookmarkDialog = true, tempBookmark = event.bookmark, isDetailBodySheet = false) }
             }
 
-            CollectionEvents.HideRenameBookmarkDialog -> {
-                _state.update { it.copy(showRenameBookmarkDialog = false, renameBookmarkDialogText = null, renameBookmarkDialogId = null, tempBookmark = null) }
+            CollectionEvents.HideEditDialog -> {
+                _state.update { it.copy(showRenameBookmarkDialog = false, tempBookmark = null) }
             }
 
-            is CollectionEvents.UpdateBookmarkTitle -> {
-                val newTitle = event.title.trim()
-                if (newTitle.isBlank()) return // Validation: do not save empty
+            is CollectionEvents.UpdateBookmarkDetails -> {
+                val newTitle = event.title?.trim()
+                val newDesc = event.description?.trim()
                 
                 viewModelScope.launch {
-                    repository.updateBookmarkTitle(event.id, newTitle)
-                    _state.update { it.copy(showRenameBookmarkDialog = false, renameBookmarkDialogText = null, renameBookmarkDialogId = null, tempBookmark = null, toastMessage = "Bookmark renamed") }
+                    repository.updateBookmarkDetails(event.id, newTitle, newDesc)
+                    _state.update { it.copy(showRenameBookmarkDialog = false, tempBookmark = null, toastMessage = "Bookmark updated") }
                 }
             }
 
@@ -295,12 +315,93 @@ class CollectionViewModel(
             CollectionEvents.ClearToast -> {
                 _state.update { it.copy(toastMessage = null) }
             }
+
+            CollectionEvents.ShowAddBookmarkDialog -> {
+                _state.update { it.copy(showAddBookmarkDialog = true, addBookmarkUrl = "") }
+            }
+            
+            CollectionEvents.HideAddBookmarkDialog -> {
+                _state.update { it.copy(showAddBookmarkDialog = false, addBookmarkUrl = "") }
+            }
+            
+            is CollectionEvents.OnAddBookmarkUrlChange -> {
+                _state.update { it.copy(addBookmarkUrl = event.url) }
+            }
+            
+            CollectionEvents.SaveBookmarkInCollection -> {
+                saveBookmarkInCollection()
+            }
         }
     }
 
     fun backToCollections() {
         collectionJob?.cancel()
         _state.update { it.copy(selectedCollection = null, collectionBookmarks = emptyList()) }
+    }
+
+    private fun saveBookmarkInCollection() {
+        val collectionId = _state.value.selectedCollection?.id ?: return
+        val rawUrl = _state.value.addBookmarkUrl.trim()
+        if (rawUrl.isEmpty()) {
+            _state.update { it.copy(showAddBookmarkDialog = false, addBookmarkUrl = "") }
+            return
+        }
+
+        val url = if (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://")) {
+            "https://$rawUrl"
+        } else {
+            rawUrl
+        }
+
+        val normalizedInput = url.removeSuffix("/")
+        val isDuplicate = _state.value.collectionBookmarks.any {
+            it.url.removeSuffix("/") == normalizedInput
+        }
+
+        if (isDuplicate) {
+            _state.update {
+                it.copy(
+                    addBookmarkUrl = "",
+                    showAddBookmarkDialog = false,
+                    toastMessage = "Link already exists in this collection"
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                _state.update { it.copy(isSavingBookmark = true) }
+                val meta = parser.parse(url)
+
+                val bookmark = Bookmark(
+                    url = meta?.url ?: url,
+                    title = meta?.title,
+                    description = meta?.description,
+                    imageUrl = meta?.imageUrl
+                )
+                
+                val insertedId = repository.insertHiddenBookmark(bookmark)
+                if (insertedId > 0) {
+                    repository.addBookmarkToCollection(insertedId, collectionId)
+                }
+
+                _state.update {
+                    it.copy(
+                        isSavingBookmark = false,
+                        addBookmarkUrl = "",
+                        toastMessage = "Added to collection"
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isSavingBookmark = false,
+                        error = e.message ?: "Unknown error"
+                    )
+                }
+            }
+        }
     }
 
     private fun selectCollection(collection: Collection) {

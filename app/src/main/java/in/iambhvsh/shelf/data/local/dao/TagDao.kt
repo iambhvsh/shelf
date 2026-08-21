@@ -17,6 +17,9 @@ interface TagDao {
     @Query("SELECT * FROM tags ORDER BY name ASC")
     fun getAllTags(): Flow<List<TagEntity>>
 
+    @Query("SELECT * FROM tags ORDER BY name ASC")
+    suspend fun getAllTagsOnce(): List<TagEntity>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addTagToBookmark(crossRef: BookmarkTagCrossRef)
 
@@ -25,6 +28,9 @@ interface TagDao {
 
     @Query("SELECT tags.* FROM tags INNER JOIN bookmark_tag_cross_ref ON tags.id = bookmark_tag_cross_ref.tagId WHERE bookmark_tag_cross_ref.bookmarkId = :bookmarkId")
     fun getTagsForBookmark(bookmarkId: Long): Flow<List<TagEntity>>
+
+    @Query("SELECT tags.* FROM tags INNER JOIN bookmark_tag_cross_ref ON tags.id = bookmark_tag_cross_ref.tagId WHERE bookmark_tag_cross_ref.bookmarkId = :bookmarkId")
+    suspend fun getTagsForBookmarkOnce(bookmarkId: Long): List<TagEntity>
     
     @Query("SELECT bookmarkId FROM bookmark_tag_cross_ref WHERE tagId = :tagId")
     fun getBookmarksForTag(tagId: Long): Flow<List<Long>>

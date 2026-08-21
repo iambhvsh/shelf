@@ -56,6 +56,15 @@ interface BookmarkDao {
 
     @Query("SELECT * FROM bookmarks WHERE url = :url AND isHidden = 1 LIMIT 1")
     suspend fun findHiddenByUrl(url: String): BookmarkEntity?
+    
+    @Query("SELECT * FROM bookmarks WHERE url = :url LIMIT 1")
+    suspend fun findByUrl(url: String): BookmarkEntity?
+
+    @Query("UPDATE bookmarks SET title = :title, description = :description WHERE id = :id")
+    suspend fun updateTitleAndDescription(id: Long, title: String?, description: String?)
+
+    @Query("SELECT * FROM bookmarks WHERE id = :id LIMIT 1")
+    suspend fun getBookmarkById(id: Long): BookmarkEntity?
 
     @Query("""
         SELECT DISTINCT b.* FROM bookmarks b 

@@ -7,7 +7,10 @@ import `in`.iambhvsh.shelf.domain.model.SortOrder
 data class CollectionState(
     val collections: List<Collection> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String = "",
+    val error: String? = null,
+    val showAddBookmarkDialog: Boolean = false,
+    val addBookmarkUrl: String = "",
+    val isSavingBookmark: Boolean = false,
     val showCreateDialog: Boolean = false,
     val inputName: String = "",
     val selectedCollection: Collection? = null,

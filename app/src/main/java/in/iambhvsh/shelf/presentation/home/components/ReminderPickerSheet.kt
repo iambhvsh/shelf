@@ -6,9 +6,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.NightsStay
 import androidx.compose.material.icons.outlined.WbSunny
+import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.clip
@@ -28,6 +28,72 @@ fun ReminderPickerSheet(
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = System.currentTimeMillis()
+    )
+    val timePickerState = rememberTimePickerState(
+        initialHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
+        initialMinute = Calendar.getInstance().get(Calendar.MINUTE)
+    )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                        if (datePickerState.selectedDateMillis != null) {
+                            showTimePicker = true
+                        }
+                    }
+                ) {
+                    Text("Next")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showTimePicker = false
+                        val selectedDate = datePickerState.selectedDateMillis
+                        if (selectedDate != null) {
+                            val cal = Calendar.getInstance()
+                            cal.timeInMillis = selectedDate
+                            cal.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                            cal.set(Calendar.MINUTE, timePickerState.minute)
+                            onSetReminder(cal.timeInMillis)
+                        }
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -100,6 +166,18 @@ fun ReminderPickerSheet(
                     },
                 headlineContent = { Text("This Weekend (Sat 10:00 AM)") },
                 leadingContent = { Icon(Icons.Outlined.Event, contentDescription = null) },
+                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable { showDatePicker = true },
+                headlineContent = { Text("Custom Date & Time") },
+                leadingContent = { Icon(Icons.Outlined.EditCalendar, contentDescription = null) },
                 colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
             )
 

@@ -29,7 +29,6 @@ class ReminderReceiver : BroadcastReceiver() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Deep link intent to open the app (we will handle the deep link in MainActivity)
         val activityIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("OPEN_BOOKMARK_ID", bookmarkId)
@@ -43,7 +42,7 @@ class ReminderReceiver : BroadcastReceiver() {
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.bookmark_fill) // using existing bookmark icon
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Shelf Reminder")
             .setContentText("Don't forget to read your saved bookmark!")
             .setContentIntent(pendingIntent)

@@ -18,6 +18,7 @@ sealed class HomeEvents {
     object SelectAll : HomeEvents()
     object DeselectAll : HomeEvents()
     object DeleteSelected : HomeEvents()
+    data class DeleteBookmark(val bookmark: Bookmark) : HomeEvents()
     object ClearSelection : HomeEvents()
     object ShowCollectionPicker : HomeEvents()
     object HideCollectionPicker : HomeEvents()
@@ -46,8 +47,11 @@ sealed class HomeEvents {
     data class SetReminder(val id: Long, val timeInMillis: Long) : HomeEvents()
     data class CancelReminder(val id: Long) : HomeEvents()
 
-    data class ShowRenameDialog(val id: Long, val initialTitle: String?) : HomeEvents()
-    object HideRenameDialog : HomeEvents()
-    data class UpdateBookmarkTitle(val id: Long, val title: String) : HomeEvents()
+    data class ShowEditDialog(val bookmark: Bookmark) : HomeEvents()
+    object HideEditDialog : HomeEvents()
+    data class UpdateBookmarkDetails(val id: Long, val title: String?, val description: String?) : HomeEvents()
+    
+    data class OpenBookmarkById(val id: Long) : HomeEvents()
+    
     object ClearToast : HomeEvents()
 }

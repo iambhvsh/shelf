@@ -120,6 +120,16 @@ class HomeViewModel(
                 }
             }
 
+            is HomeEvents.OpenBookmarkById -> {
+                viewModelScope.launch {
+                    val bookmark = repository.getBookmarkById(events.id)
+                    if (bookmark != null && !_state.value.isBodySheet) {
+                        homeEvents(HomeEvents.BookmarkPreviewClick(bookmark))
+                        homeEvents(HomeEvents.CancelReminder(bookmark.id))
+                    }
+                }
+            }
+
             is HomeEvents.ToggleSelection -> {
                 val current = _state.value
                 val newSelected = if (events.id in current.selectedIds) {
@@ -137,6 +147,26 @@ class HomeViewModel(
 
             HomeEvents.DeleteSelected -> {
                 deleteSelected()
+            }
+
+            is HomeEvents.DeleteBookmark -> {
+                viewModelScope.launch {
+                    try {
+                        repository.hideBookmarks(listOf(events.bookmark.id))
+                        _state.update {
+                            it.copy(
+                                toastMessage = "Deleted bookmark",
+                                isBodySheet = false,
+                                tempBookmark = null,
+                                tempBookmarkTags = emptyList()
+                            )
+                        }
+                    } catch (e: Exception) {
+                        _state.update {
+                            it.copy(error = e.message ?: "Delete failed")
+                        }
+                    }
+                }
             }
 
             HomeEvents.ClearSelection -> {
@@ -302,26 +332,36 @@ class HomeViewModel(
                 viewModelScope.launch {
                     repository.updateReminderTime(events.id, null)
                     reminderManager.cancelReminder(events.id)
-                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+                    _state.update { 
+                        if (it.isBodySheet) {
+                            it.copy(showReminderPicker = false)
+                        } else {
+                            it.copy(showReminderPicker = false, tempBookmark = null) 
+                        }
+                    }
                 }
             }
             
-            is HomeEvents.ShowRenameDialog -> {
-                _state.update { it.copy(showRenameDialog = true, renameDialogText = events.initialTitle, renameDialogBookmarkId = events.id, isBodySheet = false) }
+            is HomeEvents.ShowEditDialog -> {
+                _state.update {
+                    it.copy(
+                        showRenameDialog = true,
+                        tempBookmark = events.bookmark
+                    )
+                }
             }
-            
-            HomeEvents.HideRenameDialog -> {
-                _state.update { it.copy(showRenameDialog = false, renameDialogText = null, renameDialogBookmarkId = null, tempBookmark = null) }
+            is HomeEvents.HideEditDialog -> {
+                _state.update {
+                    it.copy(
+                        showRenameDialog = false
+                    )
+                }
             }
-            
-            is HomeEvents.UpdateBookmarkTitle -> {
-                val newTitle = events.title.trim()
-                if (newTitle.isBlank()) return // Validation: do not save empty
-                
+            is HomeEvents.UpdateBookmarkDetails -> {
                 viewModelScope.launch {
-                    repository.updateBookmarkTitle(events.id, newTitle)
-                    _state.update { it.copy(showRenameDialog = false, renameDialogText = null, renameDialogBookmarkId = null, tempBookmark = null, toastMessage = "Bookmark renamed") }
+                    repository.updateBookmarkDetails(events.id, events.title, events.description)
                 }
+                _state.update { it.copy(showRenameDialog = false) }
             }
             
             HomeEvents.ClearToast -> {
@@ -360,6 +400,21 @@ class HomeViewModel(
             "https://$rawUrl"
         } else {
             rawUrl
+        }
+
+        val normalizedInput = url.removeSuffix("/")
+        val isDuplicate = _state.value.bookmarkData.any {
+            it.url.removeSuffix("/") == normalizedInput
+        }
+        if (isDuplicate) {
+            _state.update {
+                it.copy(
+                    inputUrl = "",
+                    duplicateToastKey = it.duplicateToastKey + 1,
+                    isDialog = false
+                )
+            }
+            return
         }
         viewModelScope.launch {
             try {

@@ -36,14 +36,12 @@ fun RootFab(
             )
         }
 
-        1 -> if (collectionState.selectedCollection == null) {
-            FloatingActionButton(onClick = onCollectionFabClick) {
-                Icon(
-                    painterResource(R.drawable.add_icons),
-                    contentDescription = null,
-                    modifier = Modifier.size(26.dp)
-                )
-            }
+        1 -> FloatingActionButton(onClick = onCollectionFabClick) {
+            Icon(
+                painterResource(R.drawable.add_icons),
+                contentDescription = null,
+                modifier = Modifier.size(26.dp)
+            )
         }
     }
 }

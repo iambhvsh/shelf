@@ -30,6 +30,14 @@ class BookmarkRepositoryImpl(
         return dao.insertOrUnhide(bookmark.toEntity())
     }
 
+    override suspend fun insertHiddenBookmark(bookmark: Bookmark): Long {
+        val existing = dao.findByUrl(bookmark.url)
+        if (existing != null) {
+            return existing.id
+        }
+        return dao.insertWithReturn(bookmark.toEntity().copy(isHidden = true))
+    }
+
     override suspend fun deleteBookmark(bookmark: Bookmark) {
         dao.deleteBookmark(bookmark.toEntity())
     }
@@ -56,6 +64,10 @@ class BookmarkRepositoryImpl(
 
     override suspend fun updateBookmarkTitle(id: Long, title: String?) {
         dao.updateTitle(id, title)
+    }
+
+    override suspend fun updateBookmarkDetails(id: Long, title: String?, description: String?) {
+        dao.updateTitleAndDescription(id, title, description)
     }
 
     override fun getAllTags(): Flow<Resource<List<Tag>>> = flow {
@@ -119,6 +131,10 @@ class BookmarkRepositoryImpl(
             .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
             .onStart { emit(Resource.Loading()) }
             .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
+    }
+
+    override suspend fun getBookmarkById(id: Long): Bookmark? {
+        return dao.getBookmarkById(id)?.toDomain()
     }
 
     override fun getBookmarks(): Flow<Resource<List<Bookmark>>> {

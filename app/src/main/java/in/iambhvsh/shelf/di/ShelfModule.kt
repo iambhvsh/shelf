@@ -54,7 +54,7 @@ val shelfModule = module {
     }
 
     single {
-        BackupManager(get(), get(), get(), get())
+        BackupManager(get(), get(), get(), get(), get())
     }
 
     single {

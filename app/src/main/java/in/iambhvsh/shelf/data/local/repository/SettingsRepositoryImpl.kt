@@ -88,7 +88,7 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
     }
 
     override fun getAppLockUsePinEnabled(): Boolean {
-        return prefs.getBoolean(KEY_APP_LOCK_USE_PIN, false)
+        return prefs.getBoolean(KEY_APP_LOCK_USE_PIN, true)
     }
 
     override fun setAppLockUsePinEnabled(enabled: Boolean) {

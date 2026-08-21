@@ -24,6 +24,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +37,7 @@ import `in`.iambhvsh.shelf.presentation.home.components.BookmarkCard
 import `in`.iambhvsh.shelf.presentation.home.components.BookmarkListItem
 import `in`.iambhvsh.shelf.presentation.home.components.BookmarkPreviewSheet
 import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
+import `in`.iambhvsh.shelf.presentation.home.components.DeleteConfirmationDialog
 import `in`.iambhvsh.shelf.presentation.search.SearchResults
 import `in`.iambhvsh.shelf.domain.model.Bookmark
 import `in`.iambhvsh.shelf.presentation.setting.TapAction
@@ -58,6 +60,7 @@ fun CollectionDetailScreen(
     val listState = rememberLazyListState()
     val itemCount = state.collectionBookmarks.size
     var prevCount by rememberSaveable { mutableIntStateOf(itemCount) }
+    var bookmarkToDelete by remember { mutableStateOf<Bookmark?>(null) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -207,6 +210,7 @@ fun CollectionDetailScreen(
     }
 
     BookmarkPreviewSheet(
+        bookmark = state.tempBookmark,
         showBottomSheet = state.isDetailBodySheet,
         isPinned = state.tempBookmark?.isPinned ?: false,
         onDismissRequest = { viewModel.onEvent(CollectionEvents.DismissDetailBodySheet) },
@@ -234,20 +238,37 @@ fun CollectionDetailScreen(
         onReminderButtonClick = { viewModel.onEvent(CollectionEvents.ShowReminderPicker) },
         onRenameButtonClick = { 
             state.tempBookmark?.let {
-                viewModel.onEvent(CollectionEvents.ShowRenameBookmarkDialog(it.id, it.title)) 
+                viewModel.onEvent(CollectionEvents.ShowEditDialog(it)) 
+            }
+        },
+        onDeleteButtonClick = {
+            state.tempBookmark?.let {
+                bookmarkToDelete = it
             }
         }
     )
 
-    if (state.showRenameBookmarkDialog) {
-        `in`.iambhvsh.shelf.presentation.home.components.RenameSheet(
-            initialText = state.renameBookmarkDialogText ?: "",
-            title = "Rename Bookmark",
-            onDismissRequest = { viewModel.onEvent(CollectionEvents.HideRenameBookmarkDialog) },
-            onSaveClick = { newTitle ->
-                state.renameBookmarkDialogId?.let { id ->
-                    viewModel.onEvent(CollectionEvents.UpdateBookmarkTitle(id, newTitle))
-                }
+    if (bookmarkToDelete != null) {
+        DeleteConfirmationDialog(
+            title = "Delete Bookmark",
+            text = "Are you sure you want to permanently delete this bookmark?",
+            onConfirm = {
+                viewModel.onEvent(CollectionEvents.DeleteBookmark(bookmarkToDelete!!))
+                bookmarkToDelete = null
+            },
+            onDismiss = {
+                bookmarkToDelete = null
+            }
+        )
+    }
+
+    val bookmarkToEdit = state.tempBookmark
+    if (state.showRenameBookmarkDialog && bookmarkToEdit != null) {
+        `in`.iambhvsh.shelf.presentation.home.components.EditBookmarkSheet(
+            bookmark = bookmarkToEdit,
+            onDismissRequest = { viewModel.onEvent(CollectionEvents.HideEditDialog) },
+            onSaveClick = { newTitle, newDescription ->
+                viewModel.onEvent(CollectionEvents.UpdateBookmarkDetails(bookmarkToEdit.id, newTitle, newDescription))
             }
         )
     }
@@ -297,4 +318,12 @@ fun CollectionDetailScreen(
             onDismiss = { viewModel.onEvent(CollectionEvents.HideReminderPicker) }
         )
     }
+
+    `in`.iambhvsh.shelf.presentation.home.components.HomeInputSheet(
+        showBottomSheet = state.showAddBookmarkDialog,
+        onDismissRequest = { viewModel.onEvent(CollectionEvents.HideAddBookmarkDialog) },
+        value = state.addBookmarkUrl,
+        onTextChange = { viewModel.onEvent(CollectionEvents.OnAddBookmarkUrlChange(it)) },
+        onSaveClick = { viewModel.onEvent(CollectionEvents.SaveBookmarkInCollection) }
+    )
 }

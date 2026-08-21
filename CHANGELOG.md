@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.24] - 2026-08-22
+
+### Added
+- **Comprehensive Backups (v2):** Overhauled the auto-backup system! Tags, notes, reminder times, pins, and hidden states are now fully exported and restored flawlessly. Rest easy knowing your exact library state is backed up.
+- **Deletion Confirmation:** Added a safety net! When deleting multiple bookmarks or collections from the selection mode, a confirmation dialog now pops up preventing accidental permanent deletion.
+- **UI Refresh:** Reorganized the bookmark action sheet with a more logical order and clearer titles.
+- **Scoped Bookmarking:** You can now bypass the main feed entirely by adding URLs directly from within a folder. Simply hit the floating action button while viewing any collection to stash links exclusively there.
+- **Smart Validation:** The app now proactively checks for identical entries as soon as you attempt to save a link inside a folder, providing immediate feedback rather than delaying the warning.
+- **Input Sanitization:** Submitting blank entries through the collection add dialog no longer triggers any background actions, quietly dismissing the prompt instead.
+- **Performance Boosts:** Navigating into folders and loading your curated lists feels significantly faster, thanks to new structural optimizations applied to the underlying database.
+
+### Fixed
+- **Smart Reminders:** Fixed a bug where tapping a reminder notification would display a blank preview sheet. The preview now correctly fetches the exact bookmark directly from the database, ensuring it opens flawlessly even if it's hidden inside a specific collection!
+- **Seamless Migrations:** We've ensured that transitioning to this version maintains complete data integrity. Your established library—including pins and standalone items—transitions flawlessly to the upgraded schema without losing a byte.
+
 ## [1.0.23] - 2026-08-15
 
 ### Fixed
