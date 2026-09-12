@@ -4,16 +4,17 @@
   <h4>The links you love. Beautifully organized. Entirely yours.</h4>
 
   <br>
-  
+
   <a href="https://shelf.iambhvsh.in">
-    <img alt="Website" src="https://img.shields.io/badge/Website-shelf.iambhvsh.in-1c1c1e?style=for-the-badge&logo=googlechrome"/>
+    <img src="assets/website-badge.svg" height="54" alt="Website">
   </a>
   <a href="https://github.com/iambhvsh/shelf/releases/latest/download/shelf-release.apk">
-    <img alt="Download APK" src="https://img.shields.io/github/v/release/iambhvsh/shelf?label=Download%20APK&style=for-the-badge&color=1c1c1e&logo=android"/>
+    <img src="assets/download-badge.svg" height="54" alt="Download APK">
   </a>
   <a href="https://rookieenough.github.io/Orion-Data/redirect.html?id=shelf">
-    <img alt="Orion Store" src="https://img.shields.io/badge/Orion%20Store-Get%20it%20here-1c1c1e?style=for-the-badge&logo=github"/>
+    <img src="https://raw.githubusercontent.com/RookieEnough/Orion-Store/refs/heads/main/assets/orion-badge.png" height="54" alt="Get it on Orion Store">
   </a>
+
 </div>
 
 <br>

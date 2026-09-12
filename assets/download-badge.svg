@@ -1,0 +1,9 @@
+<svg width="280" height="80" viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
+  <rect width="280" height="80" rx="16" fill="#549474" />
+  <line x1="84" y1="20" x2="84" y2="60" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1.5" stroke-linecap="round" />
+  <svg x="25" y="25" width="34" height="34" viewBox="0 0 576 512">
+    <path fill="#ffffff" d="M420.55,301.93a24,24,0,1,1,24-24,24,24,0,0,1-24,24m-265.1,0a24,24,0,1,1,24-24,24,24,0,0,1-24,24m273.7-144.48,47.94-83a10,10,0,1,0-17.27-10h0l-48.54,84.07a301.25,301.25,0,0,0-246.56,0L116.18,64.45a10,10,0,1,0-17.27,10h0l47.94,83C64.53,202.22,8.24,285.55,0,384H576c-8.24-98.45-64.54-181.78-146.85-226.55"/>
+  </svg>
+  <text x="104" y="34" fill="#d1fae5" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="500" letter-spacing="1">DOWNLOAD</text>
+  <text x="104" y="58" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700">Latest APK</text>
+</svg>
