@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository {
     suspend fun insert(bookmark: Bookmark): Boolean
+    suspend fun saveAndReturnId(bookmark: Bookmark): Long
     suspend fun insertHiddenBookmark(bookmark: Bookmark): Long
     suspend fun deleteBookmark(bookmark: Bookmark)
     fun getAllBookmarks(): Flow<Resource<List<Bookmark>>>

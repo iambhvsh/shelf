@@ -67,4 +67,18 @@ interface CollectionDao {
         WHERE bcc.collectionId = :collectionId
     """)
     suspend fun getBookmarkUrlsForCollection(collectionId: Long): List<String>
+
+    @Query("""
+        SELECT -1 AS id, 'Uncategorised' AS name, 0 AS createdAt, 
+               COUNT(b.id) AS bookmarkCount,
+               (SELECT GROUP_CONCAT(b2.imageUrl, '|||') 
+                FROM bookmarks b2 
+                LEFT JOIN bookmark_collection_cross_ref bcc2 ON b2.id = bcc2.bookmarkId 
+                WHERE bcc2.collectionId IS NULL AND b2.isHidden = 0 AND b2.imageUrl IS NOT NULL AND b2.imageUrl != '' 
+                LIMIT 4) AS previewUrls
+        FROM bookmarks b
+        LEFT JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
+        WHERE bcc.collectionId IS NULL AND b.isHidden = 0
+    """)
+    fun getUnassignedCollectionStats(): Flow<CollectionWithCount>
 }

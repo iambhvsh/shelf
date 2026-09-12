@@ -157,6 +157,21 @@ fun SettingScreen(
         )
     }
 
+    if (state.showAppLockTimeoutSheet) {
+        RadioOptionSheet(
+            title = "Lock After",
+            options = listOf(
+                "Immediately" to 0L,
+                "1 minute" to 60_000L,
+                "5 minutes" to 300_000L,
+                "15 minutes" to 900_000L
+            ),
+            current = state.appLockTimeout,
+            onSelect = { viewModel.onEvent(SettingEvents.SetAppLockTimeout(it)) },
+            onDismiss = { viewModel.onEvent(SettingEvents.HideAppLockTimeoutSheet) }
+        )
+    }
+
     if (state.showAccentColorSheet) {
         AccentColorSheet(
             current = state.accentColor,

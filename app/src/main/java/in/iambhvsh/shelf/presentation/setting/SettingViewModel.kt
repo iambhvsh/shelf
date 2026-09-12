@@ -30,8 +30,10 @@ class SettingViewModel(
             accentColor = settingsRepository.getAccentColor(),
             viewMode = settingsRepository.getViewMode(),
             autoBackupEnabled = settingsRepository.getAutoBackupEnabled(),
+            autoBackupUri = settingsRepository.getAutoBackupUri(),
             appLockEnabled = settingsRepository.getAppLockEnabled(),
-            appLockUsePinEnabled = settingsRepository.getAppLockUsePinEnabled()
+            appLockUsePinEnabled = settingsRepository.getAppLockUsePinEnabled(),
+            appLockTimeout = settingsRepository.getAppLockTimeout()
         )
     )
     val state = _state.asStateFlow()
@@ -161,6 +163,14 @@ class SettingViewModel(
                 _state.update { it.copy(autoBackupEnabled = true, showAutoBackupInfoDialog = false) }
             }
 
+            is SettingEvents.SetAutoBackupUri -> {
+                settingsRepository.setAutoBackupUri(event.uri)
+                _state.update { it.copy(autoBackupUri = event.uri) }
+                if (event.uri != null && _state.value.autoBackupEnabled) {
+                    backupManager.startAutoBackup()
+                }
+            }
+
             SettingEvents.DismissAutoBackupInfoDialog -> {
                 _state.update { it.copy(showAutoBackupInfoDialog = false) }
             }
@@ -173,6 +183,24 @@ class SettingViewModel(
             is SettingEvents.ToggleAppLockUsePin -> {
                 settingsRepository.setAppLockUsePinEnabled(event.enabled)
                 _state.update { it.copy(appLockUsePinEnabled = event.enabled) }
+            }
+
+            is SettingEvents.SetAppLockTimeout -> {
+                settingsRepository.setAppLockTimeout(event.timeout)
+                _state.update {
+                    it.copy(
+                        appLockTimeout = event.timeout,
+                        showAppLockTimeoutSheet = false
+                    )
+                }
+            }
+
+            SettingEvents.ShowAppLockTimeoutSheet -> {
+                _state.update { it.copy(showAppLockTimeoutSheet = true) }
+            }
+
+            SettingEvents.HideAppLockTimeoutSheet -> {
+                _state.update { it.copy(showAppLockTimeoutSheet = false) }
             }
 
             is SettingEvents.ImportBrowserBookmarks -> {

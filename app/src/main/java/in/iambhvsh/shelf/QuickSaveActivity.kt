@@ -1,22 +1,19 @@
 package `in`.iambhvsh.shelf
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.widget.Toast
-import `in`.iambhvsh.shelf.domain.model.Bookmark
-import `in`.iambhvsh.shelf.domain.repository.BookmarkRepository
-import `in`.iambhvsh.shelf.link_fetcher.LinkMetadataParser
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import `in`.iambhvsh.shelf.presentation.quicksave.QuickSaveEvents
+import `in`.iambhvsh.shelf.presentation.quicksave.QuickSaveScreen
+import `in`.iambhvsh.shelf.presentation.quicksave.QuickSaveViewModel
+import `in`.iambhvsh.shelf.ui.theme.ShelfTheme
+import org.koin.androidx.compose.koinViewModel
 
-class QuickSaveActivity : Activity() {
-    private val repository: BookmarkRepository by inject()
-    private val parser = LinkMetadataParser()
+class QuickSaveActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,33 +32,25 @@ class QuickSaveActivity : Activity() {
             sharedText
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                if (repository.existsByUrl(url)) {
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(this@QuickSaveActivity, "Already saved", Toast.LENGTH_SHORT).show()
-                    }
-                    return@launch
-                }
+        setContent {
+            val viewModel: QuickSaveViewModel = koinViewModel()
+            val state by viewModel.state.collectAsState()
 
-                val meta = parser.parse(url)
-                val bookmark = Bookmark(
-                    url = meta?.url ?: url,
-                    title = meta?.title,
-                    description = meta?.description,
-                    imageUrl = meta?.imageUrl
+            androidx.compose.runtime.LaunchedEffect(url) {
+                viewModel.onEvent(QuickSaveEvents.Init(url))
+            }
+
+            ShelfTheme(
+                themeMode = `in`.iambhvsh.shelf.ui.theme.ThemeMode.SYSTEM,
+                dynamicColor = true,
+                accentColor = `in`.iambhvsh.shelf.ui.theme.AccentColor.PERIWINKLE
+            ) {
+                QuickSaveScreen(
+                    state = state,
+                    onEvent = viewModel::onEvent,
+                    onDismiss = { finish() }
                 )
-                
-                val inserted = repository.insert(bookmark)
-                if (inserted) {
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(this@QuickSaveActivity, "Saved", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } catch (e: Exception) {
             }
         }
-
-        finish()
     }
 }

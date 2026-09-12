@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.25] - 2026-09-12
+
+### Added
+- **Quick Save:** Sharing links to Shelf now opens a compact, non-disruptive bottom sheet to quickly stash your links without leaving your current app.
+- **Uncategorised Collection:** Easily find all your loose links! Added a virtual Uncategorised collection that automatically gathers all bookmarks not assigned to any folder.
+- **Custom Backup Location:** You now have full control over where your backups are stored. Added the ability to choose a custom local folder for all your backups.
+- **App Lock Timeout:** Added a customizable timeout setting for the app lock. Quickly switch between apps without having to unlock Shelf every time!
+
+### Fixed
+- **Code Cleanliness:** Cleaned up internal logic and polished the codebase for better maintainability.
+
 ## [1.0.24] - 2026-08-22
 
 ### Added

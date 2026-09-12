@@ -18,8 +18,10 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
         private const val KEY_ACCENT_COLOR = "accent_color"
         private const val KEY_VIEW_MODE = "view_mode"
         private const val KEY_AUTO_BACKUP = "auto_backup"
+        private const val KEY_AUTO_BACKUP_URI = "auto_backup_uri"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_APP_LOCK_USE_PIN = "app_lock_use_pin"
+        private const val KEY_APP_LOCK_TIMEOUT = "app_lock_timeout"
         private const val KEY_LAST_UPDATE_CHECK_TIME = "last_update_check_time"
         private const val KEY_LATEST_AVAILABLE_VERSION = "latest_available_version"
         private const val KEY_LATEST_RELEASE_URL = "latest_release_url"
@@ -79,6 +81,14 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
         prefs.edit { putBoolean(KEY_AUTO_BACKUP, enabled) }
     }
 
+    override fun getAutoBackupUri(): String? {
+        return prefs.getString(KEY_AUTO_BACKUP_URI, null)
+    }
+
+    override fun setAutoBackupUri(uri: String?) {
+        prefs.edit { putString(KEY_AUTO_BACKUP_URI, uri) }
+    }
+
     override fun getAppLockEnabled(): Boolean {
         return prefs.getBoolean(KEY_APP_LOCK, false)
     }
@@ -93,6 +103,14 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun setAppLockUsePinEnabled(enabled: Boolean) {
         prefs.edit { putBoolean(KEY_APP_LOCK_USE_PIN, enabled) }
+    }
+
+    override fun getAppLockTimeout(): Long {
+        return prefs.getLong(KEY_APP_LOCK_TIMEOUT, 0L)
+    }
+
+    override fun setAppLockTimeout(timeout: Long) {
+        prefs.edit { putLong(KEY_APP_LOCK_TIMEOUT, timeout) }
     }
 
     override fun getLastUpdateCheckTime(): Long {

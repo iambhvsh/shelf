@@ -60,6 +60,7 @@ private fun fastOutLinearIn(fraction: Float): Float {
 fun RootScreen(
     sharedUrl: String? = null,
     openBookmarkId: Long? = null,
+    intentId: Int = 0,
     viewModel: HomeViewModel = koinViewModel(),
     collectionViewModel: CollectionViewModel = koinViewModel(),
     settingViewModel: SettingViewModel = koinViewModel(),
@@ -84,7 +85,7 @@ fun RootScreen(
             mutableStateListOf<AppRoute>(AppRoute.Settings)
         )
     }
-    val pendingSharedUrl = remember { mutableStateOf(sharedUrl) }
+    val pendingSharedUrl = remember(intentId) { mutableStateOf(sharedUrl) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
@@ -111,7 +112,7 @@ fun RootScreen(
         searchViewModel.onTagsChange(state.activeTagFilters)
     }
     
-    LaunchedEffect(openBookmarkId) {
+    LaunchedEffect(openBookmarkId, intentId) {
         if (openBookmarkId != null && !state.isBodySheet) {
             viewModel.homeEvents(HomeEvents.OpenBookmarkById(openBookmarkId))
         }
@@ -205,9 +206,13 @@ fun RootScreen(
                             onClose = { collectionViewModel.onEvent(CollectionEvents.ClearDetailSelection) },
                             onSelectAll = { collectionViewModel.onEvent(CollectionEvents.SelectAllDetail) },
                             onDeselectAll = { collectionViewModel.onEvent(CollectionEvents.DeselectAllDetail) },
-                            onDelete = {
-                                val id = collectionState.selectedCollection?.id ?: return@SelectionTopBar
-                                collectionViewModel.onEvent(CollectionEvents.RemoveSelectedFromCollection(id))
+                            onDelete = if (collectionState.selectedCollection?.id == `in`.iambhvsh.shelf.domain.model.Collection.UNCATEGORISED_ID) null else {
+                                {
+                                    val id = collectionState.selectedCollection?.id
+                                    if (id != null) {
+                                        collectionViewModel.onEvent(CollectionEvents.RemoveSelectedFromCollection(id))
+                                    }
+                                }
                             },
                             scrollBehavior = scrollBehavior
                         )
@@ -357,7 +362,7 @@ fun RootScreen(
 
         if (state.showCollectionPicker) {
             CollectionPickerSheet(
-                collections = state.collections,
+                collections = state.collections.filter { !it.isVirtual },
                 onSelectCollection = { viewModel.homeEvents(HomeEvents.AddToCollection(it)) },
                 onDismiss = { viewModel.homeEvents(HomeEvents.HideCollectionPicker) }
             )

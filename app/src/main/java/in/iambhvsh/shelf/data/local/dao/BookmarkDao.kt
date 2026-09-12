@@ -99,4 +99,23 @@ interface BookmarkDao {
         }
         return true
     }
+
+    @Transaction
+    suspend fun insertOrUnhideAndReturnId(bookmark: BookmarkEntity): Long {
+        val existing = findByUrl(bookmark.url)
+        if (existing != null && !existing.isHidden) return existing.id
+        val hidden = findHiddenByUrl(bookmark.url)
+        if (hidden != null) {
+            unhideBookmark(hidden.id, bookmark.title, bookmark.description, bookmark.imageUrl, bookmark.createdAt)
+            return hidden.id
+        }
+        return insertWithReturn(bookmark)
+    }
+
+    @Query("""
+        SELECT b.* FROM bookmarks b 
+        LEFT JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId 
+        WHERE bcc.collectionId IS NULL AND b.isHidden = 0
+    """)
+    fun getUnassignedBookmarks(): Flow<List<BookmarkEntity>>
 }

@@ -5,8 +5,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Pin
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.presentation.setting.SettingEvents
 import androidx.compose.material3.MaterialTheme
@@ -40,21 +41,36 @@ fun SecuritySection(
     )
     
     androidx.compose.animation.AnimatedVisibility(visible = state.appLockEnabled) {
-        SettingItem(
-            icon = Icons.Outlined.Pin,
-            title = "Use PIN",
-            subtitle = if (state.appLockUsePinEnabled) "PIN fallback enabled" else "Fingerprint only",
-            trailing = {
-                Switch(
-                    checked = state.appLockUsePinEnabled,
-                    onCheckedChange = { viewModel.onEvent(SettingEvents.ToggleAppLockUsePin(it)) },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.primary,
-                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+        androidx.compose.foundation.layout.Column {
+            SettingItem(
+                icon = Icons.Outlined.Pin,
+                title = "Use PIN",
+                subtitle = if (state.appLockUsePinEnabled) "PIN fallback enabled" else "Fingerprint only",
+                trailing = {
+                    Switch(
+                        checked = state.appLockUsePinEnabled,
+                        onCheckedChange = { viewModel.onEvent(SettingEvents.ToggleAppLockUsePin(it)) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                        )
                     )
-                )
-            },
-            onClick = { viewModel.onEvent(SettingEvents.ToggleAppLockUsePin(!state.appLockUsePinEnabled)) }
-        )
+                },
+                onClick = { viewModel.onEvent(SettingEvents.ToggleAppLockUsePin(!state.appLockUsePinEnabled)) }
+            )
+            
+            SettingItem(
+                icon = Icons.Outlined.Timer,
+                title = "Lock After",
+                subtitle = when (state.appLockTimeout) {
+                    0L -> "Immediately"
+                    60_000L -> "1 minute"
+                    300_000L -> "5 minutes"
+                    900_000L -> "15 minutes"
+                    else -> "Immediately"
+                },
+                onClick = { viewModel.onEvent(SettingEvents.ShowAppLockTimeoutSheet) }
+            )
+        }
     }
 }

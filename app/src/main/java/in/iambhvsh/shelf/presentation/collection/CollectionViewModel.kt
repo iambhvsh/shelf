@@ -58,6 +58,7 @@ class CollectionViewModel(
             }
 
             is CollectionEvents.ToggleSelection -> {
+                if (event.id == Collection.UNCATEGORISED_ID) return
                 val current = _state.value
                 val newSelected = if (event.id in current.selectedIds) {
                     current.selectedIds - event.id
@@ -77,7 +78,7 @@ class CollectionViewModel(
             }
 
             CollectionEvents.SelectAll -> {
-                val allIds = _state.value.collections.map { it.id }.toSet()
+                val allIds = _state.value.collections.filter { !it.isVirtual }.map { it.id }.toSet()
                 _state.update {
                     it.copy(
                         selectedIds = allIds,
@@ -382,7 +383,7 @@ class CollectionViewModel(
                 )
                 
                 val insertedId = repository.insertHiddenBookmark(bookmark)
-                if (insertedId > 0) {
+                if (insertedId > 0 && collectionId != Collection.UNCATEGORISED_ID) {
                     repository.addBookmarkToCollection(insertedId, collectionId)
                 }
 
@@ -433,7 +434,7 @@ class CollectionViewModel(
     }
 
     private fun deleteSelected() {
-        val selected = _state.value.collections.filter { it.id in _state.value.selectedIds }
+        val selected = _state.value.collections.filter { it.id in _state.value.selectedIds && !it.isVirtual }
         if (selected.isEmpty()) return
         viewModelScope.launch {
             selected.forEach { repository.deleteCollection(it) }
@@ -442,6 +443,7 @@ class CollectionViewModel(
     }
 
     private fun deleteCollectionById(collectionId: Long) {
+        if (collectionId == Collection.UNCATEGORISED_ID) return
         viewModelScope.launch {
             val collection = _state.value.collections.find { it.id == collectionId } ?: return@launch
             repository.deleteCollection(collection)

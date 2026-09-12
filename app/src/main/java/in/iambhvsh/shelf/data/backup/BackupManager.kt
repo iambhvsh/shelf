@@ -127,11 +127,47 @@ class BackupManager(
         val internalFile = File(backupDir, FILE_NAME)
         internalFile.writeText(jsonString)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val customUriStr = settingsRepository.getAutoBackupUri()
+        if (customUriStr != null) {
+            writeToCustomUri(jsonString, customUriStr)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             writeToDownloads(jsonString)
         }
 
         _lastBackupTimeMillis.value = System.currentTimeMillis()
+    }
+
+    private fun writeToCustomUri(jsonString: String, uriString: String) {
+        try {
+            val treeUri = android.net.Uri.parse(uriString)
+            val dir = androidx.documentfile.provider.DocumentFile.fromTreeUri(context, treeUri)
+            if (dir == null || !dir.exists() || !dir.canWrite()) {
+                showBackupErrorToast()
+                return
+            }
+            
+            var backupFile = dir.findFile(FILE_NAME)
+            if (backupFile == null) {
+                backupFile = dir.createFile("application/json", FILE_NAME)
+            }
+            
+            if (backupFile != null) {
+                context.contentResolver.openOutputStream(backupFile.uri)?.use { output ->
+                    output.write(jsonString.toByteArray())
+                }
+            } else {
+                showBackupErrorToast()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            showBackupErrorToast()
+        }
+    }
+
+    private fun showBackupErrorToast() {
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+            android.widget.Toast.makeText(context, "Backup folder unavailable. Please choose a new folder in settings.", android.widget.Toast.LENGTH_LONG).show()
+        }
     }
 
     @SuppressLint("NewApi")

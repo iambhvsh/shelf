@@ -127,6 +127,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.4.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.4.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-process:2.8.4")
 
     implementation("androidx.room:room-runtime:2.8.4")
     ksp("androidx.room:room-compiler:2.8.4")
@@ -142,6 +143,7 @@ dependencies {
 
     implementation("com.materialkolor:material-kolor:5.0.0")
     implementation(libs.androidx.biometric)
+    implementation("androidx.documentfile:documentfile:1.0.1")
 
     implementation("com.mikepenz:multiplatform-markdown-renderer:0.13.0")
     implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.13.0")

@@ -81,6 +81,10 @@ val shelfModule = module {
         SettingViewModel(get(), get(), get(), get())
     }
 
+    viewModel {
+        `in`.iambhvsh.shelf.presentation.quicksave.QuickSaveViewModel(get())
+    }
+
     single {
         okhttp3.OkHttpClient()
     }

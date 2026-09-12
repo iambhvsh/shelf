@@ -44,7 +44,7 @@ fun SelectionTopBar(
     onClose: () -> Unit,
     onSelectAll: () -> Unit,
     onDeselectAll: () -> Unit,
-    onDelete: () -> Unit,
+    onDelete: (() -> Unit)? = null,
     onAddToCollection: (() -> Unit)? = null,
     onRename: (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior
@@ -95,11 +95,13 @@ fun SelectionTopBar(
                     )
                 }
             }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    painter = painterResource(R.drawable.delete_icon),
-                    contentDescription = "Delete selected"
-                )
+            if (onDelete != null) {
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        painter = painterResource(R.drawable.delete_icon),
+                        contentDescription = "Delete selected"
+                    )
+                }
             }
         }
     )

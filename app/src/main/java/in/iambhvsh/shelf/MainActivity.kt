@@ -21,6 +21,7 @@ import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.core.content.ContextCompat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,22 +29,27 @@ import androidx.compose.ui.Modifier
 
 class MainActivity : FragmentActivity() {
     private val settingsRepository: SettingsRepository by inject()
+    private var currentIntent by mutableStateOf<Intent?>(null)
+    private var intentId by mutableIntStateOf(0)
+    
+    private lateinit var biometricPrompt: BiometricPrompt
+    private lateinit var promptInfo: BiometricPrompt.PromptInfo
+    private var isAuthenticating = false
+    private var isAuthenticatedState by mutableStateOf(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val sharedUrl = when (intent?.action) {
-            Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)?.trim()
-            else -> null
-        }
-        
-        val openBookmarkId = intent?.getLongExtra("OPEN_BOOKMARK_ID", -1L)?.takeIf { it != -1L }
+        currentIntent = intent
 
         val appLockEnabled = settingsRepository.getAppLockEnabled()
         val usePin = settingsRepository.getAppLockUsePinEnabled()
-        var isAuthenticated by mutableStateOf(!appLockEnabled)
+        
+        isAuthenticatedState = !SessionManager.shouldRequireAuthentication(
+            appLockEnabled, settingsRepository.getAppLockTimeout()
+        )
 
         if (appLockEnabled) {
             val authenticators = if (usePin) {
@@ -60,17 +66,21 @@ class MainActivity : FragmentActivity() {
                 canAuthenticate == BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE) {
                 
                 settingsRepository.setAppLockEnabled(false)
-                isAuthenticated = true
+                isAuthenticatedState = true
+                SessionManager.isUnlocked = true
             } else {
                 val executor = ContextCompat.getMainExecutor(this)
-                val biometricPrompt = BiometricPrompt(this, executor,
+                biometricPrompt = BiometricPrompt(this, executor,
                     object : BiometricPrompt.AuthenticationCallback() {
                         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                             super.onAuthenticationSucceeded(result)
-                            isAuthenticated = true
+                            isAuthenticatedState = true
+                            SessionManager.isUnlocked = true
+                            isAuthenticating = false
                         }
                         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                             super.onAuthenticationError(errorCode, errString)
+                            isAuthenticating = false
                             if (errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON || errorCode == BiometricPrompt.ERROR_USER_CANCELED) {
                                 finish()
                             }
@@ -86,17 +96,49 @@ class MainActivity : FragmentActivity() {
                     promptInfoBuilder.setNegativeButtonText("Cancel")
                 }
 
-                biometricPrompt.authenticate(promptInfoBuilder.build())
+                promptInfo = promptInfoBuilder.build()
             }
         }
 
         setContent {
-            if (isAuthenticated) {
-                RootScreen(sharedUrl = sharedUrl, openBookmarkId = openBookmarkId)
+            val sharedUrl = when (currentIntent?.action) {
+                Intent.ACTION_SEND -> currentIntent?.getStringExtra(Intent.EXTRA_TEXT)?.trim()
+                else -> null
+            }
+            val openBookmarkId = currentIntent?.getLongExtra("OPEN_BOOKMARK_ID", -1L)?.takeIf { it != -1L }
+
+            if (isAuthenticatedState) {
+                RootScreen(sharedUrl = sharedUrl, openBookmarkId = openBookmarkId, intentId = intentId)
             } else {
                 Box(modifier = Modifier.fillMaxSize())
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val appLockEnabled = settingsRepository.getAppLockEnabled()
+        if (appLockEnabled) {
+            val requiresAuth = SessionManager.shouldRequireAuthentication(
+                appLockEnabled, settingsRepository.getAppLockTimeout()
+            )
+            isAuthenticatedState = !requiresAuth
+
+            if (requiresAuth && !isAuthenticating && ::biometricPrompt.isInitialized) {
+                isAuthenticating = true
+                biometricPrompt.authenticate(promptInfo)
+            }
+        } else {
+            isAuthenticatedState = true
+            SessionManager.isUnlocked = true
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        currentIntent = intent
+        intentId++
     }
 }
 

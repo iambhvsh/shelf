@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.combine
 
 class BookmarkRepositoryImpl(
     private val dao: BookmarkDao,
@@ -28,6 +29,10 @@ class BookmarkRepositoryImpl(
 
     override suspend fun insert(bookmark: Bookmark): Boolean {
         return dao.insertOrUnhide(bookmark.toEntity())
+    }
+
+    override suspend fun saveAndReturnId(bookmark: Bookmark): Long {
+        return dao.insertOrUnhideAndReturnId(bookmark.toEntity())
     }
 
     override suspend fun insertHiddenBookmark(bookmark: Bookmark): Long {
@@ -175,13 +180,25 @@ class BookmarkRepositoryImpl(
     }
 
     override fun getAllCollections(): Flow<Resource<List<Collection>>> {
-        return collectionDao.getAllCollections()
-            .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Collection>> }
-            .onStart { emit(Resource.Loading()) }
-            .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
+        return combine(
+            collectionDao.getAllCollections(),
+            collectionDao.getUnassignedCollectionStats()
+        ) { collections, unassignedStats ->
+            val mapped = collections.map { it.toDomain() }.toMutableList()
+            mapped.add(0, unassignedStats.toDomain())
+            Resource.Success(mapped) as Resource<List<Collection>>
+        }
+        .onStart { emit(Resource.Loading()) }
+        .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
     }
 
     override fun getBookmarksInCollection(collectionId: Long): Flow<Resource<List<Bookmark>>> {
+        if (collectionId == Collection.UNCATEGORISED_ID) {
+            return dao.getUnassignedBookmarks()
+                .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
+                .onStart { emit(Resource.Loading()) }
+                .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
+        }
         return collectionDao.getCollectionWithBookmarks(collectionId)
             .map { result ->
                 Resource.Success(result?.bookmarks?.map { it.toDomain() } ?: emptyList()) as Resource<List<Bookmark>>

@@ -17,7 +17,8 @@ fun CollectionWithCount.toDomain(): Collection {
         id = id,
         name = name,
         bookmarkCount = bookmarkCount,
-        previewUrls = previewUrls?.split("|||")?.filter { it.isNotBlank() } ?: emptyList()
+        previewUrls = previewUrls?.split("|||")?.filter { it.isNotBlank() } ?: emptyList(),
+        isVirtual = id == Collection.UNCATEGORISED_ID
     )
 }
 

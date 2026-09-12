@@ -19,10 +19,14 @@ interface SettingsRepository {
     fun setViewMode(mode: ViewMode)
     fun getAutoBackupEnabled(): Boolean
     fun setAutoBackupEnabled(enabled: Boolean)
+    fun getAutoBackupUri(): String?
+    fun setAutoBackupUri(uri: String?)
     fun getAppLockEnabled(): Boolean
     fun setAppLockEnabled(enabled: Boolean)
     fun getAppLockUsePinEnabled(): Boolean
     fun setAppLockUsePinEnabled(enabled: Boolean)
+    fun getAppLockTimeout(): Long
+    fun setAppLockTimeout(timeout: Long)
     fun getLastUpdateCheckTime(): Long
     fun setLastUpdateCheckTime(time: Long)
     fun getLatestAvailableVersion(): String?
