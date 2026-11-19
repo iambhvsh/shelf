@@ -186,7 +186,7 @@ Bug reports and feature ideas are welcome. [Open an issue](https://github.com/ia
 
 Shelf is free, open source and has no ads. If it helps keep your links in order, consider supporting development.
 
-<a href="https://www.buymeacoffee.com/iambhvsh"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=iambhvsh&button_colour=FFDD00&font_colour=000000&font_family=Comic&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee"></a>
+<a href="https://www.buymeacoffee.com/iambhvsh"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" height="50"></a>
 
 A star on GitHub also helps.
 
