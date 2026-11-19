@@ -4,6 +4,7 @@ package `in`.iambhvsh.shelf.theme
 
 import android.app.Activity
 import android.os.Build
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalRippleThemeConfiguration
@@ -23,6 +24,17 @@ import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
 
 enum class ThemeMode { LIGHT, DARK, SYSTEM, OLED }
+
+fun applyThemeMode(themeMode: ThemeMode) {
+    val nightMode = when (themeMode) {
+        ThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+        ThemeMode.DARK, ThemeMode.OLED -> AppCompatDelegate.MODE_NIGHT_YES
+        ThemeMode.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+    }
+    if (AppCompatDelegate.getDefaultNightMode() != nightMode) {
+        AppCompatDelegate.setDefaultNightMode(nightMode)
+    }
+}
 
 private val PureBlack = Color(0xFF000000)
 
