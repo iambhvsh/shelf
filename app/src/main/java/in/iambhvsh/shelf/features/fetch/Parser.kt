@@ -1,0 +1,43 @@
+package `in`.iambhvsh.shelf.features.fetch
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+ class LinkMetadataParser {
+
+    companion object {
+        private val AGENTS = arrayOf(
+            "WhatsApp/2.24.8.76 A",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36"
+        )
+    }
+
+    suspend fun parse(url: String): LinkPreviewData? = withContext(Dispatchers.IO) {
+        return@withContext try {
+            try {
+                var linkPreviewEntity: LinkPreviewData? = null
+                AGENTS.forEach {
+                    linkPreviewEntity = LinkPreviewService().getLinkPreviewData(
+                        url, it
+                    )
+                    val isResultNull = checkNullParserResult(linkPreviewEntity)
+                    if (!isResultNull) {
+                        return@withContext linkPreviewEntity
+                    }
+                }
+                return@withContext linkPreviewEntity
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return@withContext null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun checkNullParserResult(linkPreviewData: LinkPreviewData?): Boolean {
+        if (linkPreviewData == null) return true
+        return (linkPreviewData.title.isNullOrEmpty() || linkPreviewData.title == "null") && (linkPreviewData.description.isNullOrEmpty() || linkPreviewData.description == "null")
+    }
+}
