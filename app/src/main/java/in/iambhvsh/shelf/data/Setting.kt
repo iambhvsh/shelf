@@ -5,6 +5,7 @@ import `in`.iambhvsh.shelf.features.setting.TapAction
 import `in`.iambhvsh.shelf.features.setting.ViewMode
 import `in`.iambhvsh.shelf.theme.AccentColor
 import `in`.iambhvsh.shelf.theme.ThemeMode
+import `in`.iambhvsh.shelf.theme.applyThemeMode
 import androidx.core.content.edit
 
 class SettingsRepositoryImpl(private val context: Context) : SettingsRepository {
@@ -35,6 +36,7 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun setThemeMode(mode: ThemeMode) {
         prefs.edit { putInt(KEY_THEME_MODE, mode.ordinal) }
+        applyThemeMode(mode)
     }
 
     override fun getTapAction(): TapAction {

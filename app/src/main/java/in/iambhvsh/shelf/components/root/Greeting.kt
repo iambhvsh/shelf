@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import `in`.iambhvsh.shelf.theme.HeroFont
 import kotlinx.coroutines.delay
+import java.util.Calendar
 
 @Composable
 fun GreetingTitle(
@@ -49,15 +50,7 @@ fun GreetingTitle(
         modifier = modifier.offset(x = titleXOffset)
     ) { target ->
         if (target == "home_header") {
-            val greeting = remember {
-                listOf(
-                    "Welcome",
-                    "Hey there",
-                    "Your Shelf",
-                    "Read Later",
-                    "Explore"
-                ).random()
-            }
+            val greeting = remember { randomGreeting() }
             var stage by remember { mutableIntStateOf(0) }
             LaunchedEffect(Unit) {
                 delay(1600)
@@ -94,4 +87,79 @@ fun GreetingTitle(
             )
         }
     }
+}
+
+private fun randomGreeting(): String {
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    val timeGreeting = when (hour) {
+        in 5..11 -> listOf(
+            "Morning",
+            "Rise up",
+            "Early bird",
+            "Fresh day",
+            "Sunrise",
+            "New day",
+            "Daybreak",
+            "Good day",
+            "First cup"
+        )
+        in 12..16 -> listOf(
+            "Afternoon",
+            "Midday",
+            "Pause",
+            "Break time",
+            "Relax",
+            "Breathe",
+            "Quick look",
+            "Slow down",
+            "Catch up"
+        )
+        in 17..21 -> listOf(
+            "Evening",
+            "Sunset",
+            "Wind down",
+            "Unwind",
+            "Dusk",
+            "Sundown",
+            "Chill out",
+            "Nightfall",
+            "Rest easy"
+        )
+        else -> listOf(
+            "Night owl",
+            "Midnight",
+            "Late hours",
+            "Deep night",
+            "Starlight",
+            "Quiet time",
+            "Moonlit",
+            "Night read",
+            "Stillness"
+        )
+    }
+    val common = listOf(
+        "Hey there",
+        "Your Shelf",
+        "Welcome",
+        "Explore",
+        "Read later",
+        "Bookmarks",
+        "Discover",
+        "Saved",
+        "Hello",
+        "Hi there",
+        "Curated",
+        "Keepers",
+        "Treasures",
+        "Stashed",
+        "Finds",
+        "Curious",
+        "Wander",
+        "Collected",
+        "Back again",
+        "Favorites",
+        "Read on",
+        "Check-in"
+    )
+    return (timeGreeting + common).random()
 }

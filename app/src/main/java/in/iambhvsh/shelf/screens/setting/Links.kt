@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.LocalCafe
 import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -23,10 +24,41 @@ import `in`.iambhvsh.shelf.theme.ShelfShapes
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun LazyListScope.aboutExternalLinks(context: Context) {
+    item(key = "buy_me_a_coffee") {
+        SegmentedListItem(
+            onClick = { openChromeTab("https://buymeacoffee.com/iambhvsh", context) },
+            shapes = ShelfShapes.segmented(0, 3),
+            modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
+            colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.LocalCafe,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = "buymeacoffee.com/iambhvsh",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            content = {
+                Text(
+                    text = "Buy Me a Coffee",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        )
+    }
+
     item(key = "github_star") {
         SegmentedListItem(
             onClick = { openChromeTab("https://github.com/iambhvsh/shelf", context) },
-            shapes = ShelfShapes.segmented(0, 2),
+            shapes = ShelfShapes.segmented(1, 3),
             modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
             colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
             leadingContent = {
@@ -57,7 +89,7 @@ fun LazyListScope.aboutExternalLinks(context: Context) {
     item(key = "report_issue") {
         SegmentedListItem(
             onClick = { openChromeTab("https://github.com/iambhvsh/shelf/issues", context) },
-            shapes = ShelfShapes.segmented(1, 2),
+            shapes = ShelfShapes.segmented(2, 3),
             modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
             colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
             leadingContent = {
