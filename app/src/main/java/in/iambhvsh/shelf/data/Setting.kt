@@ -36,7 +36,7 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun setThemeMode(mode: ThemeMode) {
         prefs.edit { putInt(KEY_THEME_MODE, mode.ordinal) }
-        applyThemeMode(mode)
+        applyThemeMode(mode, context)
     }
 
     override fun getTapAction(): TapAction {
@@ -140,5 +140,6 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun resetToDefaults() {
         prefs.edit { clear() }
+        applyThemeMode(ThemeMode.SYSTEM, context)
     }
 }

@@ -39,7 +39,7 @@ class App : Application(), DefaultLifecycleObserver {
             androidContext(this@App)
             modules(shelfModule)
         }
-        applyThemeMode(settingsRepository.getThemeMode())
+        applyThemeMode(settingsRepository.getThemeMode(), this)
         GlobalContext.getOrNull()?.get<BackupManager>()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
