@@ -7,10 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import `in`.iambhvsh.shelf.save.QuickSaveEvents
-import `in`.iambhvsh.shelf.save.QuickSaveScreen
-import `in`.iambhvsh.shelf.save.QuickSaveViewModel
-import `in`.iambhvsh.shelf.ui.theme.ShelfTheme
+import `in`.iambhvsh.shelf.features.save.QuickSaveEvents
+import `in`.iambhvsh.shelf.screens.save.QuickSaveScreen
+import `in`.iambhvsh.shelf.features.save.QuickSaveViewModel
+import `in`.iambhvsh.shelf.theme.ShelfTheme
 import org.koin.androidx.compose.koinViewModel
 
 class QuickSaveActivity : ComponentActivity() {
@@ -41,9 +41,9 @@ class QuickSaveActivity : ComponentActivity() {
             }
 
             ShelfTheme(
-                themeMode = `in`.iambhvsh.shelf.ui.theme.ThemeMode.SYSTEM,
+                themeMode = `in`.iambhvsh.shelf.theme.ThemeMode.SYSTEM,
                 dynamicColor = true,
-                accentColor = `in`.iambhvsh.shelf.ui.theme.AccentColor.PERIWINKLE
+                accentColor = `in`.iambhvsh.shelf.theme.AccentColor.PERIWINKLE
             ) {
                 QuickSaveScreen(
                     state = state,

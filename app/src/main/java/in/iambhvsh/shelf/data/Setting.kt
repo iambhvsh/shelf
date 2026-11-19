@@ -1,10 +1,10 @@
 package `in`.iambhvsh.shelf.data
 
 import android.content.Context
-import `in`.iambhvsh.shelf.setting.TapAction
-import `in`.iambhvsh.shelf.setting.ViewMode
-import `in`.iambhvsh.shelf.ui.theme.AccentColor
-import `in`.iambhvsh.shelf.ui.theme.ThemeMode
+import `in`.iambhvsh.shelf.features.setting.TapAction
+import `in`.iambhvsh.shelf.features.setting.ViewMode
+import `in`.iambhvsh.shelf.theme.AccentColor
+import `in`.iambhvsh.shelf.theme.ThemeMode
 import androidx.core.content.edit
 
 class SettingsRepositoryImpl(private val context: Context) : SettingsRepository {

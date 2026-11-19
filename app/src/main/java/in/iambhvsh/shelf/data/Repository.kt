@@ -1,9 +1,9 @@
 package `in`.iambhvsh.shelf.data
 
-import `in`.iambhvsh.shelf.setting.TapAction
-import `in`.iambhvsh.shelf.setting.ViewMode
-import `in`.iambhvsh.shelf.ui.theme.AccentColor
-import `in`.iambhvsh.shelf.ui.theme.ThemeMode
+import `in`.iambhvsh.shelf.features.setting.TapAction
+import `in`.iambhvsh.shelf.features.setting.ViewMode
+import `in`.iambhvsh.shelf.theme.AccentColor
+import `in`.iambhvsh.shelf.theme.ThemeMode
 import `in`.iambhvsh.shelf.util.Resource
 import kotlinx.coroutines.flow.Flow
 
