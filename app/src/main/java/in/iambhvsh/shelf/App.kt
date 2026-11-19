@@ -1,7 +1,7 @@
 package `in`.iambhvsh.shelf
 
 import android.app.Application
-import `in`.iambhvsh.shelf.data.backup.BackupManager
+import `in`.iambhvsh.shelf.backup.BackupManager
 import `in`.iambhvsh.shelf.di.shelfModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -9,7 +9,7 @@ import org.koin.core.context.GlobalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
-import `in`.iambhvsh.shelf.domain.repository.SettingsRepository
+import `in`.iambhvsh.shelf.data.SettingsRepository
 import org.koin.android.ext.android.inject
 
 class App : Application(), DefaultLifecycleObserver {
@@ -38,4 +38,4 @@ class App : Application(), DefaultLifecycleObserver {
         super.onStop(owner)
         SessionManager.onAppBackgrounded()
     }
-}
+}
