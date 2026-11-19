@@ -19,23 +19,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
@@ -44,22 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.components.common.expressiveBounce
 import `in`.iambhvsh.shelf.theme.AccentColor
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun shapeForAccent(accent: AccentColor): Shape {
-    return when (accent) {
-        AccentColor.PERIWINKLE -> MaterialShapes.Clover4Leaf.toShape()
-        AccentColor.RED -> MaterialShapes.Heart.toShape()
-        AccentColor.ORANGE -> MaterialShapes.Sunny.toShape()
-        AccentColor.YELLOW -> MaterialShapes.Flower.toShape()
-        AccentColor.GREEN -> MaterialShapes.Cookie4Sided.toShape()
-        AccentColor.TEAL -> MaterialShapes.Pill.toShape()
-        AccentColor.BLUE -> MaterialShapes.Gem.toShape()
-        AccentColor.PURPLE -> MaterialShapes.Burst.toShape()
-        AccentColor.PINK -> MaterialShapes.PuffyDiamond.toShape()
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,7 +107,6 @@ private fun AccentSwatch(
     onClick: () -> Unit
 ) {
     val checkTint = if (accent.seed.luminance() > 0.5f) Color.Black else Color.White
-    val swatchShape = shapeForAccent(accent)
 
     val scale by animateFloatAsState(
         targetValue = if (selected) 1.08f else 1f,
@@ -156,12 +136,12 @@ private fun AccentSwatch(
                         scaleX = scale
                         scaleY = scale
                     }
-                    .clip(swatchShape)
-                    .background(accent.seed, swatchShape)
+                    .clip(CircleShape)
+                    .background(accent.seed, CircleShape)
                     .border(
                         width = if (selected) 3.dp else 0.dp,
                         color = if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
-                        shape = swatchShape
+                        shape = CircleShape
                     )
             )
 
