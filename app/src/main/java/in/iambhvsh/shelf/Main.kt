@@ -39,7 +39,7 @@ class MainActivity : FragmentActivity() {
     private var isAuthenticatedState by mutableStateOf(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemeMode(settingsRepository.getThemeMode())
+        applyThemeMode(settingsRepository.getThemeMode(), this)
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

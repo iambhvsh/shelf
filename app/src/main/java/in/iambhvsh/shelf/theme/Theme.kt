@@ -3,6 +3,8 @@
 package `in`.iambhvsh.shelf.theme
 
 import android.app.Activity
+import android.app.UiModeManager
+import android.content.Context
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -25,7 +27,7 @@ import com.materialkolor.rememberDynamicColorScheme
 
 enum class ThemeMode { LIGHT, DARK, SYSTEM, OLED }
 
-fun applyThemeMode(themeMode: ThemeMode) {
+fun applyThemeMode(themeMode: ThemeMode, context: Context? = null) {
     val nightMode = when (themeMode) {
         ThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
         ThemeMode.DARK, ThemeMode.OLED -> AppCompatDelegate.MODE_NIGHT_YES
@@ -33,6 +35,19 @@ fun applyThemeMode(themeMode: ThemeMode) {
     }
     if (AppCompatDelegate.getDefaultNightMode() != nightMode) {
         AppCompatDelegate.setDefaultNightMode(nightMode)
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && context != null) {
+        val targetMode = when (themeMode) {
+            ThemeMode.LIGHT -> UiModeManager.MODE_NIGHT_NO
+            ThemeMode.DARK, ThemeMode.OLED -> UiModeManager.MODE_NIGHT_YES
+            ThemeMode.SYSTEM -> UiModeManager.MODE_NIGHT_AUTO
+        }
+        try {
+            val uiModeManager = context.getSystemService(UiModeManager::class.java)
+            uiModeManager?.setApplicationNightMode(targetMode)
+        } catch (_: Throwable) {
+        }
     }
 }
 
