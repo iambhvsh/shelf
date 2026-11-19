@@ -30,43 +30,40 @@ No sign-ups. No cloud lock-in. No trackers. Just you and the links that matter.
 ## Features that feel like magic
 
 **✨ Instant Metadata**  
-Paste a URL, and watch Shelf instantly pull in the title, description, and high-resolution preview artwork. Intelligent background crawling bypasses simple anti-bot protections to ensure you always get a rich preview.
-
-**🎨 Material 3 Expressive Design**  
-Engineered with Google's Material 3 Expressive design system. Experience tactile spring physics, variable typography (Google Sans Flex), organic corner shapes, and an intelligent floating dock that gets out of your way as you scroll.
-
-**🌓 Instant, Lag-Free Theming**  
-Switch effortlessly between Light, Dark, and true OLED Black themes with zero latency. Shelf synchronizes directly with Android's system splash screen so the app launches in the exact theme you chose. Supports Material You Dynamic Color and 8 curated accent palettes.
+Paste a URL, and watch Shelf instantly pull in the title, description, and a high-quality preview image. Intelligent background crawling bypasses simple anti-bot protections to ensure you always get a rich preview.
 
 **🔄 Seamless In-App Updates**  
 Shelf actively checks for new GitHub releases in the background and installs them seamlessly over-the-air, keeping you on the latest version without the hassle.
 
-**🚀 Quick Save & Share Integration**  
-Found something interesting in Chrome, Twitter, or Reddit? Hit "Share" and send it straight to Shelf via a lightweight, non-disruptive bottom sheet. Save in a split second without leaving your current app.
+**🚀 Direct Share Integration**  
+Found something interesting in Chrome, Twitter, or Reddit? Just hit "Share" and send it straight to Shelf. It's saved in a split second without even opening the app.
 
 **🗂️ Collections & Tags. Perfected.**  
-Group your bookmarks naturally. No messy nested folders—just name a collection, drop your links in, or add **Tags** to cross-reference and filter them effortlessly. An automatic **Uncategorised** collection keeps your loose links organized.
+Group your bookmarks naturally. No messy nested folders—just name a collection, drop your links in, or add **Tags** to cross-reference and filter them effortlessly.
 
 **📌 Pin Bookmarks**  
-Pin your most important links to the top of Home and Collections for immediate access.
+Pin your most important links to the top for immediate access.
 
 **✅ Bulk Actions & Sorting**  
-Manage your library efficiently. Select multiple bookmarks to delete, move to collections, or export in one go, and sort them by date, title, or pins.
+Manage your library efficiently. Select multiple bookmarks to delete or move them to collections at once, and sort them exactly how you like.
+
+**🎨 Designed for your screen**  
+Built with pure Material 3 and tailored for Android. Switch seamlessly between Light, Dark, or true OLED Black themes. Choose from 8 beautifully curated accent colors, or enable **Dynamic Colors (Material You)** to adapt to your wallpaper.
 
 **🛡️ App Lock Privacy**  
-Keep your saved links for your eyes only. Secure the app using your device's built-in fingerprint, face unlock, or device PIN, with customizable auto-lock timeout.
+Keep your saved links for your eyes only. Secure the app using your device's built-in biometrics.
 
 **⚡ Lightning Fast Actions**  
-Configure exactly what happens when you tap a link: open directly in Custom Tabs, display a rich in-app preview card, copy the URL to your clipboard, or share via the native Android Share sheet.
+Configure exactly what happens when you tap a link. Open it directly in your browser, bring up a quick preview card without leaving the app, instantly copy the URL to your clipboard, or share it out via the native Android Share sheet.
 
-**📱 Adaptive Previews (Grid & List)**  
-Bookmark cards intelligently adapt to image aspect ratios in grid view. Vertical media (Reels, Shorts, TikToks, Pins) renders in full portrait, while website previews and banners display in widescreen.
+**📱 View it your way**  
+Prefer a visual spread or a dense list? Toggle effortlessly between Grid and List view to browse your collection however you like.
 
 **🔍 Full-Text Search**  
-Find exactly what you're looking for, the moment you need it. Instant full-text search across titles, URLs, descriptions, tags, and personal notes.
+Find exactly what you're looking for, the moment you need it. Instant full-text search across titles, URLs, descriptions, and your personal notes.
 
 **📝 Personal Notes**  
-Add context to your bookmarks with private, inline notes directly on cards. No more forgetting why you saved a link.
+Add context to your bookmarks with private, inline notes directly on the cards. No more forgetting why you saved a link.
 
 **⏰ Exact Reminders**  
 Schedule notifications to remind you to revisit specific links at exactly the right time.
@@ -75,29 +72,26 @@ Schedule notifications to remind you to revisit specific links at exactly the ri
 You own your bookmarks. Export them to JSON or HTML anytime. Import from your desktop browser just as easily. Works completely offline, prioritizing your privacy.
 
 **💾 Peace of mind, built-in**  
-Rest easy with automatic, daily backups saved straight to your custom local folder or device storage. You never lose a thing.
+Rest easy with automatic, daily backups saved straight to your device's internal storage and downloads folder. You never lose a thing.
 
 ## Under the Hood
 
-Crafted with modern Android engineering and an Apple-inspired modular single-word architecture.
+Crafted with modern Android engineering.
 
 | Category | Technology |
 | :--- | :--- |
 | **Language** | Kotlin 💜 |
-| **UI** | Jetpack Compose + Material 3 Expressive |
-| **Architecture** | MVI + StateFlow (Modular single-word packages) |
-| **DI** | Koin |
+| **UI** | Jetpack Compose + Material 3 |
+| **Architecture** | MVI + StateFlow |
 | **Database** | Room |
 | **Networking** | OkHttp, Jsoup |
-| **Images** | Coil 3 |
-| **Markdown** | Multiplatform Markdown Renderer M3 |
+| **Images** | Coil |
 
 ## Support the Project
 
-Shelf is free, open-source, and contains zero ads or trackers. If Shelf brings value to your everyday workflow, consider supporting its development:
+Shelf is free, open-source, and contains zero ads or trackers. If Shelf helps keep your digital life a little more organized, consider supporting development:
 
-☕ **[Buy Me a Coffee](https://buymeacoffee.com/iambhvsh)**  
-⭐ **Star on GitHub** — it helps more people discover Shelf!
+☕ **[Buy Me a Coffee](https://buymeacoffee.com/iambhvsh)**
 
 ## Acknowledgements
 
@@ -113,3 +107,5 @@ Proudly open-source and licensed under the **GNU General Public License v3.0**. 
 
 Found a bug? Have an idea that could make Shelf even better? I'd love to hear it.  
 👉 [Open an issue](https://github.com/iambhvsh/shelf/issues) and let's chat.
+
+⭐ *If Shelf helps keep your digital life a little more organized, a star on GitHub goes a long way.*
