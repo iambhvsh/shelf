@@ -1,5 +1,6 @@
 package `in`.iambhvsh.shelf.presentation.collection
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -49,28 +53,29 @@ fun CollectionScreen(
         viewModel.onEvent(CollectionEvents.ClearSelection)
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
         if (state.collections.isEmpty() && !state.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Text(
-                        text = "Please click + to create a collection",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                `in`.iambhvsh.shelf.presentation.home.components.EmptyBookmarkState(
+                    title = "No collections yet",
+                    description = "Tap + on the toolbar to create your first collection"
+                )
             }
         } else {
+            val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+            val topPadding = statusBarTop + 68.dp
+
             LazyVerticalStaggeredGrid(
                 modifier = Modifier.fillMaxSize(),
                 columns = StaggeredGridCells.Adaptive(160.dp),
-                contentPadding = PaddingValues(8.dp),
+                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = 108.dp),
                 verticalItemSpacing = 6.dp,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -94,14 +99,6 @@ fun CollectionScreen(
         }
         LoadingProgress(state.isLoading)
     }
-
-    CollectionInputSheet(
-        showBottomSheet = state.showCreateDialog,
-        onDismissRequest = { viewModel.onEvent(CollectionEvents.HideCreateDialog) },
-        value = state.inputName,
-        onTextChange = { viewModel.onEvent(CollectionEvents.InputNameChanged(it)) },
-        onSaveClick = { viewModel.onEvent(CollectionEvents.CreateCollection) }
-    )
 
     if (state.showRenameCollectionDialog) {
         `in`.iambhvsh.shelf.presentation.home.components.RenameSheet(

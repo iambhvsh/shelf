@@ -1,24 +1,29 @@
+@file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
+
 package `in`.iambhvsh.shelf.presentation.home.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.domain.model.Tag
+import `in`.iambhvsh.shelf.ui.components.ExpressiveIconButton
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
+import `in`.iambhvsh.shelf.ui.theme.ShelfShapes
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TagManagerSheet(
     tags: List<Tag>,
@@ -30,25 +35,31 @@ fun TagManagerSheet(
 ) {
     var newTagName by remember { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState()
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        Column(modifier = Modifier.heightIn(max = screenHeight * 0.9f).padding(bottom = 24.dp)) {
+        Column(
+            modifier = Modifier
+                .heightIn(max = screenHeight * 0.9f)
+                .padding(bottom = 24.dp)
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, end = 4.dp, top = 8.dp)
+                    .padding(start = 24.dp, end = 24.dp, top = 8.dp)
             ) {
                 Text(
                     text = "Manage Tags",
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
             }
@@ -59,18 +70,19 @@ fun TagManagerSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
                     value = newTagName,
                     onValueChange = { newTagName = it },
-                    placeholder = { Text("New tag name...") },
+                    placeholder = { Text("New tag name\u2026") },
                     modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.largeIncreased,
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
+                ExpressiveIconButton(
                     onClick = {
                         if (newTagName.isNotBlank()) {
                             onCreateTag(newTagName.trim())
@@ -78,8 +90,8 @@ fun TagManagerSheet(
                         }
                     },
                     colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add Tag")
@@ -96,19 +108,24 @@ fun TagManagerSheet(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)
                 )
             } else {
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(tags, key = { it.id }) { tag ->
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap)
+                ) {
+                    itemsIndexed(tags, key = { _, tag -> tag.id }) { index, tag ->
                         val isSelected = selectedTags.any { it.id == tag.id }
-                        ListItem(
+                        SegmentedListItem(
+                            onClick = { onToggleTag(tag, !isSelected) },
+                            shapes = ShelfShapes.segmented(index, tags.size),
                             modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
                                 .fillMaxWidth()
-                                .clip(MaterialTheme.shapes.extraLarge)
-                                .clickable { onToggleTag(tag, !isSelected) },
+                                .expressiveBounce(scaleDown = 0.98f),
                             colors = ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
                             ),
-                            headlineContent = {
+                            content = {
                                 Text(
                                     text = tag.name,
                                     style = MaterialTheme.typography.bodyLarge,
@@ -117,14 +134,14 @@ fun TagManagerSheet(
                             },
                             trailingContent = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(onClick = { onDeleteTag(tag) }) {
+                                    ExpressiveIconButton(onClick = { onDeleteTag(tag) }) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             contentDescription = "Delete Tag",
                                             tint = MaterialTheme.colorScheme.error
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Switch(
                                         checked = isSelected,
                                         onCheckedChange = { onToggleTag(tag, it) }

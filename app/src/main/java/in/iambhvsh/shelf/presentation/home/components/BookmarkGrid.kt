@@ -5,6 +5,9 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -29,13 +32,17 @@ fun BookmarkGrid(
     tapAction: TapAction,
     context: Context,
     clipboard: Clipboard,
-    viewModel: HomeViewModel
+    viewModel: HomeViewModel,
+    hasTags: Boolean = false
 ) {
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val topPadding = statusBarTop + 68.dp + if (hasTags) 48.dp else 0.dp
+
     LazyVerticalStaggeredGrid(
         state = gridState,
         modifier = Modifier.fillMaxSize(),
         columns = StaggeredGridCells.Adaptive(160.dp),
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = 108.dp),
         verticalItemSpacing = 6.dp,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {

@@ -3,12 +3,14 @@ package `in`.iambhvsh.shelf.presentation.home.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.domain.model.Tag
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +34,14 @@ fun TagFilterRow(
             FilterChip(
                 selected = isSelected,
                 onClick = { onToggleTag(tag.id) },
-                label = { Text(tag.name) }
+                shape = CircleShape,
+                modifier = Modifier.expressiveBounce(scaleDown = 0.94f),
+                label = {
+                    Text(
+                        text = tag.name,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             )
         }
     }

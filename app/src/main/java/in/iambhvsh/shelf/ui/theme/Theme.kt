@@ -1,17 +1,25 @@
+@file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
+
 package `in`.iambhvsh.shelf.ui.theme
 
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalRippleThemeConfiguration
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.RippleDefaults
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
+import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
 
 enum class ThemeMode { LIGHT, DARK, SYSTEM, OLED }
@@ -31,44 +39,59 @@ fun ShelfTheme(
         ThemeMode.OLED -> true
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
+    val isOled = themeMode == ThemeMode.OLED
 
+    val context = LocalContext.current
     val colorScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val context = LocalContext.current
-        if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        val dynamic = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        if (isOled) {
+            val darkSurface = Color(0xFF0E0E0E)
+            val lighterSurface = Color(0xFF161616)
+            dynamic.copy(
+                background = PureBlack,
+                surface = PureBlack,
+                surfaceDim = PureBlack,
+                surfaceBright = darkSurface,
+                surfaceContainerLowest = PureBlack,
+                surfaceContainerLow = darkSurface,
+                surfaceContainer = darkSurface,
+                surfaceContainerHigh = lighterSurface,
+                surfaceContainerHighest = lighterSurface,
+            )
+        } else {
+            dynamic
+        }
     } else {
-        rememberDynamicColorScheme(seedColor = accentColor.seed, isDark = isDark)
-    }
-
-    val finalColorScheme = if (themeMode == ThemeMode.OLED) {
-        val darkSurface = Color(0xFF0E0E0E)
-        val lighterSurface = Color(0xFF161616)
-        colorScheme.copy(
-            background = PureBlack,
-            surface = PureBlack,
-            surfaceDim = PureBlack,
-            surfaceBright = darkSurface,
-            surfaceContainerLowest = PureBlack,
-            surfaceContainerLow = darkSurface,
-            surfaceContainer = darkSurface,
-            surfaceContainerHigh = lighterSurface,
-            surfaceContainerHighest = lighterSurface,
+        rememberDynamicColorScheme(
+            seedColor = accentColor.seed,
+            isDark = isDark,
+            isAmoled = isOled,
+            specVersion = if (isOled) ColorSpec.SpecVersion.SPEC_2021 else ColorSpec.SpecVersion.SPEC_2025
         )
-    } else {
-        colorScheme
     }
 
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            WindowInsetsControllerCompat(
-                (view.context as Activity).window, view
-            ).isAppearanceLightStatusBars = !isDark
+            val window = (view.context as? Activity)?.window
+            if (window != null) {
+                WindowInsetsControllerCompat(window, view).isAppearanceLightStatusBars = !isDark
+            }
         }
     }
 
-    MaterialTheme(
-        colorScheme = finalColorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalRippleThemeConfiguration provides RippleDefaults.InsetFocusRingRippleThemeConfiguration
+    ) {
+        MaterialExpressiveTheme(
+            colorScheme = colorScheme,
+            typography = ShelfTypography,
+            motionScheme = MotionScheme.expressive()
+        ) {
+            CompositionLocalProvider(
+                LocalContentColor provides colorScheme.onSurface,
+                content = content
+            )
+        }
+    }
 }

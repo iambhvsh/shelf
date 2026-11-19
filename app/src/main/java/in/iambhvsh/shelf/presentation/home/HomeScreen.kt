@@ -156,7 +156,8 @@ fun HomeScreen(
                         tapAction = tapAction,
                         context = context,
                         clipboard = clipboard,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        hasTags = state.tags.isNotEmpty() && !state.isSelectionMode
                     )
                 } else {
                     BookmarkList(
@@ -167,21 +168,14 @@ fun HomeScreen(
                         tapAction = tapAction,
                         context = context,
                         clipboard = clipboard,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        hasTags = state.tags.isNotEmpty() && !state.isSelectionMode
                     )
                 }
                 LoadingProgress(state.isLoading)
             }
         }
     }
-
-    HomeInputSheet(
-        state.isDialog,
-        onDismissRequest = { viewModel.homeEvents(HomeEvents.OnDialogDismissClick) },
-        value = state.inputUrl,
-        onTextChange = { viewModel.homeEvents(HomeEvents.OnTextFieldValueChange(it)) },
-        onSaveClick = { viewModel.homeEvents(HomeEvents.SaveBookmark) }
-    )
 
     PhotoPreview(
         isDialog = state.isPhotoPreviewDialog,

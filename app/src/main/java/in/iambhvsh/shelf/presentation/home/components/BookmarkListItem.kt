@@ -38,6 +38,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import androidx.core.net.toUri
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
+import `in`.iambhvsh.shelf.ui.theme.ShelfShapes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -64,15 +66,18 @@ fun BookmarkListItem(
     var imageAspectRatio by remember { mutableStateOf(1f) }
     val hasImage = !imageUrl.isNullOrBlank() && !imageFailed
 
+    val cardShape = if (isSelected) MaterialTheme.shapes.extraLargeIncreased else MaterialTheme.shapes.largeIncreased
+
     val cardModifier = if (isSelected) {
         modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(MaterialTheme.shapes.extraLarge)
+            .expressiveBounce(scaleDown = 0.97f)
+            .clip(cardShape)
             .border(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primary,
-                shape = MaterialTheme.shapes.extraLarge
+                shape = cardShape
             )
             .combinedClickable(
                 onClick = onLongClick,
@@ -83,7 +88,8 @@ fun BookmarkListItem(
         modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(MaterialTheme.shapes.extraLarge)
+            .expressiveBounce(scaleDown = 0.97f)
+            .clip(cardShape)
             .combinedClickable(
                 onClick = {
                     if (isSelectionMode) onLongClick() else bodyClick()
@@ -107,17 +113,20 @@ fun BookmarkListItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val faviconShape = ShelfShapes.expressiveShapeFor(cleanHost)
+
                 if (faviconFailed) {
                     Box(
                         modifier = Modifier
-                            .size(20.dp)
-                            .clip(MaterialTheme.shapes.extraSmall)
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                            .size(22.dp)
+                            .clip(faviconShape)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = cleanHost.firstOrNull()?.uppercase() ?: "?",
-                            style = MaterialTheme.typography.labelSmall
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 } else {
@@ -126,8 +135,8 @@ fun BookmarkListItem(
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(20.dp)
-                            .clip(MaterialTheme.shapes.extraSmall),
+                            .size(22.dp)
+                            .clip(faviconShape),
                         onError = { faviconFailed = true }
                     )
                 }
@@ -135,7 +144,7 @@ fun BookmarkListItem(
                 Text(
                     text = cleanHost,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false)
@@ -171,7 +180,7 @@ fun BookmarkListItem(
                 Text(
                     text = desc,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = MaterialTheme.typography.bodySmall.lineHeight
@@ -183,7 +192,7 @@ fun BookmarkListItem(
                 Text(
                     text = url,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -191,7 +200,7 @@ fun BookmarkListItem(
 
             if (note != null) {
                 androidx.compose.material3.Surface(
-                    shape = MaterialTheme.shapes.small,
+                    shape = MaterialTheme.shapes.medium,
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -218,9 +227,9 @@ fun BookmarkListItem(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .width(150.dp)
+                    .width(140.dp)
                     .aspectRatio(imageAspectRatio)
-                    .clip(MaterialTheme.shapes.large)
+                    .clip(MaterialTheme.shapes.largeIncreased)
                     .clickable {
                         if (isSelectionMode) onLongClick() else photoClickUrl(imageUrl)
                     },
@@ -236,9 +245,9 @@ fun BookmarkListItem(
         } else {
             Box(
                 modifier = Modifier
-                    .width(150.dp)
+                    .width(140.dp)
                     .aspectRatio(1.2f)
-                    .clip(MaterialTheme.shapes.large)
+                    .clip(MaterialTheme.shapes.largeIncreased)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(

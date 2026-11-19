@@ -1,10 +1,11 @@
+@file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
+
 package `in`.iambhvsh.shelf.presentation.setting.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,8 +19,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
+import `in`.iambhvsh.shelf.ui.theme.HeroFont
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AboutSheet(
     versionName: String,
@@ -30,6 +33,7 @@ fun AboutSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
@@ -49,14 +53,15 @@ fun AboutSheet(
                     painter = painterResource(id = R.drawable.shelf_logo),
                     contentDescription = "Shelf Logo",
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
+                        .size(88.dp)
+                        .clip(MaterialShapes.Cookie12Sided.toShape())
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Shelf",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontFamily = HeroFont,
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
                 Text(
@@ -65,11 +70,11 @@ fun AboutSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 Text(
-                    text = "The links you love. Beautifully organized.\n\nShelf is a privacy-first, lightning-fast bookmark manager designed to do exactly one thing flawlessly: drop a link, grab the details, and move on. No sign-ups, no cloud lock-in, and absolutely no trackers.",
+                    text = "The links you love. Beautifully organized.\n\nShelf is a privacy-first, lightning-fast bookmark manager designed with Material 3 Expressive. Drop a link, grab the details, and move on. No sign-ups, no cloud lock-in, and absolutely no trackers.",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -84,7 +89,7 @@ fun AboutSheet(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 CreditItem(
                     title = "Bhavesh Patil (@iambhvsh)",
                     description = "Modified and crafted this beautiful version (Shelf).",
@@ -100,7 +105,7 @@ fun AboutSheet(
                     description = "Creator of Android-Link-Preview library powering the metadata fetching.",
                     url = "https://github.com/vishalkumarsinghvi"
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
@@ -113,7 +118,8 @@ private fun CreditItem(title: String, description: String, url: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(MaterialTheme.shapes.small)
+            .clip(MaterialTheme.shapes.largeIncreased)
+            .expressiveBounce(scaleDown = 0.98f)
             .clickable { uriHandler.openUri(url) }
             .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally

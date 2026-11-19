@@ -19,9 +19,12 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import `in`.iambhvsh.shelf.R
 import `in`.iambhvsh.shelf.domain.model.Collection
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -45,15 +49,18 @@ fun CollectionCard(
     isSelectionMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val cardShape = if (isSelected) MaterialTheme.shapes.extraLargeIncreased else MaterialTheme.shapes.largeIncreased
+
     val cardModifier = if (isSelected) {
         modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(MaterialTheme.shapes.extraLarge)
+            .expressiveBounce(scaleDown = 0.96f)
+            .clip(cardShape)
             .border(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primary,
-                shape = MaterialTheme.shapes.extraLarge
+                shape = cardShape
             )
             .combinedClickable(
                 onClick = onLongClick,
@@ -65,7 +72,8 @@ fun CollectionCard(
         modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(MaterialTheme.shapes.extraLarge)
+            .expressiveBounce(scaleDown = 0.96f)
+            .clip(cardShape)
             .combinedClickable(
                 onClick = {
                     if (isSelectionMode) onLongClick() else onClick()
@@ -77,20 +85,28 @@ fun CollectionCard(
     }
 
     Column(modifier = cardModifier) {
-
         PhotoCollage(
             imageUrls = collection.previewUrls,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1.2f)
-                .clip(MaterialTheme.shapes.extraLarge)
+                .clip(MaterialTheme.shapes.largeIncreased)
         )
 
+        val displayName = remember(collection.name) {
+            if (collection.name.length > 13) {
+                "${collection.name.take(13)}..."
+            } else {
+                collection.name
+            }
+        }
+
         Text(
-            text = collection.name,
-            style = MaterialTheme.typography.titleSmall,
+            text = displayName,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            maxLines = 2,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .fillMaxWidth()
@@ -101,7 +117,7 @@ fun CollectionCard(
         Text(
             text = countText,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
@@ -125,6 +141,7 @@ private fun PhotoCollage(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun NoPhotosPlaceholder() {
     Box(
@@ -140,12 +157,20 @@ private fun NoPhotosPlaceholder() {
             ),
         contentAlignment = Alignment.Center
     ) {
-        Icon(
-            painter = painterResource(R.drawable.bookmark_one),
-            contentDescription = null,
-            modifier = Modifier.size(48.dp),
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-        )
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(MaterialShapes.Cookie4Sided.toShape())
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.bookmark_one),
+                contentDescription = null,
+                modifier = Modifier.size(28.dp),
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+            )
+        }
     }
 }
 
@@ -170,7 +195,7 @@ private fun TwoPhotoCollage(url1: String, url2: String) {
                 .weight(1f)
                 .fillMaxSize()
         )
-        Spacer(modifier = Modifier.width(1.dp))
+        Spacer(modifier = Modifier.width(2.dp))
         AsyncImage(
             model = url2,
             contentDescription = null,
@@ -193,7 +218,7 @@ private fun ThreePhotoCollage(url1: String, url2: String, url3: String) {
                 .weight(1f)
                 .fillMaxSize()
         )
-        Spacer(modifier = Modifier.width(1.dp))
+        Spacer(modifier = Modifier.width(2.dp))
         Column(modifier = Modifier.weight(1f)) {
             AsyncImage(
                 model = url2,
@@ -203,7 +228,7 @@ private fun ThreePhotoCollage(url1: String, url2: String, url3: String) {
                     .weight(1f)
                     .fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(1.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             AsyncImage(
                 model = url3,
                 contentDescription = null,
@@ -228,7 +253,7 @@ private fun FourPhotoCollage(url1: String, url2: String, url3: String, url4: Str
                     .weight(1f)
                     .fillMaxSize()
             )
-            Spacer(modifier = Modifier.width(1.dp))
+            Spacer(modifier = Modifier.width(2.dp))
             AsyncImage(
                 model = url2,
                 contentDescription = null,
@@ -238,7 +263,7 @@ private fun FourPhotoCollage(url1: String, url2: String, url3: String, url4: Str
                     .fillMaxSize()
             )
         }
-        Spacer(modifier = Modifier.height(1.dp))
+        Spacer(modifier = Modifier.height(2.dp))
         Row(modifier = Modifier.weight(1f)) {
             AsyncImage(
                 model = url3,
@@ -248,7 +273,7 @@ private fun FourPhotoCollage(url1: String, url2: String, url3: String, url4: Str
                     .weight(1f)
                     .fillMaxSize()
             )
-            Spacer(modifier = Modifier.width(1.dp))
+            Spacer(modifier = Modifier.width(2.dp))
             AsyncImage(
                 model = url4,
                 contentDescription = null,

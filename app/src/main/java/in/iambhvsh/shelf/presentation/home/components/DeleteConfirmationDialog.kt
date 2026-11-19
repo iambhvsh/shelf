@@ -3,8 +3,8 @@ package `in`.iambhvsh.shelf.presentation.home.components
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import `in`.iambhvsh.shelf.ui.components.ExpressiveTextButton
 
 @Composable
 fun DeleteConfirmationDialog(
@@ -15,15 +15,16 @@ fun DeleteConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = { Text(text) },
+        shape = MaterialTheme.shapes.extraLargeIncreased,
+        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+        text = { Text(text, style = MaterialTheme.typography.bodyMedium) },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            ExpressiveTextButton(onClick = onConfirm) {
                 Text("Delete", color = MaterialTheme.colorScheme.error)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            ExpressiveTextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2026-11-19
+
+### Added
+- **Material 3 Expressive:** Upgraded the entire design system to Material 3 Expressive, featuring Google Sans Flex variable typography, tactile spring physics on interactive elements, and expressive organic shapes.
+- **Reorganized Settings:** Split the settings screen into dedicated sub-screens (Appearance, General, Security, Data & Storage, and About), neatly organized with segmented card lists.
+- **Adaptive Media Previews:** Bookmark cards now intelligently adapt to image aspect ratios in grid view. Vertical media (Reels, Shorts, TikToks, Pins) renders in full portrait, while website previews and OpenGraph banners display horizontally in widescreen.
+- **Spring Navigation Transitions:** Navigating between tabs (Home, Collections, Settings) and opening detail screens now features smooth, directional spring slide motions with natural physics.
+- **Floating Bottom Toolbar:** Replaced the static bottom bar with a floating pill toolbar that automatically hides when scrolling into collection folders or settings screens.
+- **Unified Create Menu:** Added a new '+' action button to the top app bar with a dropdown menu to quickly save a new bookmark or create a collection from either the Home or Collections tab.
+
+### Changed
+- **Top App Bar:** Redesigned the header with dynamic greetings and cleaner layout. Long collection titles now cleanly truncate at 13 characters with an ellipsis to prevent overlapping.
+- **OLED Dark Mode:** Updated the pure black dark theme with true pitch-black surfaces and refined contrast for OLED screens.
+- **Empty States:** Refreshed empty state screens with expressive illustrations, guidance text, and hero typography.
+
 ## [1.0.25] - 2026-09-12
 
 ### Added
@@ -26,7 +41,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - **Smart Reminders:** Fixed a bug where tapping a reminder notification would display a blank preview sheet. The preview now correctly fetches the exact bookmark directly from the database, ensuring it opens flawlessly even if it's hidden inside a specific collection!
-- **Seamless Migrations:** We've ensured that transitioning to this version maintains complete data integrity. Your established library—including pins and standalone items—transitions flawlessly to the upgraded schema without losing a byte.
+- **Seamless Migrations:** We've ensured that transitioning to this version maintains complete data integrity. Your established library (including pins and standalone items) transitions flawlessly to the upgraded schema without losing a byte.
 
 ## [1.0.23] - 2026-08-15
 
@@ -34,7 +49,7 @@ All notable changes to this project will be documented in this file.
 - **Compiler Warning:** Removed unnecessary safe call on non-null `ResponseBody` in `NetworkFetcher`.
 - **Build Warning:** Replaced deprecated `srcDir()` with `srcDirs()` in build configuration.
 - **Changelog Spacing:** Improved spacing below version titles and between list items in the changelog sheet.
-- **Settings Order:** Reordered settings sections — Support and Legal now appear above the About group for a more logical flow.
+- **Settings Order:** Reordered settings sections so Support and Legal now appear above the About group for a more logical flow.
 
 ### Added
 - **Orion Store:** Shelf is now listed on the [Orion Store](https://rookieenough.github.io/Orion-Data/redirect.html?id=shelf).

@@ -1,5 +1,7 @@
 package `in`.iambhvsh.shelf.presentation.home.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,14 +13,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,25 +32,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
-import `in`.iambhvsh.shelf.R
-
-import `in`.iambhvsh.shelf.domain.model.Bookmark
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.foundation.background
-import androidx.compose.ui.draw.clip
-import coil3.compose.AsyncImage
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import `in`.iambhvsh.shelf.domain.model.Bookmark
+import `in`.iambhvsh.shelf.ui.components.ExpressiveButton
+import `in`.iambhvsh.shelf.ui.components.ExpressiveTextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +67,7 @@ fun EditBookmarkSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
@@ -95,7 +94,7 @@ fun EditBookmarkSheet(
             ListItem(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.extraLarge),
+                    .clip(MaterialTheme.shapes.largeIncreased),
                 colors = ListItemDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                 ),
@@ -116,7 +115,7 @@ fun EditBookmarkSheet(
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        androidx.compose.foundation.layout.Box(
+                        Box(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(MaterialTheme.shapes.medium)
@@ -142,7 +141,7 @@ fun EditBookmarkSheet(
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
+                shape = MaterialTheme.shapes.largeIncreased,
                 placeholder = {
                     Text("Title")
                 },
@@ -160,7 +159,7 @@ fun EditBookmarkSheet(
                     .fillMaxWidth(),
                 minLines = 3,
                 maxLines = 5,
-                shape = MaterialTheme.shapes.medium,
+                shape = MaterialTheme.shapes.largeIncreased,
                 placeholder = {
                     Text("Description")
                 },
@@ -173,25 +172,26 @@ fun EditBookmarkSheet(
 
             val hasChanges = title.trim() != (bookmark.title ?: "") || description.trim() != (bookmark.description ?: "")
 
-            Button(
+            ExpressiveButton(
                 onClick = {
                     onSaveClick(title.trim().takeIf { it.isNotBlank() }, description.trim().takeIf { it.isNotBlank() })
                 },
                 enabled = hasChanges,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = MaterialTheme.shapes.extraLarge
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Edit,
                     contentDescription = null
                 )
-                androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(8.dp))
+                Spacer(modifier = Modifier.size(8.dp))
                 Text("Save Changes")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(
+            ExpressiveTextButton(
                 onClick = onDismissRequest
             ) {
                 Text("Cancel")

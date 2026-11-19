@@ -1,14 +1,18 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+
 package `in`.iambhvsh.shelf.presentation.root
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -17,7 +21,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CreateNewFolder
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.toShape
+import androidx.compose.ui.res.painterResource
+import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
@@ -28,24 +62,32 @@ import `in`.iambhvsh.shelf.presentation.collection.CollectionDetailScreen
 import `in`.iambhvsh.shelf.presentation.collection.CollectionEvents
 import `in`.iambhvsh.shelf.presentation.collection.CollectionScreen
 import `in`.iambhvsh.shelf.presentation.collection.CollectionViewModel
+import `in`.iambhvsh.shelf.presentation.collection.components.CollectionInputSheet
 import `in`.iambhvsh.shelf.presentation.collection.components.CollectionPickerSheet
 import `in`.iambhvsh.shelf.presentation.home.HomeEvents
 import `in`.iambhvsh.shelf.presentation.home.HomeScreen
 import `in`.iambhvsh.shelf.presentation.home.HomeViewModel
+import `in`.iambhvsh.shelf.presentation.home.components.HomeInputSheet
 import `in`.iambhvsh.shelf.presentation.home.components.TagFilterRow
-import `in`.iambhvsh.shelf.presentation.root.components.DefaultTopBar
 import `in`.iambhvsh.shelf.presentation.root.components.RootBottomBar
 import `in`.iambhvsh.shelf.presentation.root.components.RootFab
-import `in`.iambhvsh.shelf.presentation.root.components.SearchTopBar
-import `in`.iambhvsh.shelf.presentation.root.components.SelectionTopBar
+import `in`.iambhvsh.shelf.presentation.root.components.ShelfHeader
 import `in`.iambhvsh.shelf.presentation.search.SearchViewModel
 import `in`.iambhvsh.shelf.presentation.home.components.LoadingProgress
 import `in`.iambhvsh.shelf.presentation.setting.BrowserImportState
+import `in`.iambhvsh.shelf.presentation.setting.ExportState
 import `in`.iambhvsh.shelf.navigation.AppRoute
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.platform.LocalContext
 import `in`.iambhvsh.shelf.presentation.setting.ImportState
-import `in`.iambhvsh.shelf.presentation.setting.SettingScreen
+import `in`.iambhvsh.shelf.presentation.setting.SettingDialogsAndSheets
 import `in`.iambhvsh.shelf.presentation.setting.SettingViewModel
+import `in`.iambhvsh.shelf.presentation.setting.screens.SettingsAboutScreen
+import `in`.iambhvsh.shelf.presentation.setting.screens.SettingsAppearanceScreen
+import `in`.iambhvsh.shelf.presentation.setting.screens.SettingsDataScreen
+import `in`.iambhvsh.shelf.presentation.setting.screens.SettingsGeneralScreen
+import `in`.iambhvsh.shelf.presentation.setting.screens.SettingsMainScreen
+import `in`.iambhvsh.shelf.presentation.setting.screens.SettingsSecurityScreen
 import `in`.iambhvsh.shelf.presentation.setting.components.RadioOptionSheet
 import `in`.iambhvsh.shelf.ui.theme.ShelfTheme
 import org.koin.androidx.compose.koinViewModel
@@ -102,7 +144,7 @@ fun RootScreen(
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     LaunchedEffect(isSearching) {
         if (isSearching) focusRequester.requestFocus()
@@ -122,6 +164,11 @@ fun RootScreen(
         if (isCollectionSearching) focusRequester.requestFocus()
     }
 
+    LaunchedEffect(currentTab) {
+        scrollBehavior.state.heightOffset = 0f
+        scrollBehavior.state.contentOffset = 0f
+    }
+
     val showTopBarActions =
         !state.isSelectionMode && !collectionState.isSelectionMode &&
         !collectionState.isDetailSelectionMode && !isSearching && !isCollectionSearching
@@ -131,188 +178,56 @@ fun RootScreen(
         dynamicColor = settingState.dynamicColor,
         accentColor = settingState.accentColor
     ) {
-        Scaffold(
+        val context = LocalContext.current
+        val versionName = remember {
+            runCatching {
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            }.getOrNull().orEmpty()
+        }
+
+        val isCollectionDetail = currentTab == 1 && backStacks[1].lastOrNull() is AppRoute.CollectionDetail
+        val collectionName = if (isCollectionDetail) {
+            val rawName = collectionState.selectedCollection?.name ?: "Collection"
+            if (rawName.length > 13) "${rawName.take(13)}..." else rawName
+        } else null
+
+        val currentSettingsRoute = if (currentTab == 2) backStacks[2].lastOrNull() else null
+        val isSettingsSubScreen = currentTab == 2 && currentSettingsRoute != null && currentSettingsRoute != AppRoute.Settings
+        val settingsSubScreenTitle = when (currentSettingsRoute) {
+            is AppRoute.SettingsAppearance -> "Appearance"
+            is AppRoute.SettingsGeneral -> "General"
+            is AppRoute.SettingsSecurity -> "Security"
+            is AppRoute.SettingsData -> "Data & Storage"
+            is AppRoute.SettingsAbout -> "About"
+            else -> null
+        }
+
+        val isDeepScreen = isCollectionDetail || isSettingsSubScreen
+        val deepScreenTitle = if (isCollectionDetail) collectionName else settingsSubScreenTitle
+        val isAnySearching = isSearching || isCollectionSearching
+
+        val isAnySelection = state.isSelectionMode || collectionState.isSelectionMode || collectionState.isDetailSelectionMode
+        val selectedCount = when {
+            state.isSelectionMode -> state.selectedIds.size
+            collectionState.isSelectionMode -> collectionState.selectedIds.size
+            collectionState.isDetailSelectionMode -> collectionState.detailSelectedIds.size
+            else -> 0
+        }
+        val isAllSelected = when {
+            state.isSelectionMode -> state.bookmarkData.isNotEmpty() && state.selectedIds.size == state.bookmarkData.size
+            collectionState.isSelectionMode -> collectionState.collections.isNotEmpty() && collectionState.selectedIds.size == collectionState.collections.size
+            collectionState.isDetailSelectionMode -> collectionState.collectionBookmarks.isNotEmpty() && collectionState.detailSelectedIds.size == collectionState.collectionBookmarks.size
+            else -> false
+        }
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .background(MaterialTheme.colorScheme.surface),
-            bottomBar = {
-                if (showTopBarActions) {
-                    RootBottomBar(
-                        currentTab = currentTab,
-                        onTabChange = { currentTab = it }
-                    )
-                }
-            },
-            topBar = {
-                val fraction = scrollBehavior.state.collapsedFraction
-                val topBarColor = androidx.compose.ui.graphics.lerp(
-                    MaterialTheme.colorScheme.surface,
-                    MaterialTheme.colorScheme.surfaceContainer,
-                    fastOutLinearIn(fraction)
-                )
-
-                androidx.compose.foundation.layout.Column(
-                    modifier = Modifier.background(topBarColor)
-                ) {
-                    when {
-                    state.isSelectionMode && !isSearching && !isCollectionSearching -> {
-                        SelectionTopBar(
-                            title = "Selected ${state.selectedIds.size}",
-                            isAllSelected = state.bookmarkData.isNotEmpty() &&
-                                state.selectedIds.size == state.bookmarkData.size,
-                            onClose = { viewModel.homeEvents(HomeEvents.ClearSelection) },
-                            onSelectAll = { viewModel.homeEvents(HomeEvents.SelectAll) },
-                            onDeselectAll = { viewModel.homeEvents(HomeEvents.DeselectAll) },
-                            onDelete = { 
-                                pendingDeleteAction = { viewModel.homeEvents(HomeEvents.DeleteSelected) }
-                                showDeleteConfirmDialog = true
-                            },
-                            onAddToCollection = { viewModel.homeEvents(HomeEvents.ShowCollectionPicker) },
-                            scrollBehavior = scrollBehavior
-                        )
-                    }
-
-                    collectionState.isSelectionMode && !isSearching && !isCollectionSearching -> {
-                        SelectionTopBar(
-                            title = "Selected ${collectionState.selectedIds.size}",
-                            isAllSelected = collectionState.collections.isNotEmpty() &&
-                                collectionState.selectedIds.size == collectionState.collections.size,
-                            onClose = { collectionViewModel.onEvent(CollectionEvents.ClearSelection) },
-                            onSelectAll = { collectionViewModel.onEvent(CollectionEvents.SelectAll) },
-                            onDeselectAll = { collectionViewModel.onEvent(CollectionEvents.DeselectAll) },
-                            onDelete = { 
-                                pendingDeleteAction = { collectionViewModel.onEvent(CollectionEvents.DeleteSelected) }
-                                showDeleteConfirmDialog = true
-                            },
-                            onRename = if (collectionState.selectedIds.size == 1) {
-                                {
-                                    val id = collectionState.selectedIds.first()
-                                    val collection = collectionState.collections.find { it.id == id }
-                                    if (collection != null) {
-                                        collectionViewModel.onEvent(CollectionEvents.ShowRenameCollectionDialog(collection.name))
-                                    }
-                                }
-                            } else null,
-                            scrollBehavior = scrollBehavior
-                        )
-                    }
-
-                    collectionState.isDetailSelectionMode && !isSearching && !isCollectionSearching -> {
-                        SelectionTopBar(
-                            title = "Selected ${collectionState.detailSelectedIds.size}",
-                            isAllSelected = collectionState.collectionBookmarks.isNotEmpty() &&
-                                collectionState.detailSelectedIds.size == collectionState.collectionBookmarks.size,
-                            onClose = { collectionViewModel.onEvent(CollectionEvents.ClearDetailSelection) },
-                            onSelectAll = { collectionViewModel.onEvent(CollectionEvents.SelectAllDetail) },
-                            onDeselectAll = { collectionViewModel.onEvent(CollectionEvents.DeselectAllDetail) },
-                            onDelete = if (collectionState.selectedCollection?.id == `in`.iambhvsh.shelf.domain.model.Collection.UNCATEGORISED_ID) null else {
-                                {
-                                    val id = collectionState.selectedCollection?.id
-                                    if (id != null) {
-                                        collectionViewModel.onEvent(CollectionEvents.RemoveSelectedFromCollection(id))
-                                    }
-                                }
-                            },
-                            scrollBehavior = scrollBehavior
-                        )
-                    }
-
-                    isSearching -> {
-                        SearchTopBar(
-                            query = searchState.searchQuery,
-                            onQueryChange = { searchViewModel.onQueryChange(it) },
-                            placeholder = "Search bookmarks\u2026",
-                            onClose = {
-                                isSearching = false
-                                searchViewModel.onQueryChange("")
-                                focusManager.clearFocus()
-                            },
-                            focusRequester = focusRequester
-                        )
-                    }
-
-                    isCollectionSearching -> {
-                        SearchTopBar(
-                            query = collectionSearchQuery,
-                            onQueryChange = { collectionSearchQuery = it },
-                            placeholder = "Search in collection\u2026",
-                            onClose = {
-                                isCollectionSearching = false
-                                collectionSearchQuery = ""
-                                focusManager.clearFocus()
-                            },
-                            focusRequester = focusRequester
-                        )
-                    }
-
-                    else -> {
-                        val isCollectionDetail = currentTab == 1 && backStacks[1].lastOrNull() is AppRoute.CollectionDetail
-                        val collectionName = if (isCollectionDetail) collectionState.selectedCollection?.name else null
-                        val showSortButton =
-                            currentTab == 0 || (currentTab == 1 && collectionState.selectedCollection != null)
-                        val showSearchButton =
-                            currentTab == 0 || (currentTab == 1 && collectionState.selectedCollection != null)
-                        DefaultTopBar(
-                            currentTab = currentTab,
-                            collectionName = collectionName,
-                            showSearchButton = showSearchButton,
-                            showSortButton = showSortButton,
-                            scrollBehavior = scrollBehavior,
-                            onSearchClick = {
-                                if (currentTab == 0) {
-                                    isSearching = true
-                                    searchViewModel.onQueryChange("")
-                                    viewModel.homeEvents(HomeEvents.ClearSelection)
-                                } else {
-                                    isCollectionSearching = true
-                                    collectionSearchQuery = ""
-                                    collectionViewModel.onEvent(CollectionEvents.ClearDetailSelection)
-                                }
-                            },
-                            onSortClick = {
-                                if (currentTab == 0) {
-                                    viewModel.homeEvents(HomeEvents.ShowSortSheet)
-                                } else {
-                                    collectionViewModel.onEvent(CollectionEvents.ShowSortSheet)
-                                }
-                            }
-                        )
-                    }
-                }
-
-                if (currentTab == 0 && !state.isSelectionMode && !isSearching) {
-                    if (state.tags.isNotEmpty()) {
-                        TagFilterRow(
-                            tags = state.tags,
-                            activeTagIds = state.activeTagFilters,
-                            onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
-                        )
-                    }
-                }
-                }
-            },
-            floatingActionButton = {
-                RootFab(
-                    currentTab = currentTab,
-                    homeState = state,
-                    collectionState = collectionState,
-                    isSearching = isSearching,
-                    onHomeFabClick = { viewModel.homeEvents(HomeEvents.FabClick) },
-                    onCollectionFabClick = { 
-                        if (collectionState.selectedCollection == null) {
-                            collectionViewModel.onEvent(CollectionEvents.ShowCreateDialog) 
-                        } else {
-                            collectionViewModel.onEvent(CollectionEvents.ShowAddBookmarkDialog)
-                        }
-                    }
-                )
-            }
-        ) { innerPadding ->
+                .background(MaterialTheme.colorScheme.surface)
+        ) {
             AppNavHost(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 currentTab = currentTab,
                 onTabChange = { currentTab = it },
                 backStacks = backStacks,
@@ -338,27 +253,262 @@ fun RootScreen(
                         searchQuery = collectionSearchQuery
                     )
                 },
-                settingsScreen = { 
-                    SettingScreen(
+                settingsMainScreen = { onNavigate ->
+                    SettingsMainScreen(
+                        state = settingState,
+                        versionName = versionName,
+                        onNavigate = onNavigate
+                    )
+                },
+                settingsAppearanceScreen = {
+                    SettingsAppearanceScreen(
+                        state = settingState,
                         viewModel = settingViewModel
-                    ) 
+                    )
+                },
+                settingsGeneralScreen = {
+                    SettingsGeneralScreen(
+                        state = settingState,
+                        viewModel = settingViewModel
+                    )
+                },
+                settingsSecurityScreen = {
+                    SettingsSecurityScreen(
+                        state = settingState,
+                        viewModel = settingViewModel
+                    )
+                },
+                settingsDataScreen = {
+                    SettingsDataScreen(
+                        state = settingState,
+                        viewModel = settingViewModel
+                    )
+                },
+                settingsAboutScreen = {
+                    SettingsAboutScreen(
+                        state = settingState,
+                        viewModel = settingViewModel,
+                        versionName = versionName,
+                        context = context
+                    )
                 }
             )
 
-            BackHandler(enabled = isSearching) {
-                isSearching = false
-                searchViewModel.onQueryChange("")
+            // Top Header (Floating over content with zIndex)
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .zIndex(10f)
+            ) {
+                ShelfHeader(
+                    currentTab = currentTab,
+                    isDeepScreen = isDeepScreen,
+                    deepScreenTitle = deepScreenTitle,
+                    isSelectionMode = isAnySelection,
+                    selectedCount = selectedCount,
+                    isAllSelected = isAllSelected,
+                    isSearching = isAnySearching,
+                    searchQuery = if (isCollectionSearching) collectionSearchQuery else searchState.searchQuery,
+                    searchPlaceholder = if (isCollectionSearching) "Search in collection\u2026" else "Search bookmarks\u2026",
+                    onSearchQueryChange = {
+                        if (isCollectionSearching) collectionSearchQuery = it
+                        else searchViewModel.onQueryChange(it)
+                    },
+                    focusRequester = focusRequester,
+                    scrollBehavior = scrollBehavior,
+                    onBack = {
+                        if (isCollectionDetail) {
+                            backStacks[1].removeAt(backStacks[1].size - 1)
+                            collectionViewModel.onEvent(CollectionEvents.ClearSelectedCollection)
+                        } else if (isSettingsSubScreen) {
+                            backStacks[2].removeAt(backStacks[2].size - 1)
+                        }
+                    },
+                    onNewBookmarkClick = {
+                        if (isCollectionDetail && collectionState.selectedCollection != null) {
+                            collectionViewModel.onEvent(CollectionEvents.ShowAddBookmarkDialog)
+                        } else {
+                            viewModel.homeEvents(HomeEvents.FabClick)
+                        }
+                    },
+                    onNewCollectionClick = {
+                        collectionViewModel.onEvent(CollectionEvents.ShowCreateDialog)
+                    },
+                    onSearchClick = {
+                        if (currentTab == 0) {
+                            isSearching = true
+                            searchViewModel.onQueryChange("")
+                            viewModel.homeEvents(HomeEvents.ClearSelection)
+                        } else {
+                            isCollectionSearching = true
+                            collectionSearchQuery = ""
+                            collectionViewModel.onEvent(CollectionEvents.ClearDetailSelection)
+                        }
+                    },
+                    onSortClick = {
+                        if (currentTab == 0) {
+                            viewModel.homeEvents(HomeEvents.ShowSortSheet)
+                        } else {
+                            collectionViewModel.onEvent(CollectionEvents.ShowSortSheet)
+                        }
+                    },
+                    onCloseSelection = {
+                        when {
+                            state.isSelectionMode -> viewModel.homeEvents(HomeEvents.ClearSelection)
+                            collectionState.isSelectionMode -> collectionViewModel.onEvent(CollectionEvents.ClearSelection)
+                            collectionState.isDetailSelectionMode -> collectionViewModel.onEvent(CollectionEvents.ClearDetailSelection)
+                        }
+                    },
+                    onSelectAll = {
+                        when {
+                            state.isSelectionMode -> viewModel.homeEvents(HomeEvents.SelectAll)
+                            collectionState.isSelectionMode -> collectionViewModel.onEvent(CollectionEvents.SelectAll)
+                            collectionState.isDetailSelectionMode -> collectionViewModel.onEvent(CollectionEvents.SelectAllDetail)
+                        }
+                    },
+                    onDeselectAll = {
+                        when {
+                            state.isSelectionMode -> viewModel.homeEvents(HomeEvents.DeselectAll)
+                            collectionState.isSelectionMode -> collectionViewModel.onEvent(CollectionEvents.DeselectAll)
+                            collectionState.isDetailSelectionMode -> collectionViewModel.onEvent(CollectionEvents.DeselectAllDetail)
+                        }
+                    },
+                    onDeleteSelected = when {
+                        state.isSelectionMode -> {
+                            {
+                                pendingDeleteAction = { viewModel.homeEvents(HomeEvents.DeleteSelected) }
+                                showDeleteConfirmDialog = true
+                            }
+                        }
+                        collectionState.isSelectionMode -> {
+                            {
+                                pendingDeleteAction = { collectionViewModel.onEvent(CollectionEvents.DeleteSelected) }
+                                showDeleteConfirmDialog = true
+                            }
+                        }
+                        collectionState.isDetailSelectionMode && collectionState.selectedCollection?.id != `in`.iambhvsh.shelf.domain.model.Collection.UNCATEGORISED_ID -> {
+                            {
+                                val id = collectionState.selectedCollection?.id
+                                if (id != null) {
+                                    collectionViewModel.onEvent(CollectionEvents.RemoveSelectedFromCollection(id))
+                                }
+                            }
+                        }
+                        else -> null
+                    },
+                    onAddToCollection = if (state.isSelectionMode) {
+                        { viewModel.homeEvents(HomeEvents.ShowCollectionPicker) }
+                    } else null,
+                    onRenameSelected = if (collectionState.isSelectionMode && collectionState.selectedIds.size == 1) {
+                        {
+                            val id = collectionState.selectedIds.first()
+                            val collection = collectionState.collections.find { it.id == id }
+                            if (collection != null) {
+                                collectionViewModel.onEvent(CollectionEvents.ShowRenameCollectionDialog(collection.name))
+                            }
+                        }
+                    } else null,
+                    onCloseSearch = {
+                        if (isCollectionSearching) {
+                            isCollectionSearching = false
+                            collectionSearchQuery = ""
+                        } else {
+                            isSearching = false
+                            searchViewModel.onQueryChange("")
+                        }
+                        focusManager.clearFocus()
+                    }
+                )
+
+                AnimatedVisibility(
+                    visible = currentTab == 0 && !isAnySelection && !isAnySearching && state.tags.isNotEmpty(),
+                    enter = expandVertically(tween(180)) + fadeIn(tween(180)),
+                    exit = shrinkVertically(tween(150)) + fadeOut(tween(150))
+                ) {
+                    TagFilterRow(
+                        tags = state.tags,
+                        activeTagIds = state.activeTagFilters,
+                        onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
+                    )
+                }
             }
 
-            BackHandler(enabled = isCollectionSearching) {
-                isCollectionSearching = false
-                collectionSearchQuery = ""
+            // Bottom Toolbar (Floating over content with zIndex)
+            AnimatedVisibility(
+                visible = showTopBarActions && !isDeepScreen,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(bottom = 16.dp)
+                    .zIndex(10f),
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                ) + fadeIn(),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                ) + fadeOut()
+            ) {
+                RootBottomBar(
+                    currentTab = currentTab,
+                    onTabChange = { tab ->
+                        if (currentTab == tab) {
+                            if (tab == 1 && backStacks[1].size > 1) {
+                                backStacks[1].subList(1, backStacks[1].size).clear()
+                                collectionViewModel.onEvent(CollectionEvents.ClearSelectedCollection)
+                            } else if (tab == 2 && backStacks[2].size > 1) {
+                                backStacks[2].subList(1, backStacks[2].size).clear()
+                            }
+                        } else {
+                            currentTab = tab
+                        }
+                    }
+                )
             }
         }
 
-        val isImporting = settingState.browserImportState is BrowserImportState.Loading || settingState.importState is ImportState.Loading
+        BackHandler(enabled = isSearching) {
+            isSearching = false
+            searchViewModel.onQueryChange("")
+        }
 
-        LoadingProgress(isLoading = isImporting, blockTouch = true)
+        BackHandler(enabled = isCollectionSearching) {
+            isCollectionSearching = false
+            collectionSearchQuery = ""
+        }
+
+        val isSettingBusy =
+            settingState.browserImportState is BrowserImportState.Loading ||
+            settingState.importState is ImportState.Loading ||
+            settingState.exportState is ExportState.Loading ||
+            settingState.browserExportState is ExportState.Loading ||
+            settingState.isCheckingForUpdates
+
+        LoadingProgress(isLoading = isSettingBusy, blockTouch = true)
+
+        HomeInputSheet(
+            showBottomSheet = state.isDialog,
+            onDismissRequest = { viewModel.homeEvents(HomeEvents.OnDialogDismissClick) },
+            value = state.inputUrl,
+            onTextChange = { viewModel.homeEvents(HomeEvents.OnTextFieldValueChange(it)) },
+            onSaveClick = { viewModel.homeEvents(HomeEvents.SaveBookmark) }
+        )
+
+        CollectionInputSheet(
+            showBottomSheet = collectionState.showCreateDialog,
+            onDismissRequest = { collectionViewModel.onEvent(CollectionEvents.HideCreateDialog) },
+            value = collectionState.inputName,
+            onTextChange = { collectionViewModel.onEvent(CollectionEvents.InputNameChanged(it)) },
+            onSaveClick = { collectionViewModel.onEvent(CollectionEvents.CreateCollection) }
+        )
 
         if (state.showCollectionPicker) {
             CollectionPickerSheet(
@@ -413,5 +563,12 @@ fun RootScreen(
                 }
             )
         }
+
+        SettingDialogsAndSheets(
+            state = settingState,
+            viewModel = settingViewModel,
+            versionName = versionName,
+            context = context
+        )
     }
 }

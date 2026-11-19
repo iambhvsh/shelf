@@ -3,34 +3,31 @@ package `in`.iambhvsh.shelf.presentation.home.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ime
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.ui.components.ExpressiveButton
+import `in`.iambhvsh.shelf.ui.components.ExpressiveTextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,10 +44,9 @@ fun HomeInputSheet(
         val sheetState = rememberModalBottomSheetState()
 
         ModalBottomSheet(
-            onDismissRequest = {
-                onDismissRequest()
-            },
-            sheetState = sheetState
+            onDismissRequest = onDismissRequest,
+            sheetState = sheetState,
+            shape = MaterialTheme.shapes.extraLargeIncreased
         ) {
             Column(
                 modifier = Modifier
@@ -67,7 +63,8 @@ fun HomeInputSheet(
                 Text(
                     text = "New Bookmark",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -81,13 +78,15 @@ fun HomeInputSheet(
                     value = value,
                     onValueChange = onTextChange,
                     modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.largeIncreased,
                     singleLine = true,
                     isError = showError,
                     leadingIcon = {
                         Icon(
-                           painter = painterResource(R.drawable.link_three),
+                            painter = painterResource(R.drawable.link_three),
                             contentDescription = null,
-                            modifier = Modifier.size(24.dp),    tint = MaterialTheme.colorScheme.surfaceTint,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.surfaceTint,
                         )
                     },
                     placeholder = {
@@ -110,7 +109,7 @@ fun HomeInputSheet(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Button(
+                ExpressiveButton(
                     onClick = {
                         onSaveClick()
                         onDismissRequest()
@@ -123,7 +122,7 @@ fun HomeInputSheet(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                TextButton(
+                ExpressiveTextButton(
                     onClick = onDismissRequest
                 ) {
                     Text("Cancel")

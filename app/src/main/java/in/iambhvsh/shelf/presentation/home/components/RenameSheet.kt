@@ -11,14 +11,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.ui.components.ExpressiveButton
+import `in`.iambhvsh.shelf.ui.components.ExpressiveTextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,7 +57,9 @@ fun RenameSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        sheetState = sheetState
+        sheetState = sheetState,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
             modifier = Modifier
@@ -74,7 +76,8 @@ fun RenameSheet(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -86,6 +89,7 @@ fun RenameSheet(
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
                 singleLine = true,
+                shape = MaterialTheme.shapes.largeIncreased,
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.bookmark_one),
@@ -104,7 +108,7 @@ fun RenameSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
+            ExpressiveButton(
                 onClick = {
                     onSaveClick(text)
                 },
@@ -116,7 +120,7 @@ fun RenameSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(
+            ExpressiveTextButton(
                 onClick = onDismissRequest
             ) {
                 Text("Cancel")

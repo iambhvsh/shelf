@@ -8,20 +8,22 @@ import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.presentation.setting.SettingEvents
 import `in`.iambhvsh.shelf.presentation.setting.SettingState
 import `in`.iambhvsh.shelf.presentation.setting.SettingViewModel
 import `in`.iambhvsh.shelf.presentation.setting.TapAction
 import `in`.iambhvsh.shelf.presentation.setting.ViewMode
+import `in`.iambhvsh.shelf.ui.theme.ShelfShapes
 
 @Composable
 fun GeneralSection(state: SettingState, viewModel: SettingViewModel) {
-    Spacer(Modifier.height(12.dp))
+    Spacer(Modifier.height(ShelfShapes.Gap * 4))
     SectionHeader("General")
     SettingItem(
         icon = Icons.Outlined.TouchApp,
         title = "Default tap action",
+        index = 0,
+        count = 2,
         subtitle = when (state.tapAction) {
             TapAction.SHOW_PREVIEW -> "Preview"
             TapAction.OPEN_BROWSER -> "Open in browser"
@@ -29,10 +31,12 @@ fun GeneralSection(state: SettingState, viewModel: SettingViewModel) {
         },
         onClick = { viewModel.onEvent(SettingEvents.ShowTapActionSheet) }
     )
-    Spacer(Modifier.height(4.dp))
+    Spacer(Modifier.height(ShelfShapes.Gap))
     SettingItem(
         icon = if (state.viewMode == ViewMode.GRID) Icons.Outlined.GridView else Icons.AutoMirrored.Outlined.ViewList,
         title = "View mode",
+        index = 1,
+        count = 2,
         subtitle = if (state.viewMode == ViewMode.GRID) "Grid" else "List",
         onClick = { viewModel.onEvent(SettingEvents.ShowViewModeSheet) }
     )

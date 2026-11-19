@@ -1,5 +1,10 @@
+@file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
+
 package `in`.iambhvsh.shelf.presentation.setting.components
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -8,30 +13,35 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.res.painterResource
-import `in`.iambhvsh.shelf.R
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
 import `in`.iambhvsh.shelf.ui.theme.AccentColor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,6 +56,7 @@ fun AccentColorSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
@@ -57,6 +68,7 @@ fun AccentColorSheet(
                 text = "Accent color",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 16.dp)
             )
 
@@ -90,6 +102,7 @@ fun AccentColorSheet(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AccentSwatch(
     accent: AccentColor,
@@ -97,17 +110,42 @@ private fun AccentSwatch(
     onClick: () -> Unit
 ) {
     val checkTint = if (accent.seed.luminance() > 0.5f) Color.Black else Color.White
+    val swatchShape = if (selected) MaterialShapes.Cookie4Sided.toShape() else CircleShape
+
+    val rotation by animateFloatAsState(
+        targetValue = if (selected) 45f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "accentRotation"
+    )
+
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.08f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
+        label = "accentScale"
+    )
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
                 .size(64.dp)
-                .clip(CircleShape)
-                .background(accent.seed, CircleShape)
+                .expressiveBounce(scaleDown = 0.92f)
+                .graphicsLayer {
+                    rotationZ = rotation
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .clip(swatchShape)
+                .background(accent.seed, swatchShape)
                 .border(
                     width = if (selected) 3.dp else 0.dp,
                     color = if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
-                    shape = CircleShape
+                    shape = swatchShape
                 )
                 .selectable(
                     selected = selected,
@@ -129,7 +167,8 @@ private fun AccentSwatch(
         Text(
             text = accent.label,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )
     }
 }

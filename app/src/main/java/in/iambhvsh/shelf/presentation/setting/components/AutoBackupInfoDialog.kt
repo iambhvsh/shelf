@@ -3,12 +3,12 @@ package `in`.iambhvsh.shelf.presentation.setting.components
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import `in`.iambhvsh.shelf.ui.components.ExpressiveTextButton
 
 @Composable
 fun AutoBackupInfoDialog(
@@ -17,6 +17,7 @@ fun AutoBackupInfoDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
         title = {
             Text(
                 text = "Enable Auto Backup?",
@@ -40,12 +41,12 @@ fun AutoBackupInfoDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = onEnable) {
+            ExpressiveTextButton(onClick = onEnable) {
                 Text("Enable")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            ExpressiveTextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }

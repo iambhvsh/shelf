@@ -43,7 +43,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import androidx.core.net.toUri
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
+import `in`.iambhvsh.shelf.ui.theme.ShelfShapes
 
+private val aspectRatioCache = java.util.concurrent.ConcurrentHashMap<String, Float>()
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -63,20 +66,28 @@ fun BookmarkCard(
     note: String? = null,
     reminderTime: Long? = null
 ) {
-
     val host = remember(url) { url.toUri().host.orEmpty() }
-    
-    val isVertical = remember(url) {
-        listOf(
-            "instagram.com/reel", "instagram.com/p/", "ig.me",
-            "youtube.com/shorts", 
-            "tiktok.com", 
+
+    val cachedRatio = remember(imageUrl) {
+        if (!imageUrl.isNullOrBlank()) aspectRatioCache[imageUrl] else null
+    }
+
+    val initialAspectRatio = remember(url) {
+        val isVertical = listOf(
+            "instagram.com/reel", "ig.me",
+            "youtube.com/shorts",
+            "tiktok.com",
             "facebook.com/reel", "fb.watch",
             "pinterest.com/pin", "pin.it"
         ).any { url.contains(it, ignoreCase = true) }
+        if (isVertical) 9f / 16f else 16f / 9f
     }
-                     
-    val cardAspectRatio = if (isVertical) 9f / 16f else 1.2f
+
+    var detectedAspectRatio by remember(imageUrl) {
+        mutableStateOf(cachedRatio)
+    }
+
+    val cardAspectRatio = detectedAspectRatio ?: initialAspectRatio
 
     val cleanHost = remember(host) {
         if (host.startsWith("www.")) {
@@ -89,15 +100,18 @@ fun BookmarkCard(
     var imageFailed by remember { mutableStateOf(false) }
     var faviconFailed by remember { mutableStateOf(false) }
 
+    val cardShape = if (isSelected) MaterialTheme.shapes.extraLargeIncreased else MaterialTheme.shapes.largeIncreased
+
     val cardModifier = if (isSelected) {
         modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(MaterialTheme.shapes.extraLarge)
+            .expressiveBounce(scaleDown = 0.96f)
+            .clip(cardShape)
             .border(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primary,
-                shape = MaterialTheme.shapes.extraLarge
+                shape = cardShape
             )
             .combinedClickable(
                 onClick = onLongClick,
@@ -109,7 +123,8 @@ fun BookmarkCard(
         modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(MaterialTheme.shapes.extraLarge)
+            .expressiveBounce(scaleDown = 0.96f)
+            .clip(cardShape)
             .combinedClickable(
                 onClick = {
                     if (isSelectionMode) onLongClick() else bodyClick()
@@ -123,25 +138,26 @@ fun BookmarkCard(
     Column(
         modifier = cardModifier
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val faviconShape = ShelfShapes.expressiveShapeFor(cleanHost)
 
             if (faviconFailed) {
                 Box(
                     modifier = Modifier
-                        .size(20.dp)
-                        .clip(MaterialTheme.shapes.extraSmall)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .size(24.dp)
+                        .clip(faviconShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = cleanHost.firstOrNull()?.uppercase() ?: "?",
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             } else {
@@ -150,8 +166,8 @@ fun BookmarkCard(
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(20.dp)
-                        .clip(MaterialTheme.shapes.extraSmall),
+                        .size(24.dp)
+                        .clip(faviconShape),
                     onError = {
                         faviconFailed = true
                     }
@@ -168,8 +184,6 @@ fun BookmarkCard(
                 modifier = Modifier.weight(1f)
             )
 
-
-
             if (reminderTime != null) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
@@ -183,18 +197,17 @@ fun BookmarkCard(
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = "Pinned",
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
 
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(cardAspectRatio)
-                .clip(MaterialTheme.shapes.extraLarge)
+                .clip(MaterialTheme.shapes.largeIncreased)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
@@ -205,9 +218,7 @@ fun BookmarkCard(
                 ),
             contentAlignment = Alignment.Center
         ) {
-
             if (!imageUrl.isNullOrBlank() && !imageFailed) {
-
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = null,
@@ -217,6 +228,16 @@ fun BookmarkCard(
                         .clickable {
                             if (isSelectionMode) onLongClick() else photoClickUrl(imageUrl)
                         },
+                    onSuccess = { state ->
+                        val size = state.painter.intrinsicSize
+                        if (size.width.isFinite() && size.height.isFinite() && size.width > 0f && size.height > 0f) {
+                            val ratio = (size.width / size.height).coerceIn(9f / 16f, 1.91f)
+                            aspectRatioCache[imageUrl] = ratio
+                            if (detectedAspectRatio != ratio) {
+                                detectedAspectRatio = ratio
+                            }
+                        }
+                    },
                     onError = {
                         imageFailed = true
                     }
@@ -236,10 +257,7 @@ fun BookmarkCard(
                             )
                         )
                 )
-
             } else {
-
-
                 Text(
                     text = host,
                     maxLines = 1,
@@ -250,14 +268,12 @@ fun BookmarkCard(
             }
         }
 
-
         if (!title.isNullOrBlank() || !description.isNullOrBlank()) {
             Column(
                 modifier = modifier
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
-
                 if (!title.isNullOrBlank()) {
                     Text(
                         text = title,
@@ -278,7 +294,7 @@ fun BookmarkCard(
                             .fillMaxWidth()
                             .padding(horizontal = 2.dp),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -286,7 +302,7 @@ fun BookmarkCard(
 
                 if (note != null) {
                     androidx.compose.material3.Surface(
-                        shape = MaterialTheme.shapes.small,
+                        shape = MaterialTheme.shapes.medium,
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -307,4 +323,3 @@ fun BookmarkCard(
         }
     }
 }
-

@@ -5,8 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -60,10 +63,9 @@ fun SearchResults(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "No results for \"$query\"",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                `in`.iambhvsh.shelf.presentation.home.components.EmptyBookmarkState(
+                    title = "No results found",
+                    description = "We couldn't find anything matching \"$query\""
                 )
             }
         } else if (query.isEmpty()) {
@@ -71,55 +73,53 @@ fun SearchResults(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Text(
-                        text = "Type to search",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        } else if (viewMode == ViewMode.GRID) {
-            LazyVerticalStaggeredGrid(
-                state = gridState,
-                modifier = Modifier.fillMaxSize(),
-                columns = StaggeredGridCells.Adaptive(160.dp),
-                contentPadding = PaddingValues(8.dp),
-                verticalItemSpacing = 6.dp,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                items(
-                    items = results,
-                    key = { it.id }
-                ) { item ->
-                    BookmarkCard(
-                        modifier = Modifier.animateItem(),
-                        imageUrl = item.imageUrl,
-                        title = item.title,
-                        description = item.description,
-                        isPinned = item.isPinned,
-                        photoClickUrl = { onPhotoClick?.invoke(it) },
-                        bodyClick = { onBodyClick?.invoke(item) },
-                        onLongClick = { onLongClick?.invoke(item.id) },
-                        onNoteClick = { onNoteClick?.invoke(item) },
-                        isSelected = item.id in selectedIds,
-                        isSelectionMode = isSelectionMode,
-                        url = item.url,
-                        note = item.note,
-                        reminderTime = item.reminderTime
-                    )
-                }
+                `in`.iambhvsh.shelf.presentation.home.components.EmptyBookmarkState(
+                    title = "Search your shelf",
+                    description = "Type keywords, titles, or domains to search"
+                )
             }
         } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
+            val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+            val topPadding = statusBarTop + 68.dp
+
+            if (viewMode == ViewMode.GRID) {
+                LazyVerticalStaggeredGrid(
+                    state = gridState,
+                    modifier = Modifier.fillMaxSize(),
+                    columns = StaggeredGridCells.Adaptive(160.dp),
+                    contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = 108.dp),
+                    verticalItemSpacing = 6.dp,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(
+                        items = results,
+                        key = { it.id }
+                    ) { item ->
+                        BookmarkCard(
+                            modifier = Modifier.animateItem(),
+                            imageUrl = item.imageUrl,
+                            title = item.title,
+                            description = item.description,
+                            isPinned = item.isPinned,
+                            photoClickUrl = { onPhotoClick?.invoke(it) },
+                            bodyClick = { onBodyClick?.invoke(item) },
+                            onLongClick = { onLongClick?.invoke(item.id) },
+                            onNoteClick = { onNoteClick?.invoke(item) },
+                            isSelected = item.id in selectedIds,
+                            isSelectionMode = isSelectionMode,
+                            url = item.url,
+                            note = item.note,
+                            reminderTime = item.reminderTime
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = 108.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                 items(
                     items = results,
                     key = { it.id }
@@ -141,6 +141,7 @@ fun SearchResults(
                     )
                 }
             }
+        }
         }
         LoadingProgress(isLoading)
     }

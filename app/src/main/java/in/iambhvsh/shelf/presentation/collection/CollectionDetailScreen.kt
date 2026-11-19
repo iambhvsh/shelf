@@ -1,11 +1,16 @@
 package `in`.iambhvsh.shelf.presentation.collection
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -129,55 +134,64 @@ fun CollectionDetailScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No bookmarks in this collection",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    `in`.iambhvsh.shelf.presentation.home.components.EmptyBookmarkState(
+                        title = "Collection is empty",
+                        description = "Tap + on the toolbar to add bookmarks to this collection"
                     )
                 }
-            } else if (viewMode == ViewMode.GRID) {
-                LazyVerticalStaggeredGrid(
-                    state = gridState,
-                    modifier = Modifier.fillMaxSize(),
-                    columns = StaggeredGridCells.Adaptive(180.dp),
-                    contentPadding = PaddingValues(8.dp),
-                    verticalItemSpacing = 6.dp,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    items(
-                        items = state.collectionBookmarks,
-                        key = { it.id }
-                    ) { item ->
-                        BookmarkCard(
-                            modifier = Modifier.animateItem(),
-                            imageUrl = item.imageUrl,
-                            title = item.title,
-                            description = item.description,
-                            isPinned = item.isPinned,
-                            photoClickUrl = { Log.d("CollectionDetail", "Photo click: $it") },
-                            bodyClick = {
-                                when (tapAction) {
-                                    TapAction.OPEN_BROWSER -> item.url.let { openChromeTab(it, context) }
-                                    TapAction.COPY_LINK -> item.url.let { clipboardManager.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) }
-                                    TapAction.SHOW_PREVIEW -> viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
-                                }
-                            },
-                            onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(item.id)) },
-                            isSelected = item.id in state.detailSelectedIds,
-                            isSelectionMode = state.isDetailSelectionMode,
-                            url = item.url,
-                            note = item.note,
-                            reminderTime = item.reminderTime
-                        )
-                    }
-                }
             } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                val topPadding = statusBarTop + 68.dp
+                val bottomPadding = navBarBottom + 24.dp
+
+                if (viewMode == ViewMode.GRID) {
+                    LazyVerticalStaggeredGrid(
+                        state = gridState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surface),
+                        columns = StaggeredGridCells.Adaptive(180.dp),
+                        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = bottomPadding),
+                        verticalItemSpacing = 6.dp,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(
+                            items = state.collectionBookmarks,
+                            key = { it.id }
+                        ) { item ->
+                            BookmarkCard(
+                                modifier = Modifier.animateItem(),
+                                imageUrl = item.imageUrl,
+                                title = item.title,
+                                description = item.description,
+                                isPinned = item.isPinned,
+                                photoClickUrl = { Log.d("CollectionDetail", "Photo click: $it") },
+                                bodyClick = {
+                                    when (tapAction) {
+                                        TapAction.OPEN_BROWSER -> item.url.let { openChromeTab(it, context) }
+                                        TapAction.COPY_LINK -> item.url.let { clipboardManager.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) }
+                                        TapAction.SHOW_PREVIEW -> viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
+                                    }
+                                },
+                                onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(item.id)) },
+                                isSelected = item.id in state.detailSelectedIds,
+                                isSelectionMode = state.isDetailSelectionMode,
+                                url = item.url,
+                                note = item.note,
+                                reminderTime = item.reminderTime
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surface),
+                        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = bottomPadding),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                     items(
                         items = state.collectionBookmarks,
                         key = { it.id }
@@ -204,6 +218,7 @@ fun CollectionDetailScreen(
                         )
                     }
                 }
+            }
             }
             LoadingProgress(state.isDetailLoading)
         }

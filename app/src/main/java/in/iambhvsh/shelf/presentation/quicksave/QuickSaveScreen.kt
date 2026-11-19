@@ -22,6 +22,11 @@ import android.widget.Toast
 import coil3.compose.SubcomposeAsyncImage
 import `in`.iambhvsh.shelf.presentation.collection.components.CollectionPickerSheet
 import `in`.iambhvsh.shelf.presentation.home.components.TagManagerSheet
+import `in`.iambhvsh.shelf.ui.components.ExpressiveButton
+import `in`.iambhvsh.shelf.ui.components.ExpressiveOutlinedButton
+import `in`.iambhvsh.shelf.ui.components.expressiveBounce
+import `in`.iambhvsh.shelf.ui.theme.HeroFont
+import `in`.iambhvsh.shelf.ui.theme.ShelfShapes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -36,6 +41,7 @@ fun QuickSaveScreen(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
@@ -49,7 +55,7 @@ fun QuickSaveScreen(
         ) {
             Text(
                 text = "Add to Shelf",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = HeroFont),
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -58,7 +64,7 @@ fun QuickSaveScreen(
             
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                shape = RoundedCornerShape(12.dp),
+                shape = MaterialTheme.shapes.largeIncreased,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -154,16 +160,21 @@ fun QuickSaveScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(ShelfShapes.card)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .expressiveBounce(scaleDown = 0.98f)
                     .clickable { onEvent(QuickSaveEvents.ShowCollectionPicker) }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val rawCollectionName = state.selectedCollection?.name ?: "No Collection"
+                val displayCollectionName = if (rawCollectionName.length > 13) "${rawCollectionName.take(13)}..." else rawCollectionName
                 Text(
-                    text = state.selectedCollection?.name ?: "No Collection",
+                    text = displayCollectionName,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
@@ -185,8 +196,9 @@ fun QuickSaveScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(ShelfShapes.card)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .expressiveBounce(scaleDown = 0.98f)
                     .clickable { onEvent(QuickSaveEvents.ShowTagPicker) }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -212,13 +224,12 @@ fun QuickSaveScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                OutlinedButton(
+                ExpressiveOutlinedButton(
                     onClick = {
                         onEvent(QuickSaveEvents.CancelSave)
                         onDismiss()
                     },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = "Cancel",
@@ -227,7 +238,7 @@ fun QuickSaveScreen(
                     )
                 }
 
-                Button(
+                ExpressiveButton(
                     onClick = {
                         state.message?.let {
                             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -235,8 +246,7 @@ fun QuickSaveScreen(
                         }
                         onDismiss()
                     },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = "Done",

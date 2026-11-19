@@ -1,11 +1,13 @@
 package `in`.iambhvsh.shelf.presentation.home.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.unit.dp
+import `in`.iambhvsh.shelf.ui.components.ExpressiveButton
+import `in`.iambhvsh.shelf.ui.components.ExpressiveTextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,13 +25,15 @@ fun NoteEditorSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState
+        sheetState = sheetState,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
             modifier = Modifier
                 .heightIn(max = screenHeight * 0.9f)
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 24.dp, vertical = 8.dp)
                 .imePadding()
                 .verticalScroll(androidx.compose.foundation.rememberScrollState())
         ) {
@@ -45,6 +49,7 @@ fun NoteEditorSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
+                shape = MaterialTheme.shapes.largeIncreased,
                 placeholder = { Text("Write your thoughts, ideas, or context here...") },
                 textStyle = MaterialTheme.typography.bodyLarge,
                 supportingText = {
@@ -56,17 +61,17 @@ fun NoteEditorSheet(
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onDismiss) {
+                ExpressiveTextButton(onClick = onDismiss) {
                     Text("Cancel")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { 
+                ExpressiveButton(onClick = { 
                     val finalNote = noteText.trim().ifEmpty { null }
                     onSave(finalNote) 
                 }) {
