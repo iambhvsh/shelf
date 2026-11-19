@@ -1,0 +1,39 @@
+package `in`.iambhvsh.shelf.collection
+
+import `in`.iambhvsh.shelf.data.Bookmark
+import `in`.iambhvsh.shelf.data.Collection
+import `in`.iambhvsh.shelf.data.SortOrder
+
+data class CollectionState(
+    val collections: List<Collection> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val showAddBookmarkDialog: Boolean = false,
+    val addBookmarkUrl: String = "",
+    val isSavingBookmark: Boolean = false,
+    val showCreateDialog: Boolean = false,
+    val inputName: String = "",
+    val selectedCollection: Collection? = null,
+    val collectionBookmarks: List<Bookmark> = emptyList(),
+    val isDetailLoading: Boolean = false,
+    val selectedIds: Set<Long> = emptySet(),
+    val isSelectionMode: Boolean = false,
+    val detailSelectedIds: Set<Long> = emptySet(),
+    val isDetailSelectionMode: Boolean = false,
+    val tempBookmark: Bookmark? = null,
+    val isDetailBodySheet: Boolean = false,
+    val sortOrder: SortOrder = SortOrder.DATE_NEWEST,
+    val showSortSheet: Boolean = false,
+    val showRenameCollectionDialog: Boolean = false,
+    val renameCollectionDialogText: String? = null,
+    val showRenameBookmarkDialog: Boolean = false,
+    val renameBookmarkDialogText: String? = null,
+    val renameBookmarkDialogId: Long? = null,
+    val tags: List<`in`.iambhvsh.shelf.data.Tag> = emptyList(),
+    val tempBookmarkTags: List<`in`.iambhvsh.shelf.data.Tag> = emptyList(),
+    val showTagManager: Boolean = false,
+    val showNoteEditor: Boolean = false,
+    val noteEditorText: String? = null,
+    val showReminderPicker: Boolean = false,
+    val toastMessage: String? = null
+)

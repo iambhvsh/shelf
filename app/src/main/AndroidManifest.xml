@@ -51,12 +51,12 @@
         </activity>
 
         <receiver
-            android:name=".presentation.reminders.ReminderReceiver"
+            android:name=".reminder.ReminderReceiver"
             android:enabled="true"
             android:exported="false" />
 
         <receiver
-            android:name=".data.manager.InstallationReceiver"
+            android:name=".data.InstallationReceiver"
             android:exported="false" />
     </application>
 
