@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1] - 2026-11-19
+
+### Fixed
+- **Splash Screen:** Refined splash screen with high-resolution artwork featuring smooth rounded corners and seamless theme-aware background color synchronization.
+- **Settings Data Reset:** Added a safe data reset action with a confirmation dialog in Settings.
+- **Top Bar Greetings:** Expanded header greetings with varied, time-aware messages for a warmer and more personal experience.
+- **Support Links:** Added Buy Me a Coffee link in About to support ongoing development.
+
 ## [2.0.0] - 2026-11-19
 
 ### Added

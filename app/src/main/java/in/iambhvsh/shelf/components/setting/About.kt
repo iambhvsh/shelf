@@ -96,6 +96,11 @@ fun AboutSheet(
                     url = "https://github.com/iambhvsh"
                 )
                 CreditItem(
+                    title = "Support Development",
+                    description = "Buy me a coffee to support future updates and new features.",
+                    url = "https://buymeacoffee.com/iambhvsh"
+                )
+                CreditItem(
                     title = "Imam (@qeiq)",
                     description = "Creator of the original Savr app, which provided the amazing open-source foundation.",
                     url = "https://github.com/qeiq"

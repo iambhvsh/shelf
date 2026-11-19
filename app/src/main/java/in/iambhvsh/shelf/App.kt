@@ -20,6 +20,7 @@ import `in`.iambhvsh.shelf.features.save.QuickSaveViewModel
 import `in`.iambhvsh.shelf.features.search.SearchViewModel
 import `in`.iambhvsh.shelf.features.setting.ChangelogLoader
 import `in`.iambhvsh.shelf.features.setting.SettingViewModel
+import `in`.iambhvsh.shelf.theme.applyThemeMode
 import okhttp3.OkHttpClient
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -38,6 +39,7 @@ class App : Application(), DefaultLifecycleObserver {
             androidContext(this@App)
             modules(shelfModule)
         }
+        applyThemeMode(settingsRepository.getThemeMode())
         GlobalContext.getOrNull()?.get<BackupManager>()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
