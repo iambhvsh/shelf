@@ -32,15 +32,16 @@ interface CollectionDao {
     suspend fun updateName(id: Long, name: String)
 
     @Query("""
-        SELECT c.id, c.name, c.createdAt, COUNT(bcc.collectionId) AS bookmarkCount,
+        SELECT c.id, c.name, c.createdAt, 
+               (SELECT COUNT(*) FROM bookmark_collection_cross_ref bcc_cnt
+                INNER JOIN bookmarks b_cnt ON bcc_cnt.bookmarkId = b_cnt.id
+                WHERE bcc_cnt.collectionId = c.id AND b_cnt.isHidden = 0) AS bookmarkCount,
                (SELECT GROUP_CONCAT(b.imageUrl, '|||')
                 FROM bookmark_collection_cross_ref bcc2
                 INNER JOIN bookmarks b ON bcc2.bookmarkId = b.id
-                WHERE bcc2.collectionId = c.id AND b.imageUrl IS NOT NULL AND b.imageUrl != ''
+                WHERE bcc2.collectionId = c.id AND b.imageUrl IS NOT NULL AND b.imageUrl != '' AND b.isHidden = 0
                 LIMIT 4) AS previewUrls
         FROM collections c
-        LEFT JOIN bookmark_collection_cross_ref bcc ON c.id = bcc.collectionId
-        GROUP BY c.id
         ORDER BY c.createdAt DESC
     """)
     fun getAllCollections(): Flow<List<CollectionWithCount>>
@@ -64,7 +65,7 @@ interface CollectionDao {
     @Query("""
         SELECT b.url FROM bookmarks b
         INNER JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
-        WHERE bcc.collectionId = :collectionId
+        WHERE bcc.collectionId = :collectionId AND b.isHidden = 0
     """)
     suspend fun getBookmarkUrlsForCollection(collectionId: Long): List<String>
 

@@ -10,7 +10,8 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,11 +40,9 @@ fun GreetingTitle(
     AnimatedContent(
         targetState = headerTitle,
         transitionSpec = {
-            (fadeIn(animationSpec = tween(180)) +
-                    scaleIn(initialScale = 0.94f, animationSpec = tween(180)))
+            (fadeIn() + scaleIn(initialScale = 0.92f))
                 .togetherWith(
-                    fadeOut(animationSpec = tween(150)) +
-                            scaleOut(targetScale = 0.94f, animationSpec = tween(150))
+                    fadeOut() + scaleOut(targetScale = 0.92f)
                 )
         },
         label = "HeaderTitleAnimation",

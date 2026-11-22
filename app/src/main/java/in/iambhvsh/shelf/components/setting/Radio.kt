@@ -21,7 +21,9 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -29,7 +31,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.components.common.expressiveBounce
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import `in`.iambhvsh.shelf.theme.ShelfShapes
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,9 +46,12 @@ fun <T> RadioOptionSheet(
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val sheetState = rememberShelfSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         shape = MaterialTheme.shapes.extraLargeIncreased,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
@@ -56,7 +63,7 @@ fun <T> RadioOptionSheet(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 12.dp)
             )
@@ -70,7 +77,12 @@ fun <T> RadioOptionSheet(
                     val isSelected = value == current
                     SegmentedListItem(
                         selected = isSelected,
-                        onClick = { onSelect(value) },
+                        onClick = {
+                            scope.launch {
+                                sheetState.hide()
+                                onSelect(value)
+                            }
+                        },
                         shapes = ShelfShapes.segmented(index, options.size),
                         modifier = Modifier
                             .fillMaxWidth()

@@ -2,9 +2,12 @@ package `in`.iambhvsh.shelf.components.root
 
 import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import `in`.iambhvsh.shelf.nav.AppRoute
 import `in`.iambhvsh.shelf.nav.Router
 import `in`.iambhvsh.shelf.screens.collection.CollectionDetailScreen
@@ -23,10 +26,10 @@ import `in`.iambhvsh.shelf.screens.setting.SettingsGeneralScreen
 import `in`.iambhvsh.shelf.screens.setting.SettingsMainScreen
 import `in`.iambhvsh.shelf.screens.setting.SettingsSecurityScreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootBody(
-    currentTab: Int,
-    onTabChange: (Int) -> Unit,
+    navController: NavHostController,
     sharedUrl: String?,
     viewModel: HomeViewModel,
     collectionViewModel: CollectionViewModel,
@@ -36,18 +39,20 @@ fun RootBody(
     searchState: SearchState,
     versionName: String,
     context: Context,
-    backStacks: List<MutableList<AppRoute>>,
     isSearching: Boolean,
     isCollectionSearching: Boolean,
+    isCollectionDetail: Boolean,
     collectionSearchQuery: String,
+    scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
     val collectionSearchResults = remember(
         collectionState.collectionBookmarks,
         collectionSearchQuery,
-        isCollectionSearching
+        isCollectionSearching,
+        isCollectionDetail
     ) {
-        if (!isCollectionSearching) null
+        if (!isCollectionSearching || !isCollectionDetail) null
         else if (collectionSearchQuery.isBlank()) collectionState.collectionBookmarks
         else collectionState.collectionBookmarks.filter { bm ->
             (bm.title?.contains(collectionSearchQuery, ignoreCase = true) ?: false) ||
@@ -56,21 +61,24 @@ fun RootBody(
     }
 
     Router(
-        currentTab = currentTab,
-        onTabChange = onTabChange,
+        navController = navController,
         homeScreen = {
             HomeScreen(
                 sharedUrl = sharedUrl,
                 tapAction = settingState.tapAction,
                 viewMode = settingState.viewMode,
-                searchResults = if (isSearching) searchState.searchResults else null,
+                isSearching = isSearching,
+                searchResults = searchState.searchResults,
                 searchQuery = searchState.searchQuery,
-                viewModel = viewModel
+                viewModel = viewModel,
+                scrollBehavior = scrollBehavior
             )
         },
         collectionsScreen = { onNavigateToDetail ->
             CollectionScreen(
                 onCollectionClick = onNavigateToDetail,
+                searchQuery = collectionSearchQuery,
+                isSearching = isCollectionSearching && !isCollectionDetail,
                 viewModel = collectionViewModel
             )
         },
@@ -124,7 +132,6 @@ fun RootBody(
                 context = context
             )
         },
-        backStacks = backStacks,
         modifier = modifier.fillMaxSize()
     )
 }

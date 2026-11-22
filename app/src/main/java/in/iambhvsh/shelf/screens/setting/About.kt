@@ -3,6 +3,7 @@
 package `in`.iambhvsh.shelf.screens.setting
 
 import android.content.Context
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.features.setting.SettingEvents
@@ -50,6 +52,8 @@ fun SettingsAboutScreen(
     val topPadding = statusBarTop + 68.dp
     val bottomPadding = navBarBottom + 24.dp
 
+    val containerColor = MaterialTheme.colorScheme.surfaceContainer
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -70,7 +74,7 @@ fun SettingsAboutScreen(
                 onClick = { viewModel.onEvent(SettingEvents.CheckForUpdates) },
                 shapes = ShelfShapes.segmented(0, 3),
                 modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
-                colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                colors = ListItemDefaults.segmentedColors(containerColor = containerColor),
                 leadingContent = {
                     Icon(imageVector = Icons.Outlined.Update, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 },
@@ -92,7 +96,7 @@ fun SettingsAboutScreen(
                 onClick = { viewModel.onEvent(SettingEvents.ShowChangelogSheet) },
                 shapes = ShelfShapes.segmented(1, 3),
                 modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
-                colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                colors = ListItemDefaults.segmentedColors(containerColor = containerColor),
                 leadingContent = {
                     Icon(imageVector = Icons.Outlined.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 },
@@ -110,7 +114,7 @@ fun SettingsAboutScreen(
                 onClick = { viewModel.onEvent(SettingEvents.ShowAboutSheet) },
                 shapes = ShelfShapes.segmented(2, 3),
                 modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
-                colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                colors = ListItemDefaults.segmentedColors(containerColor = containerColor),
                 leadingContent = {
                     Icon(imageVector = Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 },

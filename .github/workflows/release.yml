@@ -7,7 +7,7 @@ on:
       - '**.md'
       - '.gitignore'
   pull_request:
-    branches: [ app ]
+    branches: [ app, main ]
     paths-ignore:
       - '**.md'
       - '.gitignore'
@@ -39,7 +39,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          cache-read-only: ${{ github.ref != 'refs/heads/app' && github.ref != 'refs/heads/main' }}
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -65,25 +65,20 @@ jobs:
             echo "No keystore provided, skipping."
           fi
 
-      - name: Build and Test (Debug & Release)
+      - name: Build and Test Release
         env:
           KEYSTORE_PATH: ${{ steps.keystore.outputs.path }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew test assembleDebug assembleRelease
-
-      - name: Upload debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: shelf-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+        run: ./gradlew test assembleRelease
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
           name: shelf-release-apk
           path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
 
       - name: Publish to GitHub Releases
         if: github.ref == 'refs/heads/app' && github.event_name == 'push'
@@ -108,4 +103,3 @@ jobs:
           gh release create "$tag" "dist/shelf-release.apk" \
             --title "Shelf $VERSION" \
             --notes-file release_notes.txt
-

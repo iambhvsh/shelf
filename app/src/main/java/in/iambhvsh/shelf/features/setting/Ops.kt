@@ -23,8 +23,18 @@ internal fun SettingViewModel.importData(jsonString: String) {
     viewModelScope.launch {
         _state.update { it.copy(importState = ImportState.Loading) }
         try {
-            backupManager.importFromJson(jsonString)
-            _state.update { it.copy(importState = ImportState.Success) }
+            val result = backupManager.importFromJson(jsonString)
+            _state.update {
+                it.copy(
+                    importState = ImportState.Success(
+                        imported = result.imported,
+                        updated = result.updated,
+                        skipped = result.skipped,
+                        collections = result.collections,
+                        unresolvable = result.skippedUrls.size
+                    )
+                )
+            }
         } catch (e: Exception) {
             _state.update { it.copy(importState = ImportState.Error(e.message ?: "Import failed")) }
         }

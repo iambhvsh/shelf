@@ -2,17 +2,25 @@
 
 package `in`.iambhvsh.shelf.screens.setting
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Pin
@@ -27,12 +35,12 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.features.setting.SettingEvents
 import `in`.iambhvsh.shelf.features.setting.SettingState
 import `in`.iambhvsh.shelf.features.setting.SettingViewModel
-import `in`.iambhvsh.shelf.components.common.expressiveBounce
 import `in`.iambhvsh.shelf.theme.ShelfShapes
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
@@ -49,69 +57,74 @@ fun SettingsSecurityScreen(
 
     val count = if (state.appLockEnabled) 3 else 1
 
-    LazyColumn(
+    val containerColor = MaterialTheme.colorScheme.surfaceContainer
+
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface),
-        verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = topPadding + 8.dp, bottom = bottomPadding)
+            .verticalScroll(rememberScrollState())
+            .padding(start = 16.dp, end = 16.dp, top = topPadding + 8.dp, bottom = bottomPadding),
+        verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap)
     ) {
-        // App Lock toggle
-        item(key = "app_lock") {
-            SegmentedListItem(
-                onClick = { viewModel.onEvent(SettingEvents.ToggleAppLock(!state.appLockEnabled)) },
-                shapes = ShelfShapes.segmented(0, count),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .expressiveBounce(scaleDown = 0.98f),
-                colors = ListItemDefaults.segmentedColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.Lock,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
+        SegmentedListItem(
+            onClick = { viewModel.onEvent(SettingEvents.ToggleAppLock(!state.appLockEnabled)) },
+            shapes = ShelfShapes.segmented(0, count),
+            modifier = Modifier.fillMaxWidth(),
+            colors = ListItemDefaults.segmentedColors(
+                containerColor = containerColor
+            ),
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = if (state.appLockEnabled) "Enabled (Biometrics)" else "Require fingerprint or face to open Shelf",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            trailingContent = {
+                Switch(
+                    checked = state.appLockEnabled,
+                    onCheckedChange = { viewModel.onEvent(SettingEvents.ToggleAppLock(it)) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.outline
                     )
-                },
-                supportingContent = {
-                    Text(
-                        text = if (state.appLockEnabled) "Enabled (Biometrics)" else "Require fingerprint or face to open Shelf",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                trailingContent = {
-                    Switch(
-                        checked = state.appLockEnabled,
-                        onCheckedChange = { viewModel.onEvent(SettingEvents.ToggleAppLock(it)) },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.primary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
-                        )
-                    )
-                },
-                content = {
-                    Text(
-                        text = "App Lock",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            )
-        }
+                )
+            },
+            content = {
+                Text(
+                    text = "App Lock",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        )
 
-        if (state.appLockEnabled) {
-            item(key = "use_pin") {
+        AnimatedVisibility(
+            visible = state.appLockEnabled,
+            enter = fadeIn(spring(stiffness = Spring.StiffnessLow)) +
+                    expandVertically(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow)),
+            exit = fadeOut(spring(stiffness = Spring.StiffnessLow)) +
+                    shrinkVertically(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow))
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap)) {
                 SegmentedListItem(
                     onClick = { viewModel.onEvent(SettingEvents.ToggleAppLockUsePin(!state.appLockUsePinEnabled)) },
                     shapes = ShelfShapes.segmented(1, 3),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .expressiveBounce(scaleDown = 0.98f),
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ListItemDefaults.segmentedColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = containerColor
                     ),
                     leadingContent = {
                         Icon(
@@ -133,8 +146,12 @@ fun SettingsSecurityScreen(
                             checked = state.appLockUsePinEnabled,
                             onCheckedChange = { viewModel.onEvent(SettingEvents.ToggleAppLockUsePin(it)) },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                uncheckedBorderColor = MaterialTheme.colorScheme.outline
                             )
                         )
                     },
@@ -146,17 +163,13 @@ fun SettingsSecurityScreen(
                         )
                     }
                 )
-            }
 
-            item(key = "lock_timeout") {
                 SegmentedListItem(
                     onClick = { viewModel.onEvent(SettingEvents.ShowAppLockTimeoutSheet) },
                     shapes = ShelfShapes.segmented(2, 3),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .expressiveBounce(scaleDown = 0.98f),
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ListItemDefaults.segmentedColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = containerColor
                     ),
                     leadingContent = {
                         Icon(

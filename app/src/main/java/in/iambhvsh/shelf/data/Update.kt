@@ -28,7 +28,7 @@ class UpdateManagerImpl(
 
     companion object {
         private const val API_URL = "https://api.github.com/repos/iambhvsh/shelf/releases/latest"
-        private const val CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000L // 24 hours
+        private const val CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000L
         private const val APK_FILE_NAME = "shelf_update.apk"
     }
 

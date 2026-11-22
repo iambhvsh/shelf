@@ -6,6 +6,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -45,7 +47,8 @@ fun BookmarkPreviewSheet(
     onNoteButtonClick: (() -> Unit)? = null,
     onReminderButtonClick: (() -> Unit)? = null,
     onRenameButtonClick: (() -> Unit)? = null,
-    onDeleteButtonClick: (() -> Unit)? = null
+    onDeleteButtonClick: (() -> Unit)? = null,
+    onPhotoClick: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
     if (!showBottomSheet) return
@@ -158,18 +161,25 @@ fun BookmarkPreviewSheet(
         }
     }
 
+    val sheetState = rememberShelfSheetState()
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
         shape = MaterialTheme.shapes.extraLargeIncreased,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
             modifier = Modifier
-                .heightIn(max = screenHeight * 0.9f)
+                .fillMaxWidth()
+                .heightIn(max = screenHeight * 0.70f)
                 .verticalScroll(rememberScrollState())
         ) {
             if (bookmark != null) {
-                PreviewDetails(bookmark = bookmark)
+                PreviewDetails(
+                    bookmark = bookmark,
+                    onPhotoClick = onPhotoClick
+                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
             PreviewActions(actions = actions)

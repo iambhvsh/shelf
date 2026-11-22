@@ -45,8 +45,13 @@ fun BookmarkGrid(
         verticalItemSpacing = 6.dp,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        items(items = items, key = { it.id }) { item ->
+        items(
+            items = items,
+            key = { it.id },
+            contentType = { "bookmark" }
+        ) { item ->
             BookmarkCard(
+                modifier = Modifier.animateItem(),
                 imageUrl = item.imageUrl,
                 title = item.title,
                 description = item.description,

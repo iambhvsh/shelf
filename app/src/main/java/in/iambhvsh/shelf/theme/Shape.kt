@@ -62,10 +62,6 @@ object ShelfShapes {
         else -> middleItem
     }
 
-    /**
-     * Maps any string key (such as domain host or tag) to a distinct, deterministic
-     * Material 3 Expressive organic shape.
-     */
     @Composable
     fun expressiveShapeFor(key: String): Shape {
         val hash = (key.hashCode() and 0x7FFFFFFF) % 12

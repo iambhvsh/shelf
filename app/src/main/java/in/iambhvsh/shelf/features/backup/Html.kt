@@ -70,32 +70,56 @@ internal suspend fun importBookmarksFromHtml(
     val parser = BookmarkParser()
     val (parsedBookmarks, collectionNames) = parser.parse(html)
 
-    val existingUrls = bookmarkDao.getBookmarksOnce().map { it.url }.toSet()
+    val existingInDb = bookmarkDao.getAllBookmarksOnce().associateBy { it.url }.toMutableMap()
     var imported = 0
     var skipped = 0
 
+    val bookmarkMap = mutableMapOf<String, Long>()
+
     for (pb in parsedBookmarks) {
-        if (pb.url in existingUrls) {
-            skipped++
-            continue
+        val existing = existingInDb[pb.url]
+        if (existing != null) {
+            if (existing.isHidden) {
+                bookmarkDao.unhideBookmark(
+                    id = existing.id,
+                    title = if (pb.title.isNotBlank()) pb.title else existing.title,
+                    description = existing.description,
+                    imageUrl = existing.imageUrl,
+                    createdAt = existing.createdAt
+                )
+                imported++
+            } else {
+                if ((existing.title.isNullOrBlank() || existing.title == existing.url) && pb.title.isNotBlank()) {
+                    bookmarkDao.updateTitle(existing.id, pb.title)
+                }
+                skipped++
+            }
+            bookmarkMap[pb.url] = existing.id
+        } else {
+            val newId = bookmarkDao.insertWithReturn(
+                BookmarkEntity(
+                    url = pb.url,
+                    title = pb.title,
+                    description = null,
+                    imageUrl = null
+                )
+            )
+            bookmarkMap[pb.url] = newId
+            existingInDb[pb.url] = BookmarkEntity(id = newId, url = pb.url, title = pb.title, description = null, imageUrl = null)
+            imported++
         }
-        bookmarkDao.insertWithReturn(BookmarkEntity(url = pb.url, title = pb.title, description = null, imageUrl = null))
-        imported++
     }
 
     val existingCollections = collectionDao.getAllCollectionsRaw().first().associateBy { it.name }
     val nameToId = existingCollections.mapValues { it.value.id }.toMutableMap()
 
-    val bookmarkMap = bookmarkDao.getBookmarksOnce().associateBy { it.url }
-
-    for (name in collectionNames) {
-        val id = nameToId.getOrPut(name) {
-            collectionDao.insertCollection(CollectionEntity(name = name))
-        }
-        parsedBookmarks.filter { pb -> pb.collection == name }.forEach { pb ->
-            bookmarkMap[pb.url]?.let { bm ->
-                collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bm.id, id))
+    for (pb in parsedBookmarks) {
+        val bmId = bookmarkMap[pb.url] ?: continue
+        for (cName in pb.collections) {
+            val colId = nameToId.getOrPut(cName) {
+                collectionDao.insertCollection(CollectionEntity(name = cName))
             }
+            collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bmId, colId))
         }
     }
 

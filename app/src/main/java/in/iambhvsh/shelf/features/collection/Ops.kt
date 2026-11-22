@@ -74,6 +74,10 @@ internal fun CollectionViewModel.saveBookmarkInCollection() {
 }
 
 internal fun CollectionViewModel.selectCollection(collection: Collection) {
+    if (_state.value.selectedCollection?.id == collection.id && _state.value.collectionBookmarks.isNotEmpty()) {
+        _state.update { it.copy(selectedCollection = collection) }
+        return
+    }
     collectionJob?.cancel()
     _state.update { it.copy(selectedCollection = collection, collectionBookmarks = emptyList(), isDetailLoading = true) }
     collectionJob = viewModelScope.launch {
@@ -86,6 +90,56 @@ internal fun CollectionViewModel.selectCollection(collection: Collection) {
                     rawCollectionBookmarks = items
                     val sortOrder = _state.value.sortOrder
                     _state.update { it.copy(isDetailLoading = false, collectionBookmarks = sortBookmarks(items, sortOrder)) }
+                }
+            }
+        }
+    }
+}
+
+internal fun CollectionViewModel.selectCollectionById(collectionId: Long) {
+    if (_state.value.selectedCollection?.id == collectionId && _state.value.collectionBookmarks.isNotEmpty()) {
+        return
+    }
+    collectionJob?.cancel()
+    val existing = if (collectionId == Collection.UNCATEGORISED_ID) {
+        _state.value.collections.find { it.id == collectionId } ?: Collection(
+            id = Collection.UNCATEGORISED_ID,
+            name = "Uncategorised",
+            isVirtual = true
+        )
+    } else {
+        _state.value.collections.find { it.id == collectionId }
+    }
+
+    _state.update {
+        it.copy(
+            selectedCollection = existing ?: it.selectedCollection?.takeIf { col -> col.id == collectionId },
+            collectionBookmarks = if (it.selectedCollection?.id == collectionId) it.collectionBookmarks else emptyList(),
+            isDetailLoading = true
+        )
+    }
+
+    collectionJob = viewModelScope.launch {
+        repository.getBookmarksInCollection(collectionId).collect { resource ->
+            when (resource) {
+                is Resource.Loading -> _state.update { it.copy(isDetailLoading = true) }
+                is Resource.Error -> _state.update { it.copy(isDetailLoading = false, error = resource.errorMessage ?: "Error") }
+                is Resource.Success -> {
+                    val items = resource.data ?: emptyList()
+                    rawCollectionBookmarks = items
+                    val sortOrder = _state.value.sortOrder
+                    val col = _state.value.selectedCollection ?: if (collectionId == Collection.UNCATEGORISED_ID) {
+                        Collection(id = Collection.UNCATEGORISED_ID, name = "Uncategorised", isVirtual = true)
+                    } else {
+                        _state.value.collections.find { it.id == collectionId }
+                    }
+                    _state.update {
+                        it.copy(
+                            selectedCollection = col ?: it.selectedCollection,
+                            isDetailLoading = false,
+                            collectionBookmarks = sortBookmarks(items, sortOrder)
+                        )
+                    }
                 }
             }
         }

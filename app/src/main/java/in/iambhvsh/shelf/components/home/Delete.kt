@@ -4,6 +4,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.font.FontWeight
 import `in`.iambhvsh.shelf.components.common.ExpressiveTextButton
 
 @Composable
@@ -16,7 +17,13 @@ fun DeleteConfirmationDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = MaterialTheme.shapes.extraLargeIncreased,
-        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = { Text(text, style = MaterialTheme.typography.bodyMedium) },
         confirmButton = {
             ExpressiveTextButton(onClick = onConfirm) {

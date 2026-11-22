@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.components.common.ExpressiveButton
 import `in`.iambhvsh.shelf.components.common.ExpressiveTextButton
 import `in`.iambhvsh.shelf.components.common.expressiveBounce
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import `in`.iambhvsh.shelf.theme.ShelfShapes
 import java.util.Calendar
 
@@ -30,7 +32,7 @@ fun ReminderPickerSheet(
     hasExistingReminder: Boolean,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberShelfSheetState()
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -120,6 +122,7 @@ fun ReminderPickerSheet(
             Text(
                 text = "Set Reminder",
                 style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -127,7 +130,7 @@ fun ReminderPickerSheet(
                 SegmentedListItem(
                     onClick = {
                         val cal = Calendar.getInstance()
-                        cal.set(Calendar.HOUR_OF_DAY, 20) // 8 PM
+                        cal.set(Calendar.HOUR_OF_DAY, 20)
                         cal.set(Calendar.MINUTE, 0)
                         if (cal.timeInMillis < System.currentTimeMillis()) {
                             cal.add(Calendar.DAY_OF_YEAR, 1)
@@ -147,7 +150,7 @@ fun ReminderPickerSheet(
                     onClick = {
                         val cal = Calendar.getInstance()
                         cal.add(Calendar.DAY_OF_YEAR, 1)
-                        cal.set(Calendar.HOUR_OF_DAY, 9) // 9 AM
+                        cal.set(Calendar.HOUR_OF_DAY, 9)
                         cal.set(Calendar.MINUTE, 0)
                         onSetReminder(cal.timeInMillis)
                     },
@@ -165,7 +168,7 @@ fun ReminderPickerSheet(
                         val cal = Calendar.getInstance()
                         val daysUntilSaturday = (Calendar.SATURDAY - cal.get(Calendar.DAY_OF_WEEK) + 7) % 7
                         cal.add(Calendar.DAY_OF_YEAR, if (daysUntilSaturday == 0) 7 else daysUntilSaturday)
-                        cal.set(Calendar.HOUR_OF_DAY, 10) // 10 AM
+                        cal.set(Calendar.HOUR_OF_DAY, 10)
                         cal.set(Calendar.MINUTE, 0)
                         onSetReminder(cal.timeInMillis)
                     },

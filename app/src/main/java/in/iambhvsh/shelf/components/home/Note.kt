@@ -5,9 +5,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.components.common.ExpressiveButton
 import `in`.iambhvsh.shelf.components.common.ExpressiveTextButton
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -16,7 +19,8 @@ fun NoteEditorSheet(
     onSave: (String?) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberShelfSheetState()
+    val scope = rememberCoroutineScope()
     var noteText by remember { mutableStateOf(initialNote ?: "") }
 
     val maxChar = 500
@@ -40,6 +44,7 @@ fun NoteEditorSheet(
             Text(
                 text = "Personal Note",
                 style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -67,13 +72,21 @@ fun NoteEditorSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                ExpressiveTextButton(onClick = onDismiss) {
+                ExpressiveTextButton(onClick = {
+                    scope.launch {
+                        sheetState.hide()
+                        onDismiss()
+                    }
+                }) {
                     Text("Cancel")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 ExpressiveButton(onClick = { 
                     val finalNote = noteText.trim().ifEmpty { null }
-                    onSave(finalNote) 
+                    scope.launch {
+                        sheetState.hide()
+                        onSave(finalNote)
+                    }
                 }) {
                     Text("Save Note")
                 }

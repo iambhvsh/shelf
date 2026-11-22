@@ -60,7 +60,7 @@ private fun writeToCustomUri(context: Context, jsonString: String, uriString: St
         }
 
         if (backupFile != null) {
-            context.contentResolver.openOutputStream(backupFile.uri)?.use { output ->
+            context.contentResolver.openOutputStream(backupFile.uri, "wt")?.use { output ->
                 output.write(jsonString.toByteArray())
             }
         } else {
@@ -123,7 +123,7 @@ private fun writeToDownloads(context: Context, jsonString: String) {
         }
 
         uri?.let {
-            context.contentResolver.openOutputStream(it)?.use { output ->
+            context.contentResolver.openOutputStream(it, "wt")?.use { output ->
                 output.write(jsonString.toByteArray())
             }
         }

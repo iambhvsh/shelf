@@ -2,9 +2,15 @@
 
 package `in`.iambhvsh.shelf.components.root
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -19,12 +25,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.TopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Brush
@@ -34,27 +38,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
-
-private class SmoothedHeaderValues(
-    val alpha: State<Float>,
-    val offset: State<Float>
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun rememberSmoothedHeaderValues(state: TopAppBarState): SmoothedHeaderValues {
-    val alpha = animateFloatAsState(
-        targetValue = (1f - state.collapsedFraction).coerceIn(0f, 1f),
-        animationSpec = tween(180),
-        label = "SmoothedHeaderAlpha"
-    )
-    val offset = animateFloatAsState(
-        targetValue = state.heightOffset,
-        animationSpec = tween(180),
-        label = "SmoothedHeaderOffset"
-    )
-    return SmoothedHeaderValues(alpha, offset)
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,29 +76,23 @@ fun ShelfHeader(
 
     val titleBias by animateFloatAsState(
         targetValue = if (isShiftedToStart) -1f else 0f,
-        animationSpec = tween(180),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "TitleAlignment"
     )
 
     val titleXOffset by animateDpAsState(
-        targetValue = if (isShiftedToStart) 68.dp else 0.dp,
-        animationSpec = tween(180),
+        targetValue = if (isShiftedToStart) 80.dp else 0.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "TitleOffset"
     )
+
+    val surface = MaterialTheme.colorScheme.surface
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer { alpha = smoothedAlpha.value }
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.surface,
-                        MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                        Color.Transparent
-                    )
-                )
-            )
+            .background(surface)
     ) {
         CenterAlignedTopAppBar(
             scrollBehavior = scrollBehavior,
@@ -129,47 +106,24 @@ fun ShelfHeader(
             )
         )
 
-        // Center / Dynamic Title Area
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .height(64.dp)
-                .offset { IntOffset(0, smoothedOffset.value.roundToInt()) }
-                .graphicsLayer {
-                    val a = smoothedAlpha.value
-                    alpha = a
-                    val scale = 1f - ((1f - a) * 0.08f)
-                    scaleX = scale
-                    scaleY = scale
-                }
-                .zIndex(1f),
-            contentAlignment = BiasAlignment(horizontalBias = titleBias, verticalBias = 0f)
-        ) {
-            if (isSearching) {
-                SearchField(
-                    searchQuery = searchQuery,
-                    onSearchQueryChange = onSearchQueryChange,
-                    searchPlaceholder = searchPlaceholder,
-                    focusRequester = focusRequester
-                )
-            } else {
-                val headerTitle = when {
-                    isSelectionMode -> "Selected $selectedCount"
-                    isDeepScreen -> deepScreenTitle ?: "Detail"
-                    currentTab == 0 -> "home_header"
-                    currentTab == 1 -> "Collections"
-                    else -> "Settings"
-                }
-                GreetingTitle(
-                    headerTitle = headerTitle,
-                    titleXOffset = titleXOffset,
-                    isShiftedToStart = isShiftedToStart
-                )
-            }
-        }
+        HeaderCenterSlot(
+            isSearching = isSearching,
+            titleBias = titleBias,
+            titleXOffset = titleXOffset,
+            isShiftedToStart = isShiftedToStart,
+            isSelectionMode = isSelectionMode,
+            selectedCount = selectedCount,
+            isDeepScreen = isDeepScreen,
+            deepScreenTitle = deepScreenTitle,
+            currentTab = currentTab,
+            searchQuery = searchQuery,
+            searchPlaceholder = searchPlaceholder,
+            onSearchQueryChange = onSearchQueryChange,
+            focusRequester = focusRequester,
+            smoothedAlpha = smoothedAlpha,
+            smoothedOffset = smoothedOffset
+        )
 
-        // Left Navigation Slot (New / Back / Close button)
         val leftState = when {
             isSearching -> HeaderLeftType.CLOSE
             isSelectionMode -> HeaderLeftType.CLOSE
@@ -206,11 +160,22 @@ fun ShelfHeader(
             )
         }
 
-        // Right Actions Slot
-        if (!isSearching) {
+        AnimatedVisibility(
+            visible = !isSearching,
+            modifier = Modifier.align(Alignment.TopEnd),
+            enter = fadeIn(spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)) +
+                    slideInHorizontally(
+                        initialOffsetX = { it },
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
+                    ),
+            exit = fadeOut(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow)) +
+                    slideOutHorizontally(
+                        targetOffsetX = { it },
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow)
+                    )
+        ) {
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
                     .offset { IntOffset(0, smoothedOffset.value.roundToInt()) }
                     .windowInsetsPadding(WindowInsets.statusBars)
                     .height(64.dp)
@@ -238,6 +203,6 @@ fun ShelfHeader(
                 onDeleteSelected = onDeleteSelected
             )
         }
-        }
     }
+}
 }

@@ -1,11 +1,5 @@
 package `in`.iambhvsh.shelf.components.root
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,7 +17,6 @@ import `in`.iambhvsh.shelf.features.collection.CollectionViewModel
 import `in`.iambhvsh.shelf.features.home.HomeEvents
 import `in`.iambhvsh.shelf.features.home.HomeState
 import `in`.iambhvsh.shelf.features.home.HomeViewModel
-import `in`.iambhvsh.shelf.components.home.TagFilterRow
 import `in`.iambhvsh.shelf.features.search.SearchState
 import `in`.iambhvsh.shelf.features.search.SearchViewModel
 
@@ -50,7 +43,7 @@ fun RootToolbar(
     onSetCollectionSearching: (Boolean) -> Unit,
     collectionSearchQuery: String,
     onSetCollectionSearchQuery: (String) -> Unit,
-    backStacks: List<MutableList<AppRoute>>,
+    onBack: () -> Unit,
     onConfirmDelete: (() -> Unit) -> Unit
 ) {
     val isAnySearching = isSearching || isCollectionSearching
@@ -82,21 +75,18 @@ fun RootToolbar(
             isAllSelected = isAllSelected,
             isSearching = isAnySearching,
             searchQuery = if (isCollectionSearching) collectionSearchQuery else searchState.searchQuery,
-            searchPlaceholder = if (isCollectionSearching) "Search in collection\u2026" else "Search bookmarks\u2026",
+            searchPlaceholder = when {
+                isCollectionDetail -> "Search in collection\u2026"
+                currentTab == 1 -> "Search collections\u2026"
+                else -> "Search bookmarks\u2026"
+            },
             onSearchQueryChange = {
                 if (isCollectionSearching) onSetCollectionSearchQuery(it)
                 else searchViewModel.onQueryChange(it)
             },
             focusRequester = focusRequester,
             scrollBehavior = scrollBehavior,
-            onBack = {
-                if (isCollectionDetail) {
-                    backStacks[1].removeAt(backStacks[1].size - 1)
-                    collectionViewModel.onEvent(CollectionEvents.ClearSelectedCollection)
-                } else if (isSettingsSubScreen) {
-                    backStacks[2].removeAt(backStacks[2].size - 1)
-                }
-            },
+            onBack = onBack,
             onNewBookmarkClick = {
                 if (isCollectionDetail && collectionState.selectedCollection != null) {
                     collectionViewModel.onEvent(CollectionEvents.ShowAddBookmarkDialog)
@@ -106,6 +96,8 @@ fun RootToolbar(
             },
             onNewCollectionClick = { collectionViewModel.onEvent(CollectionEvents.ShowCreateDialog) },
             onSearchClick = {
+                scrollBehavior.state.heightOffset = 0f
+                scrollBehavior.state.contentOffset = 0f
                 if (currentTab == 0) {
                     onSetSearching(true)
                     searchViewModel.onQueryChange("")
@@ -113,7 +105,11 @@ fun RootToolbar(
                 } else {
                     onSetCollectionSearching(true)
                     onSetCollectionSearchQuery("")
-                    collectionViewModel.onEvent(CollectionEvents.ClearDetailSelection)
+                    if (isCollectionDetail) {
+                        collectionViewModel.onEvent(CollectionEvents.ClearDetailSelection)
+                    } else {
+                        collectionViewModel.onEvent(CollectionEvents.ClearSelection)
+                    }
                 }
             },
             onSortClick = {
@@ -167,6 +163,8 @@ fun RootToolbar(
                 }
             } else null,
             onCloseSearch = {
+                scrollBehavior.state.heightOffset = 0f
+                scrollBehavior.state.contentOffset = 0f
                 if (isCollectionSearching) {
                     onSetCollectionSearching(false)
                     onSetCollectionSearchQuery("")
@@ -177,17 +175,5 @@ fun RootToolbar(
                 focusManager.clearFocus()
             }
         )
-
-        AnimatedVisibility(
-            visible = currentTab == 0 && !isAnySelection && !isAnySearching && state.tags.isNotEmpty(),
-            enter = expandVertically(tween(180)) + fadeIn(tween(180)),
-            exit = shrinkVertically(tween(150)) + fadeOut(tween(150))
-        ) {
-            TagFilterRow(
-                tags = state.tags,
-                activeTagIds = state.activeTagFilters,
-                onToggleTag = { viewModel.homeEvents(HomeEvents.ToggleTagFilter(it)) }
-            )
-        }
     }
 }

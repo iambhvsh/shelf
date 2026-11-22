@@ -52,4 +52,6 @@ sealed class SettingEvents {
     object HideResetDialog : SettingEvents()
     object ConfirmReset : SettingEvents()
     object ResetSuccessToastShown : SettingEvents()
+    object ShowPermissionsSheet : SettingEvents()
+    object HidePermissionsSheet : SettingEvents()
 }

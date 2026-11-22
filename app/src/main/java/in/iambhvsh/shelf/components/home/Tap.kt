@@ -2,6 +2,7 @@ package `in`.iambhvsh.shelf.components.home
 
 import android.content.Context
 import androidx.compose.ui.platform.Clipboard
+import `in`.iambhvsh.shelf.components.common.copyToClipboard
 import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.openChromeTab
 import `in`.iambhvsh.shelf.features.home.HomeEvents
@@ -17,7 +18,7 @@ fun handleTap(
 ) {
     when (tapAction) {
         TapAction.OPEN_BROWSER -> openChromeTab(item.url, context)
-        TapAction.COPY_LINK -> item.url.let { clipboard.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it)) }
+        TapAction.COPY_LINK -> context.copyToClipboard(item.url)
         TapAction.SHOW_PREVIEW -> viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
     }
 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.data.Tag
 import `in`.iambhvsh.shelf.components.common.ExpressiveIconButton
 import `in`.iambhvsh.shelf.components.common.expressiveBounce
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import `in`.iambhvsh.shelf.theme.ShelfShapes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -34,7 +35,7 @@ fun TagManagerSheet(
     onDismiss: () -> Unit
 ) {
     var newTagName by remember { mutableStateOf("") }
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberShelfSheetState(skipPartiallyExpanded = false)
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
@@ -58,7 +59,7 @@ fun TagManagerSheet(
                     text = "Manage Tags",
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
@@ -66,8 +67,7 @@ fun TagManagerSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Create New Tag Row
-            Row(
+                Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),

@@ -17,7 +17,13 @@ sealed class ExportState {
 sealed class ImportState {
     object Idle : ImportState()
     object Loading : ImportState()
-    object Success : ImportState()
+    data class Success(
+        val imported: Int,
+        val updated: Int,
+        val skipped: Int,
+        val collections: Int,
+        val unresolvable: Int = 0
+    ) : ImportState()
     data class Error(val message: String) : ImportState()
 }
 
@@ -61,5 +67,6 @@ data class SettingState(
     val showChangelogSheet: Boolean = false,
     val changelogText: String = "",
     val showResetDialog: Boolean = false,
-    val resetSuccessToast: Boolean = false
+    val resetSuccessToast: Boolean = false,
+    val showPermissionsSheet: Boolean = false
 )

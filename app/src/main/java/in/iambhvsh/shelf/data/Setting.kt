@@ -5,7 +5,6 @@ import `in`.iambhvsh.shelf.features.setting.TapAction
 import `in`.iambhvsh.shelf.features.setting.ViewMode
 import `in`.iambhvsh.shelf.theme.AccentColor
 import `in`.iambhvsh.shelf.theme.ThemeMode
-import `in`.iambhvsh.shelf.theme.applyThemeMode
 import androidx.core.content.edit
 
 class SettingsRepositoryImpl(private val context: Context) : SettingsRepository {
@@ -25,6 +24,7 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
         private const val KEY_LAST_UPDATE_CHECK_TIME = "last_update_check_time"
         private const val KEY_LATEST_AVAILABLE_VERSION = "latest_available_version"
         private const val KEY_LATEST_RELEASE_URL = "latest_release_url"
+        private const val KEY_FIRST_LAUNCH_PERMISSIONS_SHOWN = "first_launch_permissions_shown"
     }
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -36,7 +36,6 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun setThemeMode(mode: ThemeMode) {
         prefs.edit { putInt(KEY_THEME_MODE, mode.ordinal) }
-        applyThemeMode(mode, context)
     }
 
     override fun getTapAction(): TapAction {
@@ -138,8 +137,15 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
         prefs.edit { putString(KEY_LATEST_RELEASE_URL, url) }
     }
 
+    override fun isFirstLaunchPermissionsShown(): Boolean {
+        return prefs.getBoolean(KEY_FIRST_LAUNCH_PERMISSIONS_SHOWN, false)
+    }
+
+    override fun setFirstLaunchPermissionsShown(shown: Boolean) {
+        prefs.edit { putBoolean(KEY_FIRST_LAUNCH_PERMISSIONS_SHOWN, shown) }
+    }
+
     override fun resetToDefaults() {
         prefs.edit { clear() }
-        applyThemeMode(ThemeMode.SYSTEM, context)
     }
 }

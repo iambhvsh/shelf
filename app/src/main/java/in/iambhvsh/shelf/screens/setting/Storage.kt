@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,6 +35,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -88,10 +90,10 @@ fun SettingsDataScreen(
         }
     }
 
+    val containerColor = MaterialTheme.colorScheme.surfaceContainer
+
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = topPadding + 8.dp, bottom = bottomPadding)
     ) {
@@ -100,7 +102,7 @@ fun SettingsDataScreen(
                 onClick = { viewModel.onEvent(SettingEvents.ShowExportSheet) },
                 shapes = ShelfShapes.segmented(0, 2),
                 modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
-                colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                colors = ListItemDefaults.segmentedColors(containerColor = containerColor),
                 leadingContent = {
                     Icon(imageVector = Icons.Outlined.Upload, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 },
@@ -118,7 +120,7 @@ fun SettingsDataScreen(
                 onClick = { viewModel.onEvent(SettingEvents.ShowImportSheet) },
                 shapes = ShelfShapes.segmented(1, 2),
                 modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
-                colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                colors = ListItemDefaults.segmentedColors(containerColor = containerColor),
                 leadingContent = {
                     Icon(imageVector = Icons.Outlined.Download, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 },
@@ -141,7 +143,7 @@ fun SettingsDataScreen(
                 onClick = { viewModel.onEvent(SettingEvents.ToggleAutoBackup(!state.autoBackupEnabled)) },
                 shapes = ShelfShapes.segmented(0, autoBackupCount),
                 modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
-                colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                colors = ListItemDefaults.segmentedColors(containerColor = containerColor),
                 leadingContent = {
                     Icon(imageVector = Icons.Outlined.Backup, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 },
@@ -159,8 +161,12 @@ fun SettingsDataScreen(
                         checked = state.autoBackupEnabled,
                         onCheckedChange = { viewModel.onEvent(SettingEvents.ToggleAutoBackup(it)) },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.primary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                            checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            uncheckedBorderColor = MaterialTheme.colorScheme.outline
                         )
                     )
                 },
@@ -176,7 +182,7 @@ fun SettingsDataScreen(
                     onClick = { backupDirLauncher.launch(null) },
                     shapes = ShelfShapes.segmented(1, 2),
                     modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
-                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    colors = ListItemDefaults.segmentedColors(containerColor = containerColor),
                     leadingContent = {
                         Icon(imageVector = Icons.Outlined.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                     },

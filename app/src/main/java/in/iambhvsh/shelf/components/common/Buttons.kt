@@ -16,9 +16,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
-/**
- * Material 3 Expressive Button with shape morphing on press/hover/drag.
- */
 @Composable
 fun ExpressiveButton(
     onClick: () -> Unit,
@@ -39,9 +36,6 @@ fun ExpressiveButton(
     )
 }
 
-/**
- * Material 3 Expressive FilledTonalButton with shape morphing.
- */
 @Composable
 fun ExpressiveFilledTonalButton(
     onClick: () -> Unit,
@@ -62,9 +56,6 @@ fun ExpressiveFilledTonalButton(
     )
 }
 
-/**
- * Material 3 Expressive OutlinedButton with shape morphing.
- */
 @Composable
 fun ExpressiveOutlinedButton(
     onClick: () -> Unit,
@@ -85,9 +76,6 @@ fun ExpressiveOutlinedButton(
     )
 }
 
-/**
- * Material 3 Expressive TextButton with shape morphing.
- */
 @Composable
 fun ExpressiveTextButton(
     onClick: () -> Unit,
@@ -108,9 +96,6 @@ fun ExpressiveTextButton(
     )
 }
 
-/**
- * Material 3 Expressive IconButton with shape morphing.
- */
 @Composable
 fun ExpressiveIconButton(
     onClick: () -> Unit,

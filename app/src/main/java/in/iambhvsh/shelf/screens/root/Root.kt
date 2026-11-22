@@ -16,11 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,12 +25,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import `in`.iambhvsh.shelf.nav.AppRoute
-import `in`.iambhvsh.shelf.features.collection.CollectionEvents
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import `in`.iambhvsh.shelf.features.collection.CollectionViewModel
 import `in`.iambhvsh.shelf.features.home.HomeEvents
 import `in`.iambhvsh.shelf.features.home.HomeViewModel
 import `in`.iambhvsh.shelf.features.search.SearchViewModel
+import `in`.iambhvsh.shelf.features.setting.SettingEvents
 import `in`.iambhvsh.shelf.features.setting.SettingViewModel
 import `in`.iambhvsh.shelf.theme.ShelfTheme
 import org.koin.androidx.compose.koinViewModel
@@ -53,26 +51,37 @@ fun Root(
     val collectionState by collectionViewModel.state.collectAsState()
     val settingState by settingViewModel.state.collectAsState()
     val searchState by searchViewModel.state.collectAsState()
-    var currentTab by rememberSaveable { mutableIntStateOf(0) }
+
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
     var isSearching by remember { mutableStateOf(false) }
     var isCollectionSearching by remember { mutableStateOf(false) }
     var collectionSearchQuery by remember { mutableStateOf("") }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     var pendingDeleteAction: (() -> Unit)? by remember { mutableStateOf(null) }
 
-    val backStacks: List<MutableList<AppRoute>> = remember {
-        listOf(
-            mutableStateListOf<AppRoute>(AppRoute.Home),
-            mutableStateListOf<AppRoute>(AppRoute.Collections),
-            mutableStateListOf<AppRoute>(AppRoute.Settings)
-        )
-    }
+    val navState = rememberRootNavState(
+        navBackStackEntry = navBackStackEntry,
+        state = state,
+        collectionState = collectionState,
+        isSearching = isSearching,
+        isCollectionSearching = isCollectionSearching
+    )
+
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = if (navState.isDeepScreen) pinnedScrollBehavior else enterAlwaysScrollBehavior
 
     LaunchedEffect(isSearching) {
         if (isSearching) focusRequester.requestFocus()
+    }
+    LaunchedEffect(Unit) {
+        if (!settingViewModel.settingsRepository.isFirstLaunchPermissionsShown()) {
+            settingViewModel.onEvent(SettingEvents.ShowPermissionsSheet)
+        }
     }
     LaunchedEffect(state.activeTagFilters) {
         searchViewModel.onTagsChange(state.activeTagFilters)
@@ -85,32 +94,16 @@ fun Root(
     LaunchedEffect(isCollectionSearching) {
         if (isCollectionSearching) focusRequester.requestFocus()
     }
-    LaunchedEffect(currentTab) {
-        scrollBehavior.state.heightOffset = 0f
-        scrollBehavior.state.contentOffset = 0f
+    LaunchedEffect(navState.currentRoute) {
+        if (!navState.isDeepScreen) {
+            enterAlwaysScrollBehavior.state.heightOffset = 0f
+            enterAlwaysScrollBehavior.state.contentOffset = 0f
+        }
+        if (navState.isCollectionDetail && isCollectionSearching) {
+            isCollectionSearching = false
+            collectionSearchQuery = ""
+        }
     }
-
-    val isCollectionDetail = currentTab == 1 && backStacks[1].lastOrNull() is AppRoute.CollectionDetail
-    val collectionName = if (isCollectionDetail) {
-        val rawName = collectionState.selectedCollection?.name ?: "Collection"
-        if (rawName.length > 13) "${rawName.take(13)}..." else rawName
-    } else null
-
-    val currentSettingsRoute = if (currentTab == 2) backStacks[2].lastOrNull() else null
-    val isSettingsSubScreen = currentTab == 2 && currentSettingsRoute != null && currentSettingsRoute != AppRoute.Settings
-    val settingsSubScreenTitle = when (currentSettingsRoute) {
-        is AppRoute.SettingsAppearance -> "Appearance"
-        is AppRoute.SettingsGeneral -> "General"
-        is AppRoute.SettingsSecurity -> "Security"
-        is AppRoute.SettingsData -> "Data & Storage"
-        is AppRoute.SettingsAbout -> "About"
-        else -> null
-    }
-
-    val isDeepScreen = isCollectionDetail || isSettingsSubScreen
-    val deepScreenTitle = if (isCollectionDetail) collectionName else settingsSubScreenTitle
-    val showDock = !state.isSelectionMode && !collectionState.isSelectionMode &&
-            !collectionState.isDetailSelectionMode && !isSearching && !isCollectionSearching && !isDeepScreen
 
     ShelfTheme(
         themeMode = settingState.themeMode,
@@ -132,8 +125,7 @@ fun Root(
         ) {
             Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
                 RootBody(
-                    currentTab = currentTab,
-                    onTabChange = { currentTab = it },
+                    navController = navController,
                     sharedUrl = sharedUrl,
                     viewModel = viewModel,
                     collectionViewModel = collectionViewModel,
@@ -143,23 +135,24 @@ fun Root(
                     searchState = searchState,
                     versionName = versionName,
                     context = context,
-                    backStacks = backStacks,
                     isSearching = isSearching,
                     isCollectionSearching = isCollectionSearching,
-                    collectionSearchQuery = collectionSearchQuery
+                    isCollectionDetail = navState.isCollectionDetail,
+                    collectionSearchQuery = collectionSearchQuery,
+                    scrollBehavior = scrollBehavior
                 )
             }
 
             Box(modifier = Modifier.align(Alignment.TopCenter)) {
                 RootToolbar(
-                    currentTab = currentTab,
+                    currentTab = navState.currentTab,
                     scrollBehavior = scrollBehavior,
                     focusRequester = focusRequester,
                     focusManager = focusManager,
-                    isDeepScreen = isDeepScreen,
-                    deepScreenTitle = deepScreenTitle,
-                    isCollectionDetail = isCollectionDetail,
-                    isSettingsSubScreen = isSettingsSubScreen,
+                    isDeepScreen = navState.isDeepScreen,
+                    deepScreenTitle = navState.deepScreenTitle,
+                    isCollectionDetail = navState.isCollectionDetail,
+                    isSettingsSubScreen = navState.isSettingsSubScreen,
                     state = state,
                     viewModel = viewModel,
                     collectionState = collectionState,
@@ -172,7 +165,7 @@ fun Root(
                     onSetCollectionSearching = { isCollectionSearching = it },
                     collectionSearchQuery = collectionSearchQuery,
                     onSetCollectionSearchQuery = { collectionSearchQuery = it },
-                    backStacks = backStacks,
+                    onBack = { navController.popBackStack() },
                     onConfirmDelete = { action ->
                         pendingDeleteAction = action
                         showDeleteConfirmDialog = true
@@ -181,25 +174,20 @@ fun Root(
             }
 
             AnimatedDock(
-                visible = showDock,
-                currentTab = currentTab,
+                visible = navState.showDock,
+                currentTab = navState.currentTab,
                 onTabChange = { tab ->
-                    if (currentTab == tab) {
-                        if (tab == 1 && backStacks[1].size > 1) {
-                            backStacks[1].subList(1, backStacks[1].size).clear()
-                            collectionViewModel.onEvent(CollectionEvents.ClearSelectedCollection)
-                        } else if (tab == 2 && backStacks[2].size > 1) {
-                            backStacks[2].subList(1, backStacks[2].size).clear()
-                        }
-                    } else {
-                        currentTab = tab
-                    }
+                    enterAlwaysScrollBehavior.state.heightOffset = 0f
+                    enterAlwaysScrollBehavior.state.contentOffset = 0f
+                    navigateRootTab(navController, navState.currentRoute, tab)
                 },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
 
         BackHandler(enabled = isSearching) {
+            enterAlwaysScrollBehavior.state.heightOffset = 0f
+            enterAlwaysScrollBehavior.state.contentOffset = 0f
             isSearching = false
             searchViewModel.onQueryChange("")
         }

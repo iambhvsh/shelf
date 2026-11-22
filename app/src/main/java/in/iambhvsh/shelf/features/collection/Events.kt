@@ -10,6 +10,7 @@ sealed class CollectionEvents {
     object HideCreateDialog : CollectionEvents()
     object CreateCollection : CollectionEvents()
     data class SelectCollection(val collection: Collection) : CollectionEvents()
+    data class SelectCollectionById(val collectionId: Long) : CollectionEvents()
     object ClearSelectedCollection : CollectionEvents()
     data class ToggleSelection(val id: Long) : CollectionEvents()
     object SelectAll : CollectionEvents()

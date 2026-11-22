@@ -40,19 +40,26 @@ fun Media(
 ) {
     var imageFailed by remember { mutableStateOf(false) }
 
+    val high = MaterialTheme.colorScheme.surfaceContainerHigh
+    val low = MaterialTheme.colorScheme.surfaceContainerLow
+    val gradientBrush = remember(high, low) {
+        Brush.verticalGradient(listOf(high, low))
+    }
+    val overlayBrush = remember {
+        Brush.verticalGradient(
+            listOf(
+                Color.Transparent,
+                Color.Black.copy(alpha = 0.3f)
+            )
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(cardAspectRatio)
             .clip(MaterialTheme.shapes.largeIncreased)
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.surfaceContainerHigh,
-                        MaterialTheme.colorScheme.surfaceContainerLow
-                    )
-                )
-            ),
+            .background(gradientBrush),
         contentAlignment = Alignment.Center
     ) {
         if (!imageUrl.isNullOrBlank() && !imageFailed) {
@@ -81,14 +88,7 @@ fun Media(
                     .fillMaxWidth()
                     .height(60.dp)
                     .align(Alignment.BottomCenter)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.3f)
-                            )
-                        )
-                    )
+                    .background(overlayBrush)
             )
         } else {
             Text(

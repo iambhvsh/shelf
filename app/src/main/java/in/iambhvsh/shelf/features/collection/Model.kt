@@ -36,6 +36,7 @@ class CollectionViewModel(
             CollectionEvents.HideCreateDialog -> _state.update { it.copy(showCreateDialog = false, inputName = "") }
             CollectionEvents.CreateCollection -> createCollection()
             is CollectionEvents.SelectCollection -> selectCollection(event.collection)
+            is CollectionEvents.SelectCollectionById -> selectCollectionById(event.collectionId)
             CollectionEvents.ClearSelectedCollection -> {
                 collectionJob?.cancel()
                 _state.update { it.copy(selectedCollection = null, collectionBookmarks = emptyList(), isDetailSelectionMode = false, detailSelectedIds = emptySet()) }
