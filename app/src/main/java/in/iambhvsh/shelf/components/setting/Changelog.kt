@@ -58,7 +58,6 @@ fun ChangelogSheet(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // Strip everything before the first "## " and add separators before subsequent versions
                 val cleanText = changelogText
                     .replaceFirst(Regex("(?s)^.*?## "), "## ")
                     .replace(Regex("\\r?\\n## "), "\n---\n\n\n## ")

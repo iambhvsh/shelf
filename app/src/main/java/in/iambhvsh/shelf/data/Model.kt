@@ -65,7 +65,8 @@ data class BackupCollection(
 
 @Serializable
 data class BackupData(
-    val version: Int = 2,
+    val schemaVersion: Int = 3,
+    val version: Int = 3,
     val exportedAt: Long = System.currentTimeMillis(),
     val bookmarks: List<BackupBookmark> = emptyList(),
     val collections: List<BackupCollection> = emptyList(),

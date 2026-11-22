@@ -18,7 +18,6 @@ object SessionManager {
 
         val backgroundTime = lastBackgroundTime
         if (backgroundTime == null) {
-            // Fresh launch or killed in background
             isUnlocked = false
         } else {
             val elapsed = SystemClock.elapsedRealtime() - backgroundTime

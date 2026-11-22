@@ -27,8 +27,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,7 +42,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.components.common.expressiveBounce
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import `in`.iambhvsh.shelf.theme.AccentColor
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,9 +55,12 @@ fun AccentColorSheet(
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val sheetState = rememberShelfSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         shape = MaterialTheme.shapes.extraLargeIncreased,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
@@ -65,7 +72,7 @@ fun AccentColorSheet(
             Text(
                 text = "Accent color",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 16.dp)
             )
@@ -85,7 +92,12 @@ fun AccentColorSheet(
                             AccentSwatch(
                                 accent = accent,
                                 selected = accent == current,
-                                onClick = { onSelect(accent) }
+                                onClick = {
+                                    scope.launch {
+                                        sheetState.hide()
+                                        onSelect(accent)
+                                    }
+                                }
                             )
                         }
                         repeat(4 - rowColors.size) {

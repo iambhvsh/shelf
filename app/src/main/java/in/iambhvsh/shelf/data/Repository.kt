@@ -73,6 +73,8 @@ interface SettingsRepository {
     fun setLatestAvailableVersion(version: String?)
     fun getLatestReleaseUrl(): String?
     fun setLatestReleaseUrl(url: String?)
+    fun isFirstLaunchPermissionsShown(): Boolean
+    fun setFirstLaunchPermissionsShown(shown: Boolean)
     fun resetToDefaults()
 }
 

@@ -174,8 +174,10 @@ class BookmarkRepositoryImpl(
             collectionDao.getAllCollections(),
             collectionDao.getUnassignedCollectionStats()
         ) { collections, unassignedStats ->
-            val mapped = collections.map { it.toDomain() }.toMutableList()
-            mapped.add(0, unassignedStats.toDomain())
+            val mapped: List<Collection> = buildList {
+                add(unassignedStats.toDomain())
+                addAll(collections.map { it.toDomain() })
+            }
             Resource.Success(mapped) as Resource<List<Collection>>
         }
         .onStart { emit(Resource.Loading()) }

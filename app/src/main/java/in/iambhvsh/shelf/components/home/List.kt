@@ -40,7 +40,11 @@ fun BookmarkList(
         contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = 108.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(items = items, key = { it.id }) { item ->
+        items(
+            items = items,
+            key = { it.id },
+            contentType = { "bookmark" }
+        ) { item ->
             BookmarkListItem(
                 modifier = Modifier.animateItem(),
                 imageUrl = item.imageUrl,

@@ -10,7 +10,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
 import `in`.iambhvsh.shelf.screens.root.Root
-import `in`.iambhvsh.shelf.theme.applyThemeMode
 
 import `in`.iambhvsh.shelf.data.SettingsRepository
 import org.koin.android.ext.android.inject
@@ -39,10 +38,9 @@ class MainActivity : FragmentActivity() {
     private var isAuthenticatedState by mutableStateOf(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemeMode(settingsRepository.getThemeMode(), this)
         installSplashScreen()
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
 
         currentIntent = intent
 

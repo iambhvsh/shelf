@@ -4,7 +4,8 @@ package `in`.iambhvsh.shelf.components.root
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -52,13 +53,13 @@ fun RightActionSlot(
         targetState = if (isSelectionMode) "selection" else "normal",
         modifier = modifier,
         transitionSpec = {
-            (fadeIn(animationSpec = tween(180)) +
-                    scaleIn(initialScale = 0.92f, animationSpec = tween(180)) +
-                    slideInHorizontally(initialOffsetX = { it / 2 }, animationSpec = tween(180)))
+            (fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                    scaleIn(initialScale = 0.92f, animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                    slideInHorizontally(initialOffsetX = { it / 2 }, animationSpec = spring(stiffness = Spring.StiffnessMediumLow)))
                 .togetherWith(
-                    fadeOut(animationSpec = tween(150)) +
-                            scaleOut(targetScale = 0.92f, animationSpec = tween(150)) +
-                            slideOutHorizontally(targetOffsetX = { it / 2 }, animationSpec = tween(150))
+                    fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                            scaleOut(targetScale = 0.92f, animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                            slideOutHorizontally(targetOffsetX = { it / 2 }, animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
                 )
         },
         label = "RightActionsContent"
@@ -67,15 +68,13 @@ fun RightActionSlot(
             Row(
                 modifier = Modifier.padding(end = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 if (isAllSelected) {
-                    IconButton(
+                    TopBarButton(
                         onClick = onDeselectAll,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .expressiveBounce(scaleDown = 0.92f)
+                        contentDescription = "Deselect all",
+                        contentColor = MaterialTheme.colorScheme.primary
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.deselct_all),
@@ -85,12 +84,10 @@ fun RightActionSlot(
                         )
                     }
                 } else {
-                    IconButton(
+                    TopBarButton(
                         onClick = onSelectAll,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .expressiveBounce(scaleDown = 0.92f)
+                        contentDescription = "Select all",
+                        contentColor = MaterialTheme.colorScheme.primary
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.selectall_icon),
@@ -101,12 +98,10 @@ fun RightActionSlot(
                     }
                 }
                 if (onAddToCollection != null) {
-                    IconButton(
+                    TopBarButton(
                         onClick = onAddToCollection,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .expressiveBounce(scaleDown = 0.92f)
+                        contentDescription = "Add to collection",
+                        contentColor = MaterialTheme.colorScheme.primary
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.bookmark_add),
@@ -117,12 +112,10 @@ fun RightActionSlot(
                     }
                 }
                 if (onRenameSelected != null) {
-                    IconButton(
+                    TopBarButton(
                         onClick = onRenameSelected,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .expressiveBounce(scaleDown = 0.92f)
+                        contentDescription = "Rename",
+                        contentColor = MaterialTheme.colorScheme.primary
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Edit,
@@ -133,12 +126,10 @@ fun RightActionSlot(
                     }
                 }
                 if (onDeleteSelected != null) {
-                    IconButton(
+                    TopBarButton(
                         onClick = onDeleteSelected,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .expressiveBounce(scaleDown = 0.92f)
+                        contentDescription = "Delete selected",
+                        contentColor = MaterialTheme.colorScheme.error
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.delete_icon),
@@ -153,46 +144,40 @@ fun RightActionSlot(
             val showRightActions = currentTab == 0 || currentTab == 1
             AnimatedVisibility(
                 visible = showRightActions,
-                enter = fadeIn(animationSpec = tween(180)) +
-                        scaleIn(initialScale = 0.88f, animationSpec = tween(180)),
-                exit = fadeOut(animationSpec = tween(150)) +
-                        scaleOut(targetScale = 0.88f, animationSpec = tween(150))
+                enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                        scaleIn(initialScale = 0.88f, animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
+                exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                        scaleOut(targetScale = 0.88f, animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
             ) {
                 Row(
                     modifier = Modifier.padding(end = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
-                            .expressiveBounce(scaleDown = 0.92f)
-                            .clickable(onClick = onSearchClick),
-                        contentAlignment = Alignment.Center
+                    TopBarButton(
+                        onClick = onSearchClick,
+                        contentDescription = "Search",
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.search_icon),
                             contentDescription = "Search",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(22.dp)
                         )
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
-                            .expressiveBounce(scaleDown = 0.92f)
-                            .clickable(onClick = onSortClick),
-                        contentAlignment = Alignment.Center
+                    TopBarButton(
+                        onClick = onSortClick,
+                        contentDescription = "Sort & Filter",
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.filter_icon),
                             contentDescription = "Sort & Filter",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(22.dp)
                         )
                     }

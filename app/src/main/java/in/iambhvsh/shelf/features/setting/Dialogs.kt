@@ -2,27 +2,13 @@ package `in`.iambhvsh.shelf.features.setting
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialogDefaults
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import `in`.iambhvsh.shelf.components.common.ExpressiveTextButton
 import `in`.iambhvsh.shelf.components.setting.AutoBackupInfoDialog
 import `in`.iambhvsh.shelf.components.setting.InfoDialog
 
@@ -62,10 +48,23 @@ fun SettingDialogs(
         )
     }
 
-    if (state.importState is ImportState.Success) {
+    val importSuccess = state.importState as? ImportState.Success
+    if (importSuccess != null) {
+        val text = buildString {
+            append("Restored ${importSuccess.imported} bookmarks")
+            if (importSuccess.updated > 0) {
+                append(" (${importSuccess.updated} unhidden/updated)")
+            }
+            append(" in ${importSuccess.collections} collections.")
+            if (importSuccess.unresolvable > 0) {
+                append("\n\n${importSuccess.unresolvable} links were skipped because they could not be found.")
+            } else if (importSuccess.skipped > 0) {
+                append("\n\n${importSuccess.skipped} existing bookmarks were already up to date.")
+            }
+        }
         InfoDialog(
             title = "Import successful",
-            text = "Your bookmarks and collections have been restored.",
+            text = text,
             onDismiss = { viewModel.onEvent(SettingEvents.DismissImportResult) }
         )
     }
@@ -114,52 +113,39 @@ fun SettingDialogs(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResetConfirmationDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
-    BasicAlertDialog(
-        onDismissRequest = onDismiss
-    ) {
-        Surface(
-            shape = MaterialTheme.shapes.extraLarge,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            tonalElevation = AlertDialogDefaults.TonalElevation
-        ) {
-            Column(modifier = Modifier.padding(24.dp)) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = MaterialTheme.shapes.extraLargeIncreased,
+        title = {
+            Text(
+                text = "Reset all data?",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                text = "This will permanently delete all your bookmarks, collections, tags, notes, reminders, and reset all settings to default. This action cannot be undone.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        confirmButton = {
+            ExpressiveTextButton(onClick = onConfirm) {
                 Text(
-                    text = "Reset all data?",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.SemiBold
+                    text = "Reset",
+                    color = MaterialTheme.colorScheme.error
                 )
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = "This will permanently delete all your bookmarks, collections, tags, notes, reminders, and reset all settings to default. This action cannot be undone.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(
-                        onClick = onConfirm,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text("Reset")
-                    }
-                }
+            }
+        },
+        dismissButton = {
+            ExpressiveTextButton(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
-    }
+    )
 }

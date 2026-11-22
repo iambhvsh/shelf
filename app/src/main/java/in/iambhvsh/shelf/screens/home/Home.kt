@@ -1,21 +1,21 @@
 package `in`.iambhvsh.shelf.screens.home
 
-import `in`.iambhvsh.shelf.features.home.*
-import `in`.iambhvsh.shelf.components.home.*
-
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,31 +24,31 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import `in`.iambhvsh.shelf.data.Bookmark
-import `in`.iambhvsh.shelf.components.home.BookmarkGrid
-import `in`.iambhvsh.shelf.components.home.BookmarkList
-import `in`.iambhvsh.shelf.components.home.EmptyBookmarkState
-import `in`.iambhvsh.shelf.components.home.LoadingProgress
 import `in`.iambhvsh.shelf.components.home.handleTap
-import `in`.iambhvsh.shelf.screens.search.SearchResults
+import `in`.iambhvsh.shelf.data.Bookmark
+import `in`.iambhvsh.shelf.features.home.HomeEvents
+import `in`.iambhvsh.shelf.features.home.HomeSheets
+import `in`.iambhvsh.shelf.features.home.HomeViewModel
 import `in`.iambhvsh.shelf.features.setting.TapAction
 import `in`.iambhvsh.shelf.features.setting.ViewMode
+import `in`.iambhvsh.shelf.screens.search.SearchResults
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     sharedUrl: String? = null,
     tapAction: TapAction = TapAction.SHOW_PREVIEW,
     viewMode: ViewMode = ViewMode.GRID,
-    searchResults: List<Bookmark>? = null,
+    isSearching: Boolean = false,
+    searchResults: List<Bookmark> = emptyList(),
     searchQuery: String = "",
-    viewModel: HomeViewModel = koinViewModel()
+    viewModel: HomeViewModel = koinViewModel(),
+    scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -109,66 +109,56 @@ fun HomeScreen(
         viewModel.homeEvents(HomeEvents.ClearSelection)
     }
 
-    if (searchResults != null) {
-        SearchResults(
-            results = searchResults,
-            query = searchQuery,
+    var cachedResults by remember { mutableStateOf(searchResults) }
+    var cachedQuery by remember { mutableStateOf(searchQuery) }
+
+    if (isSearching) {
+        cachedResults = searchResults
+        cachedQuery = searchQuery
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        HomeContent(
+            state = state,
             viewMode = viewMode,
-            selectedIds = state.selectedIds,
-            isSelectionMode = state.isSelectionMode,
-            isLoading = state.isLoading,
-            onBodyClick = { item -> handleTap(item, tapAction, context, clipboard, viewModel) },
-            onPhotoClick = { viewModel.homeEvents(HomeEvents.PreviewImageClick(url = it)) },
-            onNoteClick = { item ->
-                viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
-                viewModel.homeEvents(HomeEvents.ShowNoteEditor(item.note))
-            }
+            gridState = gridState,
+            listState = listState,
+            tapAction = tapAction,
+            context = context,
+            clipboard = clipboard,
+            viewModel = viewModel,
+            scrollBehavior = scrollBehavior
         )
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
+
+        AnimatedVisibility(
+            visible = isSearching,
+            enter = fadeIn(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ),
+            exit = fadeOut(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                if (state.bookmarkData.isEmpty() && !state.isLoading) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        EmptyBookmarkState()
-                    }
-                } else if (viewMode == ViewMode.GRID) {
-                    BookmarkGrid(
-                        items = state.bookmarkData,
-                        gridState = gridState,
-                        selectedIds = state.selectedIds,
-                        isSelectionMode = state.isSelectionMode,
-                        tapAction = tapAction,
-                        context = context,
-                        clipboard = clipboard,
-                        viewModel = viewModel,
-                        hasTags = state.tags.isNotEmpty() && !state.isSelectionMode
-                    )
-                } else {
-                    BookmarkList(
-                        items = state.bookmarkData,
-                        listState = listState,
-                        selectedIds = state.selectedIds,
-                        isSelectionMode = state.isSelectionMode,
-                        tapAction = tapAction,
-                        context = context,
-                        clipboard = clipboard,
-                        viewModel = viewModel,
-                        hasTags = state.tags.isNotEmpty() && !state.isSelectionMode
-                    )
+            SearchResults(
+                results = if (isSearching) searchResults else cachedResults,
+                query = if (isSearching) searchQuery else cachedQuery,
+                viewMode = viewMode,
+                selectedIds = state.selectedIds,
+                isSelectionMode = state.isSelectionMode,
+                isLoading = state.isLoading,
+                onBodyClick = { item -> handleTap(item, tapAction, context, clipboard, viewModel) },
+                onPhotoClick = { viewModel.homeEvents(HomeEvents.PreviewImageClick(url = it)) },
+                onNoteClick = { item ->
+                    viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
+                    viewModel.homeEvents(HomeEvents.ShowNoteEditor(item.note))
                 }
-                LoadingProgress(state.isLoading)
-            }
+            )
         }
     }
 

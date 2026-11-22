@@ -10,7 +10,9 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -110,8 +112,18 @@ fun Dock(
                     )
                     AnimatedVisibility(
                         visible = selected,
-                        enter = expandHorizontally(tween(200)),
-                        exit = shrinkHorizontally(tween(150))
+                        enter = fadeIn() + slideInHorizontally(
+                            initialOffsetX = { -15 },
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessLow
+                            )
+                        ) + expandHorizontally(expandFrom = Alignment.Start),
+                        exit = fadeOut() + slideOutHorizontally(
+                            targetOffsetX = { -15 }
+                        ) + shrinkHorizontally(
+                            shrinkTowards = Alignment.Start
+                        )
                     ) {
                         Text(
                             text = item.title,

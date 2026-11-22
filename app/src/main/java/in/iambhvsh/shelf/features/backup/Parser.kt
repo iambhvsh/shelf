@@ -3,7 +3,7 @@ package `in`.iambhvsh.shelf.features.backup
 data class ParsedBookmark(
     val url: String,
     val title: String,
-    val collection: String? = null
+    val collections: List<String> = emptyList()
 )
 
 data class BrowserImportResult(
@@ -38,10 +38,9 @@ class BookmarkParser {
 
         tags.sortBy { it.position }
 
-        val bookmarks = mutableListOf<ParsedBookmark>()
+        val bookmarkMap = linkedMapOf<String, MutableParsedBookmark>()
         val folderStack = ArrayDeque<String>()
-        val seenCollections = mutableSetOf<String>()
-        val seenUrls = mutableSetOf<String>()
+        val collectionsWithBookmarks = linkedSetOf<String>()
 
         for (tag in tags) {
             when (tag.type) {
@@ -49,21 +48,38 @@ class BookmarkParser {
                     val name = tag.value.replaceHtmlEntities()
                     if (name.isNotBlank()) {
                         folderStack.addLast(name)
-                        seenCollections.add(name)
                     }
                 }
                 "bookmark" -> {
                     val parts = tag.value.split("|||", limit = 2)
-                    val url = parts[0]
+                    val url = parts[0].trim()
                     val rawTitle = parts.getOrElse(1) { "" }
                         .replace(Regex("<[^>]+>"), "").trim().replaceHtmlEntities()
-                    if (url.isNotBlank() && url !in seenUrls) {
-                        seenUrls.add(url)
-                        bookmarks.add(ParsedBookmark(
-                            url = url,
-                            title = rawTitle.ifBlank { url },
-                            collection = folderStack.lastOrNull()
-                        ))
+                    if (url.isNotBlank()) {
+                        val currentPath = if (folderStack.isNotEmpty()) {
+                            folderStack.joinToString("/")
+                        } else null
+
+                        if (currentPath != null) {
+                            collectionsWithBookmarks.add(currentPath)
+                        }
+
+                        val existing = bookmarkMap[url]
+                        if (existing == null) {
+                            val colList = if (currentPath != null) mutableListOf(currentPath) else mutableListOf()
+                            bookmarkMap[url] = MutableParsedBookmark(
+                                url = url,
+                                title = rawTitle.ifBlank { url },
+                                collections = colList
+                            )
+                        } else {
+                            if (currentPath != null && currentPath !in existing.collections) {
+                                existing.collections.add(currentPath)
+                            }
+                            if (existing.title == existing.url && rawTitle.isNotBlank()) {
+                                existing.title = rawTitle
+                            }
+                        }
                     }
                 }
                 "close" -> {
@@ -74,8 +90,17 @@ class BookmarkParser {
             }
         }
 
-        return Pair(bookmarks, seenCollections.toList())
+        val bookmarks = bookmarkMap.values.map {
+            ParsedBookmark(url = it.url, title = it.title, collections = it.collections)
+        }
+        return Pair(bookmarks, collectionsWithBookmarks.toList())
     }
+
+    private class MutableParsedBookmark(
+        val url: String,
+        var title: String,
+        val collections: MutableList<String>
+    )
 
     private fun String.replaceHtmlEntities(): String = this
         .replace("&amp;", "&")

@@ -4,6 +4,7 @@ package `in`.iambhvsh.shelf.screens.setting
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -11,40 +12,28 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import `in`.iambhvsh.shelf.nav.AppRoute
+import `in`.iambhvsh.shelf.components.common.ExpressiveTextButton
 import `in`.iambhvsh.shelf.features.setting.SettingState
-import `in`.iambhvsh.shelf.components.common.expressiveBounce
+import `in`.iambhvsh.shelf.nav.AppRoute
 import `in`.iambhvsh.shelf.theme.ShelfShapes
-
-private data class SettingsCategory(
-    val route: AppRoute,
-    val icon: ImageVector,
-    val title: String,
-    val subtitle: String
-)
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +58,7 @@ fun SettingsMainScreen(
             route = AppRoute.SettingsGeneral,
             icon = Icons.Outlined.Tune,
             title = "General",
-            subtitle = "Default tap action, View mode"
+            subtitle = "Tap action, View mode, Permissions"
         ),
         SettingsCategory(
             route = AppRoute.SettingsSecurity,
@@ -100,7 +89,6 @@ fun SettingsMainScreen(
         verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = topPadding + 8.dp, bottom = 108.dp)
     ) {
-        // Group 1: Appearance, General, Security
         items(generalGroup.size, key = { generalGroup[it].title }) { index ->
             val item = generalGroup[index]
             CategoryListItem(
@@ -115,7 +103,6 @@ fun SettingsMainScreen(
             Spacer(Modifier.height(12.dp))
         }
 
-        // Group 2: Data & Storage
         item(key = "data_category") {
             CategoryListItem(
                 item = dataCategory,
@@ -129,7 +116,6 @@ fun SettingsMainScreen(
             Spacer(Modifier.height(12.dp))
         }
 
-        // Group 3: About
         item(key = "about_category") {
             CategoryListItem(
                 item = aboutCategory,
@@ -144,16 +130,18 @@ fun SettingsMainScreen(
         }
 
         item(key = "reset_button") {
-            androidx.compose.foundation.layout.Box(
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                contentAlignment = androidx.compose.ui.Alignment.Center
+                contentAlignment = Alignment.Center
             ) {
-                androidx.compose.material3.TextButton(
-                    onClick = onResetClick
+                ExpressiveTextButton(
+                    onClick = onResetClick,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
                     Text(
                         text = "Reset",
-                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -161,58 +149,4 @@ fun SettingsMainScreen(
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
-@Composable
-private fun CategoryListItem(
-    item: SettingsCategory,
-    index: Int,
-    count: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    SegmentedListItem(
-        onClick = onClick,
-        shapes = ShelfShapes.segmented(index, count),
-        modifier = modifier
-            .fillMaxWidth()
-            .expressiveBounce(scaleDown = 0.98f),
-        colors = ListItemDefaults.segmentedColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ),
-        leadingContent = {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-        },
-        supportingContent = {
-            Text(
-                text = item.subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        trailingContent = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                modifier = Modifier.size(24.dp)
-            )
-        },
-        content = {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    )
 }

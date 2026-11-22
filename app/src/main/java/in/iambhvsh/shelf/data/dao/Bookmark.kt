@@ -85,6 +85,52 @@ interface BookmarkDao {
     @Query("SELECT * FROM bookmarks WHERE isHidden = 0")
     suspend fun getBookmarksOnce(): List<BookmarkEntity>
 
+    @Query("SELECT * FROM bookmarks")
+    suspend fun getAllBookmarksOnce(): List<BookmarkEntity>
+
+    @Query("""
+        UPDATE bookmarks SET 
+            isHidden = 0,
+            title = :title,
+            description = :description,
+            imageUrl = :imageUrl,
+            createdAt = :createdAt,
+            isPinned = :isPinned,
+            note = :note,
+            reminderTime = :reminderTime
+        WHERE id = :id
+    """)
+    suspend fun restoreBookmark(
+        id: Long,
+        title: String?,
+        description: String?,
+        imageUrl: String?,
+        createdAt: Long,
+        isPinned: Boolean,
+        note: String?,
+        reminderTime: Long?
+    )
+
+    @Query("""
+        UPDATE bookmarks SET 
+            title = CASE WHEN :title IS NOT NULL AND :title != '' THEN :title ELSE title END,
+            description = CASE WHEN :description IS NOT NULL AND :description != '' THEN :description ELSE description END,
+            imageUrl = CASE WHEN :imageUrl IS NOT NULL AND :imageUrl != '' THEN :imageUrl ELSE imageUrl END,
+            isPinned = CASE WHEN :isPinned = 1 THEN 1 ELSE isPinned END,
+            note = CASE WHEN :note IS NOT NULL AND :note != '' THEN :note ELSE note END,
+            reminderTime = CASE WHEN :reminderTime IS NOT NULL THEN :reminderTime ELSE reminderTime END
+        WHERE id = :id
+    """)
+    suspend fun updateExistingBookmarkMetadata(
+        id: Long,
+        title: String?,
+        description: String?,
+        imageUrl: String?,
+        isPinned: Boolean,
+        note: String?,
+        reminderTime: Long?
+    )
+
     @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND (imageUrl IS NULL OR imageUrl = '')")
     suspend fun getBookmarksWithoutImageOnce(): List<BookmarkEntity>
 

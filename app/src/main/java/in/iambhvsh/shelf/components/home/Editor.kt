@@ -3,6 +3,7 @@ package `in`.iambhvsh.shelf.components.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,13 +18,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,13 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.components.common.ExpressiveButton
 import `in`.iambhvsh.shelf.components.common.ExpressiveTextButton
@@ -58,7 +54,7 @@ fun EditBookmarkSheet(
     val focusRequester = remember { FocusRequester() }
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberShelfSheetState()
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -85,51 +81,17 @@ fun EditBookmarkSheet(
             Text(
                 text = "Edit Bookmark",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Card Preview at the top
-            ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.largeIncreased),
-                colors = ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                PreviewDetails(
+                bookmark = bookmark.copy(
+                    title = title.ifBlank { null },
+                    description = description.ifBlank { null }
                 ),
-                headlineContent = {
-                    Text(title.ifBlank { bookmark.url }, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                },
-                supportingContent = {
-                    Text(bookmark.url, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                },
-                leadingContent = {
-                    if (bookmark.imageUrl != null) {
-                        AsyncImage(
-                            model = bookmark.imageUrl,
-                            contentDescription = "Bookmark Image",
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(MaterialTheme.shapes.medium),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(MaterialTheme.shapes.medium)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = (title.ifBlank { bookmark.url }).take(1).uppercase(),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                    }
-                }
+                contentPadding = PaddingValues(0.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))

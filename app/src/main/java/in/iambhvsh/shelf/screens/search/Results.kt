@@ -2,6 +2,7 @@ package `in`.iambhvsh.shelf.screens.search
 
 import `in`.iambhvsh.shelf.features.search.*
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +18,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -54,7 +56,11 @@ fun SearchResults(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
         if (query.isNotEmpty() && results.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -90,7 +96,8 @@ fun SearchResults(
                 ) {
                     items(
                         items = results,
-                        key = { it.id }
+                        key = { it.id },
+                        contentType = { "search_result" }
                     ) { item ->
                         BookmarkCard(
                             modifier = Modifier.animateItem(),
@@ -119,7 +126,8 @@ fun SearchResults(
                 ) {
                     items(
                         items = results,
-                        key = { it.id }
+                        key = { it.id },
+                        contentType = { "search_result" }
                     ) { item ->
                         BookmarkListItem(
                             modifier = Modifier.animateItem(),

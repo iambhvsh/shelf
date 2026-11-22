@@ -17,6 +17,7 @@ import `in`.iambhvsh.shelf.components.setting.AboutSheet
 import `in`.iambhvsh.shelf.components.setting.AccentColorSheet
 import `in`.iambhvsh.shelf.components.setting.ChangelogSheet
 import `in`.iambhvsh.shelf.components.setting.OptionSheet
+import `in`.iambhvsh.shelf.components.setting.PermissionsSheet
 import `in`.iambhvsh.shelf.components.setting.RadioOptionSheet
 import `in`.iambhvsh.shelf.theme.ThemeMode
 
@@ -33,7 +34,7 @@ fun SettingDialogsAndSheets(
         if (uri != null) {
             val json = (state.exportState as? ExportState.Ready)?.json
             if (json != null) {
-                context.contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) }
+                context.contentResolver.openOutputStream(uri, "wt")?.use { it.write(json.toByteArray()) }
             }
         }
         viewModel.onEvent(SettingEvents.DismissExport)
@@ -65,7 +66,7 @@ fun SettingDialogsAndSheets(
         if (uri != null) {
             val html = (state.browserExportState as? ExportState.Ready)?.json
             if (html != null) {
-                context.contentResolver.openOutputStream(uri)?.use { it.write(html.toByteArray()) }
+                context.contentResolver.openOutputStream(uri, "wt")?.use { it.write(html.toByteArray()) }
             }
         }
         viewModel.onEvent(SettingEvents.DismissBrowserExport)
@@ -217,6 +218,12 @@ fun SettingDialogsAndSheets(
         UpdateSheet(
             onDismiss = { viewModel.onEvent(SettingEvents.DismissUpdateSheet) },
             onInstall = { viewModel.onEvent(SettingEvents.InstallUpdate) }
+        )
+    }
+
+    if (state.showPermissionsSheet) {
+        PermissionsSheet(
+            onDismiss = { viewModel.onEvent(SettingEvents.HidePermissionsSheet) }
         )
     }
 }

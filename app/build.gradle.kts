@@ -85,7 +85,7 @@ android {
     
     sourceSets {
         getByName("main") {
-            assets.srcDirs("build/generated/assets/changelog")
+            assets.directories.add("build/generated/assets/changelog")
         }
     }
 }
@@ -115,12 +115,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-    implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
 
-    //jsoup library
     implementation("org.jsoup:jsoup:1.22.1")
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
 
@@ -133,7 +131,6 @@ dependencies {
     ksp("androidx.room:room-compiler:2.8.4")
     implementation("androidx.room:room-ktx:2.8.4")
 
-    // Koin BOM
     implementation(platform("io.insert-koin:koin-bom:4.2.1"))
     implementation("io.insert-koin:koin-android")
     implementation("io.insert-koin:koin-androidx-compose")

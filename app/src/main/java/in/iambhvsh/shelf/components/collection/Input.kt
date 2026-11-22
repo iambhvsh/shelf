@@ -16,7 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.R
 import `in`.iambhvsh.shelf.components.common.ExpressiveButton
 import `in`.iambhvsh.shelf.components.common.ExpressiveTextButton
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +42,18 @@ fun CollectionInputSheet(
     if (showBottomSheet) {
         val configuration = LocalConfiguration.current
         val screenHeight = configuration.screenHeightDp.dp
-        val sheetState = rememberModalBottomSheetState()
+        val sheetState = rememberShelfSheetState(skipPartiallyExpanded = false)
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+        val animateDismiss: (action: (() -> Unit)?) -> Unit = { action ->
+            kotlinx.coroutines.CoroutineScope(scope.coroutineContext).run {
+                scope.launch {
+                    sheetState.hide()
+                    action?.invoke()
+                    onDismissRequest()
+                }
+            }
+        }
 
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
@@ -63,7 +75,7 @@ fun CollectionInputSheet(
                 Text(
                     text = "New Collection",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
@@ -94,10 +106,7 @@ fun CollectionInputSheet(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 ExpressiveButton(
-                    onClick = {
-                        onSaveClick()
-                        onDismissRequest()
-                    },
+                    onClick = { animateDismiss(onSaveClick) },
                     enabled = value.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -107,7 +116,7 @@ fun CollectionInputSheet(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 ExpressiveTextButton(
-                    onClick = onDismissRequest
+                    onClick = { animateDismiss(null) }
                 ) {
                     Text("Cancel")
                 }

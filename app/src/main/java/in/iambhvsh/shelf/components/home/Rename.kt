@@ -17,13 +17,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -49,7 +51,8 @@ fun RenameSheet(
     val focusRequester = remember { FocusRequester() }
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberShelfSheetState()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -76,7 +79,7 @@ fun RenameSheet(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
@@ -110,7 +113,10 @@ fun RenameSheet(
 
             ExpressiveButton(
                 onClick = {
-                    onSaveClick(text)
+                    scope.launch {
+                        sheetState.hide()
+                        onSaveClick(text)
+                    }
                 },
                 enabled = text.trim().isNotBlank() && text.trim() != initialText,
                 modifier = Modifier.fillMaxWidth()
@@ -121,7 +127,12 @@ fun RenameSheet(
             Spacer(modifier = Modifier.height(8.dp))
 
             ExpressiveTextButton(
-                onClick = onDismissRequest
+                onClick = {
+                    scope.launch {
+                        sheetState.hide()
+                        onDismissRequest()
+                    }
+                }
             ) {
                 Text("Cancel")
             }

@@ -189,19 +189,17 @@ fun BookmarkListItem(
                 }
             )
         } else {
+            val high = MaterialTheme.colorScheme.surfaceContainerHigh
+            val low = MaterialTheme.colorScheme.surfaceContainerLow
+            val gradientBrush = remember(high, low) {
+                Brush.verticalGradient(listOf(high, low))
+            }
             Box(
                 modifier = Modifier
                     .width(140.dp)
                     .aspectRatio(1.2f)
                     .clip(MaterialTheme.shapes.largeIncreased)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.surfaceContainerHigh,
-                                MaterialTheme.colorScheme.surfaceContainerLow
-                            )
-                        )
-                    ),
+                    .background(gradientBrush),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

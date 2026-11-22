@@ -21,7 +21,8 @@ fun AutoBackupInfoDialog(
         title = {
             Text(
                 text = "Enable Auto Backup?",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
             )
         },
         text = {

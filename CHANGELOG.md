@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2] - 2026-11-22
+
+### Added
+- **First-Launch Permission Onboarding:** Added a clean onboarding sheet on initial launch to request essential runtime permissions with clear rationale.
+- **Unit Testing Suite:** Added dedicated JSON serialization and Netscape bookmark parser test suites for robust backup verification.
+- **Visual Documentation:** Added high-resolution screenshots gallery and updated branding assets in README.
+
+### Changed
+- **Modular Codebase Architecture:** Refactored entire codebase into single-word named modular components and domain-scoped feature packages, adhering strictly to a 250-line file limit.
+- **Bookmark Preview Sheet:** Redesigned bookmark preview sheet with prominent media headers, inline domain favicons, and metadata layout matching bookmark cards.
+- **Edit Sheet Media Header:** Embedded the rich preview card inside the bookmark edit sheet for immediate visual feedback.
+- **Unified Dialogs:** Aligned data reset confirmation in Settings with delete dialog styling, including bold titles and shape-morphing actions.
+- **Tags Strip Refinement:** Harmonized the horizontal tag strip with top toolbar scrolling, removing hard borders and checkmark icons for cleaner Material 3 tonal hierarchy.
+
+### Fixed
+- **Tab Navigation Performance:** Eliminated transition delay and frame drops when switching between Home, Collections, and Settings tabs.
+- **List Motion Polish:** Restored fluid spring item placement animations when pinning bookmarks and updating active filters.
+- **Compiler Deprecations:** Resolved all lint warnings and deprecated API usages across the Android build.
+
 ## [2.0.1] - 2026-11-19
 
 ### Fixed

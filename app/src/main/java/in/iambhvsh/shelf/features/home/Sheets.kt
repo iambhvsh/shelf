@@ -3,6 +3,7 @@ package `in`.iambhvsh.shelf.features.home
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.Clipboard
+import `in`.iambhvsh.shelf.components.common.copyToClipboard
 import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.openChromeTab
 import `in`.iambhvsh.shelf.components.home.BookmarkPreviewSheet
@@ -36,9 +37,7 @@ fun HomeSheets(
         onDismissRequest = { viewModel.homeEvents(HomeEvents.BookmarkPreviewDismissClick) },
         openInBrowser = { state.tempBookmark?.url?.let { openChromeTab(url = it, context = context) } },
         copyLinkButtonClick = {
-            state.tempBookmark?.url?.let {
-                clipboard.nativeClipboard.setPrimaryClip(android.content.ClipData.newPlainText("", it))
-            }
+            state.tempBookmark?.url?.let { context.copyToClipboard(it) }
         },
         onShareButtonClick = {
             state.tempBookmark?.url?.let { url ->
@@ -63,6 +62,9 @@ fun HomeSheets(
             state.tempBookmark?.let {
                 onSetBookmarkToDelete(it)
             }
+        },
+        onPhotoClick = { url ->
+            viewModel.homeEvents(HomeEvents.PreviewImageClick(url = url))
         }
     )
 

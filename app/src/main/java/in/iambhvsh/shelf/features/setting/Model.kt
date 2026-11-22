@@ -159,6 +159,11 @@ class SettingViewModel(
                 resetEverything()
             }
             SettingEvents.ResetSuccessToastShown -> _state.update { it.copy(resetSuccessToast = false) }
+            SettingEvents.ShowPermissionsSheet -> _state.update { it.copy(showPermissionsSheet = true) }
+            SettingEvents.HidePermissionsSheet -> {
+                settingsRepository.setFirstLaunchPermissionsShown(true)
+                _state.update { it.copy(showPermissionsSheet = false) }
+            }
         }
     }
 }
