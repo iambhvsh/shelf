@@ -1,55 +1,47 @@
-<script lang="ts">
-</script>
-
 <svelte:head>
-  <title>Terms of Service - Shelf by iambhvsh.</title>
-  <meta name="description" content="The links you love, entirely yours. The simple rules for using Shelf. Built open source and completely free by iambhvsh.">
-  
-  <meta property="og:title" content="Terms of Service - Shelf by iambhvsh.">
-  <meta property="og:description" content="The links you love, entirely yours. The simple rules for using Shelf. Built open source and completely free by iambhvsh.">
-  <meta property="og:url" content="https://shelf.iambhvsh.in/terms">
+  <title>Terms of Service — Shelf</title>
+  <meta
+    name="description"
+    content="Terms of service for Shelf, a free, private, and open-source bookmark manager for Android licensed under GNU GPL v3.0."
+  />
 
-  <meta name="twitter:title" content="Terms of Service - Shelf by iambhvsh.">
-  <meta name="twitter:description" content="The links you love, entirely yours. The simple rules for using Shelf. Built open source and completely free by iambhvsh.">
+  <meta property="og:title" content="Terms of Service — Shelf" />
+  <meta
+    property="og:description"
+    content="Terms of service for Shelf, a free, private, and open-source bookmark manager for Android licensed under GNU GPL v3.0."
+  />
+  <meta property="og:url" content="https://shelf.iambhvsh.in/terms" />
+  <meta property="og:image" content="https://shelf.iambhvsh.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
-  <link rel="canonical" href="https://shelf.iambhvsh.in/terms">
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Terms of Service — Shelf" />
+  <meta
+    name="twitter:description"
+    content="Terms of service for Shelf, a free, private, and open-source bookmark manager for Android licensed under GNU GPL v3.0."
+  />
+  <meta name="twitter:image" content="https://shelf.iambhvsh.in/og-image.png" />
+
+  <link rel="canonical" href="https://shelf.iambhvsh.in/terms" />
 </svelte:head>
 
 <div class="content-page">
-  <h1 class="display" style="font-size:32px;color:var(--primary);">Terms of Service</h1>
-  <p style="color:var(--on-surface-variant);font-size:13px;">Last updated: July 2026</p>
+  <h1 class="display" style="font-size: 32px; margin-bottom: 8px;">Terms of Service</h1>
+  <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 24px;">Last updated: November 2026</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">The agreement.</h2>
-  <p>By downloading Shelf, you agree to these rules. If you do not agree, simply do not use the app.</p>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">The agreement.</h2>
+  <p>By downloading or using Shelf, you agree to these terms. If you do not agree, do not use the application.</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Free and open.</h2>
-  <p>Shelf is free software. It is distributed under the GNU General Public License v3. You can study it. You can modify it. You can redistribute it. The full license is linked below.</p>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">Free and open source.</h2>
+  <p>Shelf is free software distributed under the GNU General Public License v3.0 (GPLv3). You are free to inspect, modify, fork, and redistribute it under the terms of the license.</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">How to use it.</h2>
-  <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;">
-    <li style="color:var(--on-surface-variant);font-size:15px;line-height:24px;">Shelf is for your personal bookmarks. You are responsible for what you save.</li>
-    <li style="color:var(--on-surface-variant);font-size:15px;line-height:24px;">Do not use Shelf to store or distribute illegal content.</li>
-    <li style="color:var(--on-surface-variant);font-size:15px;line-height:24px;">Modify or fork the app as you see fit. Just follow the GPLv3.</li>
-  </ul>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">Your content and data.</h2>
+  <p>Your bookmarks, collections, inline notes, and tags stay strictly on your local device. We do not claim ownership of, monitor, or access your saved links.</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Your content.</h2>
-  <p>Your bookmarks. Your notes. They stay on your device. We do not claim ownership. We do not even see them.</p>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">Disclaimer of warranty.</h2>
+  <p>Shelf is provided "as is", without warranty of any kind, express or implied. Use of the app is at your sole discretion and risk.</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">No warranty.</h2>
-  <p>Shelf is provided as is. As available. There is no warranty of any kind. Use it at your own discretion.</p>
-
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Liability.</h2>
-  <p>We are not liable for data loss. We are not liable for device issues. We are not liable for any damages arising from the use of this app.</p>
-
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Credit where it is due.</h2>
-  <p>Shelf is a direct fork of Savr. Built by qeiq. Full credit is listed in the footer. Third-party libraries remain under their respective licenses.</p>
-
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Future changes.</h2>
-  <p>Features will evolve. These terms will evolve. Continued use means you accept the latest terms.</p>
-
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Termination.</h2>
-  <p>No accounts. No sign-ins. To terminate your use, simply uninstall the app. You are always in control.</p>
-
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Questions.</h2>
-  <p>Reach out through the GitHub repository linked below.</p>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">Open source heritage.</h2>
+  <p>Shelf is a fork of <a href="https://github.com/qeiq/Savr" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">Savr</a> by qeiq. All open-source licenses for dependencies and upstream components are preserved.</p>
 </div>

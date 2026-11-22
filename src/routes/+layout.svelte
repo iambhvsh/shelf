@@ -11,10 +11,8 @@
   });
 </script>
 
-<div class="app-container">
-  <Header />
-  <main id="app">
-    {@render children()}
-  </main>
-  <Footer />
-</div>
+<Header />
+<main id="app" class="site-wrapper">
+  {@render children()}
+</main>
+<Footer />

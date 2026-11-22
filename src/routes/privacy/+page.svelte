@@ -1,57 +1,59 @@
-<script lang="ts">
-</script>
-
 <svelte:head>
-  <title>Privacy Policy - Shelf by iambhvsh.</title>
-  <meta name="description" content="The links you love, entirely yours. Your data is yours. Shelf by iambhvsh collects zero personal information. Read our commitment to your privacy.">
-  
-  <meta property="og:title" content="Privacy Policy - Shelf by iambhvsh.">
-  <meta property="og:description" content="The links you love, entirely yours. Your data is yours. Shelf by iambhvsh collects zero personal information. Read our commitment to your privacy.">
-  <meta property="og:url" content="https://shelf.iambhvsh.in/privacy">
+  <title>Privacy Policy — Shelf</title>
+  <meta
+    name="description"
+    content="Shelf collects zero personal data, runs no cloud servers, and keeps everything stored 100% offline on your device. Read our full privacy policy."
+  />
 
-  <meta name="twitter:title" content="Privacy Policy - Shelf by iambhvsh.">
-  <meta name="twitter:description" content="The links you love, entirely yours. Your data is yours. Shelf by iambhvsh collects zero personal information. Read our commitment to your privacy.">
+  <meta property="og:title" content="Privacy Policy — Shelf" />
+  <meta
+    property="og:description"
+    content="Shelf collects zero personal data, runs no cloud servers, and keeps everything stored 100% offline on your device. Read our full privacy policy."
+  />
+  <meta property="og:url" content="https://shelf.iambhvsh.in/privacy" />
+  <meta property="og:image" content="https://shelf.iambhvsh.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
-  <link rel="canonical" href="https://shelf.iambhvsh.in/privacy">
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Privacy Policy — Shelf" />
+  <meta
+    name="twitter:description"
+    content="Shelf collects zero personal data, runs no cloud servers, and keeps everything stored 100% offline on your device. Read our full privacy policy."
+  />
+  <meta name="twitter:image" content="https://shelf.iambhvsh.in/og-image.png" />
+
+  <link rel="canonical" href="https://shelf.iambhvsh.in/privacy" />
 </svelte:head>
 
 <div class="content-page">
-  <h1 class="display" style="font-size:32px;color:var(--primary);">Privacy Policy</h1>
-  <p style="color:var(--on-surface-variant);font-size:13px;">Last updated: July 2026</p>
+  <h1 class="display" style="font-size: 32px; margin-bottom: 8px;">Privacy Policy</h1>
+  <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 24px;">Last updated: November 2026</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Your data is yours.</h2>
-  <p>Shelf is built for your device. Not the cloud. We don't touch your data. We don't track your habits. It's really that simple.</p>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">Your data is yours.</h2>
+  <p>Shelf is built for your device, not the cloud. We do not touch your data, we do not track your habits, and we operate no remote analytics servers. Everything lives and stays strictly on your phone.</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">What we collect. Nothing.</h2>
-  <p>Shelf requires no accounts. No sign-ins. Your bookmarks and collections stay locked in a local database right on your phone.</p>
-  <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;">
-    <li style="color:var(--on-surface-variant);font-size:15px;line-height:24px;">No names. No emails. No phone numbers.</li>
-    <li style="color:var(--on-surface-variant);font-size:15px;line-height:24px;">No analytics. No crash reporting. No ads.</li>
-    <li style="color:var(--on-surface-variant);font-size:15px;line-height:24px;">No trackers. No hidden IDs.</li>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">What we collect. Nothing.</h2>
+  <p>Shelf requires no accounts, no logins, and no subscriptions. Your bookmarks, tags, and collections stay locked in a local Room database right on your phone.</p>
+  <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 8px; margin: 12px 0;">
+    <li style="color: var(--text-muted); font-size: 15px; line-height: 1.6;">No names, no emails, no phone numbers.</li>
+    <li style="color: var(--text-muted); font-size: 15px; line-height: 1.6;">No telemetry, no crash reporting, no ad tracking SDKs.</li>
+    <li style="color: var(--text-muted); font-size: 15px; line-height: 1.6;">No advertising identifiers or background fingerprints.</li>
   </ul>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Direct connections.</h2>
-  <p>When you save a link, Shelf fetches the preview directly from the source. Just like your browser does. It never passes through our servers. Because we don't have any.</p>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">Direct connections.</h2>
+  <p>When you save a link, Shelf fetches the preview directly from the target website over your phone's network connection—just like your mobile browser does. It never passes through intermediate servers or third-party relays.</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Only what's necessary.</h2>
-  <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;">
-    <li style="color:var(--on-surface-variant);font-size:15px;line-height:24px;">Internet access. To fetch your link previews.</li>
-    <li style="color:var(--on-surface-variant);font-size:15px;line-height:24px;">Notifications. Only for on-device alerts.</li>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">Permissions required.</h2>
+  <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 8px; margin: 12px 0;">
+    <li style="color: var(--text-muted); font-size: 15px; line-height: 1.6;"><strong>Internet Access</strong>: Strictly to fetch link previews (titles, descriptions, favicons, cover images) when you share a URL.</li>
+    <li style="color: var(--text-muted); font-size: 15px; line-height: 1.6;"><strong>Biometrics</strong>: Handled entirely by Android Keystore on-device for the optional app lock.</li>
   </ul>
-  <p>Shelf doesn't want your contacts. It ignores your location. It won't touch your camera or microphone. Ever.</p>
+  <p style="margin-top: 8px;">Shelf does not request contacts, location, camera, or microphone access.</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Zero sharing.</h2>
-  <p>Your browsing history belongs to you. We don't sell it. We don't store it. We never even see it.</p>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">You are in control.</h2>
+  <p>Uninstall Shelf or clear app storage, and all data is permanently wiped from your phone. No residual cloud accounts or remote records remain.</p>
 
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">You are in control.</h2>
-  <p>Uninstall Shelf and everything is gone. Permanently. No remote backups. No lingering data.</p>
-
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Completely transparent.</h2>
-  <p>Shelf is entirely open source. You can review every line of code yourself. See the link in the footer.</p>
-
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Updates.</h2>
-  <p>If anything ever changes, we will update this page. The date above will always reflect the latest version.</p>
-
-  <h2 style="font-size:20px;color:var(--primary);margin-top:8px;">Questions.</h2>
-  <p>Reach out through the GitHub repository linked below.</p>
+  <h2 style="font-size: 20px; margin-top: 24px; margin-bottom: 8px;">Open source transparency.</h2>
+  <p>Shelf is licensed under GPL v3.0. Every line of Kotlin source code is public and verifiable on <a href="https://github.com/iambhvsh/shelf" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">GitHub</a>.</p>
 </div>

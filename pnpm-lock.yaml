@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      gsap:
+        specifier: ^3.15.1
+        version: 3.15.1
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -797,6 +801,9 @@ packages:
   globals@17.8.0:
     resolution: {integrity: sha512-Zz/LMDZScFmkakeL2cTHzf+PbWKdpU3uclqkZT7TjDG58j5WPt0PpA+n9uPI24fZtlw07q0OtEi84K+umsRzqQ==}
     engines: {node: '>=18'}
+
+  gsap@3.15.1:
+    resolution: {integrity: sha512-63yjWRFWj3QRP1UOuD8kcidCcy3nxb1mMRpwHr/xJRvPfm9GtWOXFAYUiL0ro1fgPq2nY53LR+98pAgy9BumBg==}
 
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
@@ -1891,6 +1898,8 @@ snapshots:
   globals@16.5.0: {}
 
   globals@17.8.0: {}
+
+  gsap@3.15.1: {}
 
   ignore@5.3.2: {}
 

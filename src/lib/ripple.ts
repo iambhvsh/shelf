@@ -1,7 +1,3 @@
-// A single delegated pointerdown listener drives ripples for every interactive
-// element on the page, including ones the router injects later. This avoids
-// re-querying and re-binding listeners on every navigation.
-
 const RIPPLE_SELECTOR = '.icon-btn, .btn-primary, .m3-card-interactive, .list-item, .m3-text-btn, .footer-link';
 
 function spawnRipple(target: HTMLElement, clientX: number, clientY: number): void {
