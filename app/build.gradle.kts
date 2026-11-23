@@ -62,8 +62,10 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            manifestPlaceholders["appName"] = "Shelf (D)"
         }
         release {
+            manifestPlaceholders["appName"] = "Shelf"
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -83,11 +85,22 @@ android {
         compose = true
     }
     
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     sourceSets {
         getByName("main") {
             assets.directories.add("build/generated/assets/changelog")
         }
+        getByName("test") {
+            assets.directories.add("$projectDir/schemas")
+        }
     }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 tasks.whenTaskAdded {
@@ -108,6 +121,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
+    testImplementation("androidx.room:room-testing:2.8.4")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

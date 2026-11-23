@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.3] - 2026-11-23
+
+### Added
+- **Automated Verification:** Added test coverage across state pipelines, data mappers, and URL parsers, alongside a GitHub Actions CI pipeline to catch regressions before release.
+- **Database Schema Verification:** Enabled Room schema export to validate migrations and prevent schema drift during updates.
+
+### Changed
+- **Top Bar Actions:** Consolidated top-right toolbar actions into an overflow menu containing Search and Sort & Filter options, with an Add Bookmark action available when viewing collection details.
+- **Automatic Text Ellipsis:** Removed fixed 13-character truncation from collection cards, picker dialogs, quick save sheets, and detail headers in favor of automatic layout-driven ellipsis based on available screen space.
+
+### Fixed
+- **Root Screen Insets:** Removed redundant layout wrapper that discarded Scaffold padding and caused potential content clipping.
+- **Collection Item Visibility:** Soft-deleted bookmarks are now excluded from collection detail views, aligning the items displayed with the collection card count.
+- **Collection Link Creation:** Bookmarks added directly from within a collection are now saved as visible entries instead of soft-deleted items, ensuring they appear in collection counts and on the home screen.
+- **Bookmark Card Host Color:** Explicitly bound the bookmark card host label to the surface content color and provided a theme-level default content color, preventing domain names from rendering black in dark theme.
+- **Header Title Restoration Animation:** Resolved title clipping and visual freezing when dismissing the search bar by replacing placement-only offsets with layout padding and disabling container bounds clipping during transitions.
+
 ## [2.0.2] - 2026-11-22
 
 ### Added

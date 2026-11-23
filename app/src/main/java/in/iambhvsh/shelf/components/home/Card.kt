@@ -101,6 +101,7 @@ fun BookmarkCard(
             Text(
                 text = cleanHost,
                 style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)

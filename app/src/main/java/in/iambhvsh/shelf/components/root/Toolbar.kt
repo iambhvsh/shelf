@@ -70,6 +70,7 @@ fun RootToolbar(
             currentTab = currentTab,
             isDeepScreen = isDeepScreen,
             deepScreenTitle = deepScreenTitle,
+            isCollectionDetail = isCollectionDetail,
             isSelectionMode = isAnySelection,
             selectedCount = selectedCount,
             isAllSelected = isAllSelected,

@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalRippleThemeConfiguration
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
@@ -119,7 +120,8 @@ fun ShelfTheme(
     ThemeSystemBarSync(darkTheme = isDark)
 
     CompositionLocalProvider(
-        LocalRippleThemeConfiguration provides RippleDefaults.InsetFocusRingRippleThemeConfiguration
+        LocalRippleThemeConfiguration provides RippleDefaults.InsetFocusRingRippleThemeConfiguration,
+        LocalContentColor provides colorScheme.onBackground
     ) {
         MaterialExpressiveTheme(
             colorScheme = colorScheme,

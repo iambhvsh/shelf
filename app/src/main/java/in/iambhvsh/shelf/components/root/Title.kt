@@ -4,6 +4,7 @@ package `in`.iambhvsh.shelf.components.root
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -55,8 +56,8 @@ fun rememberSmoothedHeaderValues(state: TopAppBarState): SmoothedHeaderValues {
 }
 
 fun headerTitleTransitionSpec(targetIsSearching: Boolean): ContentTransform {
-    return if (targetIsSearching) {
-        (slideInHorizontally(
+    val enter = if (targetIsSearching) {
+        slideInHorizontally(
             initialOffsetX = { it / 3 },
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioLowBouncy,
@@ -67,22 +68,9 @@ fun headerTitleTransitionSpec(targetIsSearching: Boolean): ContentTransform {
                 dampingRatio = Spring.DampingRatioLowBouncy,
                 stiffness = Spring.StiffnessLow
             )
-        )).togetherWith(
-            slideOutHorizontally(
-                targetOffsetX = { -it / 3 },
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ) + fadeOut(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
         )
     } else {
-        (slideInHorizontally(
+        slideInHorizontally(
             initialOffsetX = { -it / 3 },
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioLowBouncy,
@@ -93,21 +81,42 @@ fun headerTitleTransitionSpec(targetIsSearching: Boolean): ContentTransform {
                 dampingRatio = Spring.DampingRatioLowBouncy,
                 stiffness = Spring.StiffnessLow
             )
-        )).togetherWith(
-            slideOutHorizontally(
-                targetOffsetX = { it / 3 },
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ) + fadeOut(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
+        )
+    }
+
+    val exit = if (targetIsSearching) {
+        slideOutHorizontally(
+            targetOffsetX = { -it / 3 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        ) + fadeOut(
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        )
+    } else {
+        slideOutHorizontally(
+            targetOffsetX = { it / 3 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        ) + fadeOut(
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessLow
             )
         )
     }
+
+    return ContentTransform(
+        targetContentEnter = enter,
+        initialContentExit = exit,
+        sizeTransform = SizeTransform(clip = false)
+    )
 }
 
 @Composable
@@ -148,6 +157,7 @@ fun HeaderCenterSlot(
         AnimatedContent(
             targetState = isSearching,
             transitionSpec = { headerTitleTransitionSpec(targetState) },
+            contentAlignment = BiasAlignment(horizontalBias = titleBias, verticalBias = 0f),
             label = "HeaderTitleSearchTransition"
         ) { searching ->
             if (searching) {

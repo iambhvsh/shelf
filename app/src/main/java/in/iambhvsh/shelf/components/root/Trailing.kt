@@ -22,11 +22,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +52,8 @@ fun RightActionSlot(
     onAddToCollection: (() -> Unit)?,
     onRenameSelected: (() -> Unit)?,
     onDeleteSelected: (() -> Unit)?,
+    isCollectionDetail: Boolean = false,
+    onNewBookmarkClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     AnimatedContent(
@@ -149,38 +156,34 @@ fun RightActionSlot(
                 exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
                         scaleOut(targetScale = 0.88f, animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
             ) {
-                Row(
+                var showMenu by remember { mutableStateOf(false) }
+
+                Box(
                     modifier = Modifier.padding(end = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    contentAlignment = Alignment.CenterEnd
                 ) {
                     TopBarButton(
-                        onClick = onSearchClick,
-                        contentDescription = "Search",
+                        onClick = { showMenu = true },
+                        contentDescription = "More options",
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                         contentColor = MaterialTheme.colorScheme.onSurface
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.search_icon),
-                            contentDescription = "Search",
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More options",
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(22.dp)
                         )
                     }
 
-                    TopBarButton(
-                        onClick = onSortClick,
-                        contentDescription = "Sort & Filter",
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.filter_icon),
-                            contentDescription = "Sort & Filter",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
+                    MoreActionDropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false },
+                        onSearchClick = onSearchClick,
+                        onSortClick = onSortClick,
+                        onAddClick = if (isCollectionDetail) onNewBookmarkClick else null,
+                        addLabel = "Add Bookmark"
+                    )
                 }
             }
         }

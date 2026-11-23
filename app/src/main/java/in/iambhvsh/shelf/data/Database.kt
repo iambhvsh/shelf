@@ -17,7 +17,7 @@ import `in`.iambhvsh.shelf.data.dao.TagDao
         BookmarkTagCrossRef::class
     ],
     version = 6,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class BookmarkDatabase : RoomDatabase() {
 

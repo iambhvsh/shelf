@@ -83,3 +83,93 @@ fun NewActionDropdownMenu(
         }
     }
 }
+
+@Composable
+fun MoreActionDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onSearchClick: () -> Unit,
+    onSortClick: () -> Unit,
+    onAddClick: (() -> Unit)? = null,
+    addLabel: String = "Add Bookmark",
+    modifier: Modifier = Modifier
+) {
+    MaterialTheme(
+        shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
+    ) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissRequest,
+            offset = DpOffset(x = 0.dp, y = 10.dp),
+            modifier = modifier
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .padding(vertical = 4.dp)
+        ) {
+            if (onAddClick != null) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = addLabel,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.bookmark_add),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    },
+                    onClick = {
+                        onDismissRequest()
+                        onAddClick()
+                    }
+                )
+            }
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Search",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.search_icon),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                },
+                onClick = {
+                    onDismissRequest()
+                    onSearchClick()
+                }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Sort & Filter",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.filter_icon),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                },
+                onClick = {
+                    onDismissRequest()
+                    onSortClick()
+                }
+            )
+        }
+    }
+}

@@ -103,10 +103,9 @@ fun QuickSaveScreen(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val rawCollectionName = state.selectedCollection?.name ?: "No Collection"
-                val displayCollectionName = if (rawCollectionName.length > 13) "${rawCollectionName.take(13)}..." else rawCollectionName
+                val collectionName = state.selectedCollection?.name ?: "No Collection"
                 Text(
-                    text = displayCollectionName,
+                    text = collectionName,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,

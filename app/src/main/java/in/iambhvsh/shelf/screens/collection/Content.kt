@@ -53,7 +53,7 @@ fun CollectionDetailContent(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 EmptyBookmarkState(
                     title = "Collection is empty",
-                    description = "Tap + on the toolbar to add bookmarks to this collection"
+                    description = "Tap the toolbar menu to add bookmarks to this collection"
                 )
             }
         } else {

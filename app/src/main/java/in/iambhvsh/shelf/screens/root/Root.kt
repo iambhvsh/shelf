@@ -123,25 +123,24 @@ fun Root(
                 .background(MaterialTheme.colorScheme.background)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
-            Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
-                RootBody(
-                    navController = navController,
-                    sharedUrl = sharedUrl,
-                    viewModel = viewModel,
-                    collectionViewModel = collectionViewModel,
-                    settingViewModel = settingViewModel,
-                    collectionState = collectionState,
-                    settingState = settingState,
-                    searchState = searchState,
-                    versionName = versionName,
-                    context = context,
-                    isSearching = isSearching,
-                    isCollectionSearching = isCollectionSearching,
-                    isCollectionDetail = navState.isCollectionDetail,
-                    collectionSearchQuery = collectionSearchQuery,
-                    scrollBehavior = scrollBehavior
-                )
-            }
+            RootBody(
+                navController = navController,
+                sharedUrl = sharedUrl,
+                viewModel = viewModel,
+                collectionViewModel = collectionViewModel,
+                settingViewModel = settingViewModel,
+                collectionState = collectionState,
+                settingState = settingState,
+                searchState = searchState,
+                versionName = versionName,
+                context = context,
+                isSearching = isSearching,
+                isCollectionSearching = isCollectionSearching,
+                isCollectionDetail = navState.isCollectionDetail,
+                collectionSearchQuery = collectionSearchQuery,
+                scrollBehavior = scrollBehavior,
+                modifier = Modifier.fillMaxSize()
+            )
 
             Box(modifier = Modifier.align(Alignment.TopCenter)) {
                 RootToolbar(

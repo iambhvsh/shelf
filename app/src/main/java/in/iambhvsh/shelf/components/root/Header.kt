@@ -45,6 +45,7 @@ fun ShelfHeader(
     currentTab: Int,
     isDeepScreen: Boolean,
     deepScreenTitle: String? = null,
+    isCollectionDetail: Boolean = false,
     isSelectionMode: Boolean = false,
     selectedCount: Int = 0,
     isAllSelected: Boolean = false,
@@ -200,7 +201,9 @@ fun ShelfHeader(
                 onSortClick = onSortClick,
                 onAddToCollection = onAddToCollection,
                 onRenameSelected = onRenameSelected,
-                onDeleteSelected = onDeleteSelected
+                onDeleteSelected = onDeleteSelected,
+                isCollectionDetail = isCollectionDetail,
+                onNewBookmarkClick = onNewBookmarkClick
             )
         }
     }

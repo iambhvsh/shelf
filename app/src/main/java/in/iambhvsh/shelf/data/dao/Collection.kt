@@ -1,6 +1,7 @@
 package `in`.iambhvsh.shelf.data.dao
 
 import `in`.iambhvsh.shelf.data.BookmarkCollectionCrossRef
+import `in`.iambhvsh.shelf.data.BookmarkEntity
 import `in`.iambhvsh.shelf.data.CollectionEntity
 import `in`.iambhvsh.shelf.data.CollectionWithBookmarks
 import androidx.room.Dao
@@ -49,6 +50,14 @@ interface CollectionDao {
     @Transaction
     @Query("SELECT * FROM collections WHERE id = :collectionId")
     fun getCollectionWithBookmarks(collectionId: Long): Flow<CollectionWithBookmarks?>
+
+    @Query("""
+        SELECT b.* FROM bookmarks b
+        INNER JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
+        WHERE bcc.collectionId = :collectionId AND b.isHidden = 0
+        ORDER BY b.createdAt DESC
+    """)
+    fun getBookmarksForCollection(collectionId: Long): Flow<List<BookmarkEntity>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addBookmarkToCollection(crossRef: BookmarkCollectionCrossRef)

@@ -3,6 +3,7 @@
 package `in`.iambhvsh.shelf.components.root
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -12,7 +13,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,10 +44,10 @@ fun GreetingTitle(
             (fadeIn() + scaleIn(initialScale = 0.92f))
                 .togetherWith(
                     fadeOut() + scaleOut(targetScale = 0.92f)
-                )
+                ).using(SizeTransform(clip = false))
         },
         label = "HeaderTitleAnimation",
-        modifier = modifier.offset(x = titleXOffset)
+        modifier = modifier.padding(start = titleXOffset)
     ) { target ->
         if (target == "home_header") {
             val greeting = remember { randomGreeting() }

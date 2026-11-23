@@ -94,9 +94,8 @@ fun CollectionPickerSheet(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer
                             ),
                             content = {
-                                val displayName = if (collection.name.length > 13) "${collection.name.take(13)}..." else collection.name
                                 Text(
-                                    text = displayName,
+                                    text = collection.name,
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Medium,
                                     maxLines = 1,

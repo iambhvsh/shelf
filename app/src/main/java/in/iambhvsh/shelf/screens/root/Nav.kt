@@ -57,8 +57,7 @@ fun rememberRootNavState(
                 collectionState.collections.find { it.id == currentCollectionId }?.name
                     ?: collectionState.selectedCollection?.takeIf { it.id == currentCollectionId }?.name
             }
-            val rawName = matched ?: collectionState.selectedCollection?.name ?: "Collection"
-            if (rawName.length > 13) "${rawName.take(13)}..." else rawName
+            matched ?: collectionState.selectedCollection?.name ?: "Collection"
         } else null
 
         val settingsSubScreenTitle = when (currentRoute) {

@@ -25,14 +25,6 @@ class BookmarkRepositoryImpl(
         return dao.insertOrUnhideAndReturnId(bookmark.toEntity())
     }
 
-    override suspend fun insertHiddenBookmark(bookmark: Bookmark): Long {
-        val existing = dao.findByUrl(bookmark.url)
-        if (existing != null) {
-            return existing.id
-        }
-        return dao.insertWithReturn(bookmark.toEntity().copy(isHidden = true))
-    }
-
     override suspend fun deleteBookmark(bookmark: Bookmark) {
         dao.deleteBookmark(bookmark.toEntity())
     }
@@ -185,16 +177,13 @@ class BookmarkRepositoryImpl(
     }
 
     override fun getBookmarksInCollection(collectionId: Long): Flow<Resource<List<Bookmark>>> {
-        if (collectionId == Collection.UNCATEGORISED_ID) {
-            return dao.getUnassignedBookmarks()
-                .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
-                .onStart { emit(Resource.Loading()) }
-                .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
+        val flow = if (collectionId == Collection.UNCATEGORISED_ID) {
+            dao.getUnassignedBookmarks()
+        } else {
+            collectionDao.getBookmarksForCollection(collectionId)
         }
-        return collectionDao.getCollectionWithBookmarks(collectionId)
-            .map { result ->
-                Resource.Success(result?.bookmarks?.map { it.toDomain() } ?: emptyList()) as Resource<List<Bookmark>>
-            }
+        return flow
+            .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
             .onStart { emit(Resource.Loading()) }
             .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
     }

@@ -58,7 +58,7 @@ fun CollectionWithBookmarks.toDomain(): Collection {
     return Collection(
         id = collection.id,
         name = collection.name,
-        bookmarkCount = bookmarks.size
+        bookmarkCount = bookmarks.count { !it.isHidden }
     )
 }
 

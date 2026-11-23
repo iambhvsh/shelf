@@ -50,7 +50,7 @@ internal fun CollectionViewModel.saveBookmarkInCollection() {
                 imageUrl = meta?.imageUrl
             )
             
-            val insertedId = repository.insertHiddenBookmark(bookmark)
+            val insertedId = repository.saveAndReturnId(bookmark)
             if (insertedId > 0 && collectionId != Collection.UNCATEGORISED_ID) {
                 repository.addBookmarkToCollection(insertedId, collectionId)
             }
