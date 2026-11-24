@@ -24,6 +24,7 @@ internal fun HomeViewModel.deleteSelected() {
     if (ids.isEmpty()) return
     viewModelScope.launch {
         try {
+            ids.forEach { reminderManager.cancelReminder(it) }
             repository.hideBookmarks(ids)
             _state.update {
                 it.copy(
@@ -78,6 +79,7 @@ internal fun HomeViewModel.saveBookmark() {
             _state.update {
                 it.copy(
                     isLoading = false,
+                    isDialog = false,
                     inputUrl = if (inserted) "" else it.inputUrl,
                     duplicateToastKey = if (inserted) it.duplicateToastKey else it.duplicateToastKey + 1
                 )

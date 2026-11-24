@@ -54,5 +54,10 @@ sealed interface AppRoute {
     data object SettingsAbout : AppRoute {
         override val route: String = "settings_about"
     }
+
+    @Serializable
+    data object SettingsTrash : AppRoute {
+        override val route: String = "settings_trash"
+    }
 }
 

@@ -68,5 +68,12 @@ data class SettingState(
     val changelogText: String = "",
     val showResetDialog: Boolean = false,
     val resetSuccessToast: Boolean = false,
-    val showPermissionsSheet: Boolean = false
+    val showPermissionsSheet: Boolean = false,
+    val trashedBookmarks: List<`in`.iambhvsh.shelf.data.Bookmark> = emptyList(),
+    val trashedCount: Int = 0,
+    val selectedTrashIds: Set<Long> = emptySet(),
+    val isTrashLoading: Boolean = false,
+    val showEmptyTrashDialog: Boolean = false,
+    val showDeletePermanentlyDialog: Boolean = false,
+    val trashToastMessage: String? = null
 )

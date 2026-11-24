@@ -71,7 +71,7 @@ fun HomeSheets(
     if (bookmarkToDelete != null) {
         DeleteConfirmationDialog(
             title = "Delete Bookmark",
-            text = "Are you sure you want to permanently delete this bookmark?",
+            text = "Are you sure you want to delete this bookmark? It will be moved to Recently Deleted.",
             onConfirm = {
                 viewModel.homeEvents(HomeEvents.DeleteBookmark(bookmarkToDelete))
                 onSetBookmarkToDelete(null)

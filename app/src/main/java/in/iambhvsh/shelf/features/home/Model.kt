@@ -107,6 +107,7 @@ class HomeViewModel(
             is HomeEvents.DeleteBookmark -> {
                 viewModelScope.launch {
                     try {
+                        reminderManager.cancelReminder(events.bookmark.id)
                         repository.hideBookmarks(listOf(events.bookmark.id))
                         _state.update {
                             it.copy(
@@ -200,7 +201,8 @@ class HomeViewModel(
             }
             is HomeEvents.UpdateNote -> {
                 viewModelScope.launch {
-                    repository.updateNote(events.id, events.note)
+                    val cleanNote = events.note?.trim()?.ifEmpty { null }
+                    repository.updateNote(events.id, cleanNote)
                     _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
                 }
             }

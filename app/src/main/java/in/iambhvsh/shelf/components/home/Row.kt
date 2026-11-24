@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -53,15 +54,22 @@ fun BookmarkListItem(
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
     onNoteClick: () -> Unit = {},
+    isPinned: Boolean = false,
     url: String,
     note: String? = null,
     reminderTime: Long? = null
 ) {
-    val host = remember(url) { url.toUri().host.orEmpty() }
+    val host = remember(url) {
+        try {
+            url.toUri().host.orEmpty()
+        } catch (_: Exception) {
+            ""
+        }
+    }
     val cleanHost = remember(host) { if (host.startsWith("www.")) host.removePrefix("www.") else host }
 
-    var imageFailed by remember { mutableStateOf(false) }
-    var imageAspectRatio by remember { mutableStateOf(1f) }
+    var imageFailed by remember(imageUrl) { mutableStateOf(false) }
+    var imageAspectRatio by remember(imageUrl) { mutableStateOf(1f) }
     val hasImage = !imageUrl.isNullOrBlank() && !imageFailed
 
     val cardShape = if (isSelected) MaterialTheme.shapes.extraLargeIncreased else MaterialTheme.shapes.largeIncreased
@@ -93,11 +101,11 @@ fun BookmarkListItem(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Favicon(host = host, cleanHost = cleanHost)
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(10.dp))
                 Text(
                     text = cleanHost,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false)
@@ -108,8 +116,18 @@ fun BookmarkListItem(
                     Icon(
                         imageVector = Icons.Outlined.Notifications,
                         contentDescription = "Has Reminder",
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(16.dp).padding(end = if (isPinned) 4.dp else 0.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (isPinned) {
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Pinned",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -126,10 +144,9 @@ fun BookmarkListItem(
                 )
             }
 
-            val desc = remember(description, title) { description.takeUnless { it.isNullOrBlank() } ?: title }
-            if (desc != null) {
+            if (!description.isNullOrBlank()) {
                 Text(
-                    text = desc,
+                    text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                     maxLines = 2,

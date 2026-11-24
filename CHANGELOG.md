@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.4] - 2026-11-24
+
+### Added
+- **Recently Deleted Screen:** Added a dedicated Recently Deleted section under Data & Storage allowing individual and batch restoration as well as permanent deletion.
+- **Reboot Reminder Rescheduling:** Added a boot broadcast receiver to restore active bookmark reminder alarms in AlarmManager across device restarts.
+- **Tag Uniqueness Constraint:** Added unique index constraint and deduplicating migration on tags to prevent duplicate tag entries.
+
+### Changed
+- **Recently Deleted Interface:** Long-pressing a bookmark activates selection mode with top-bar controls for Select All, Restore, and Delete. Bookmark cards display clean title and description text, support two-way swipe gestures with green restore feedback, and prompt for confirmation before permanently deleting on right swipe.
+
+### Fixed
+- **Duplicate Title Rendering:** Resolved an issue where bookmark cards and list rows rendered the title twice when description metadata was blank or absent.
+- **List View Pin Indicator:** Added missing star indicator and pin state binding to bookmark list items across Home, Collection Detail, and Search Results.
+- **List Image State Lifecycle:** Keyed image failure and aspect ratio remember states to image URLs, preventing recycled list items from suppressing valid image loads.
+- **Collection Detail Image Preview & Note Editing:** Enabled full-screen photo preview dialog on thumbnail clicks and note editor opening on note pill clicks in collection detail views.
+- **Reminder Lifecycle Synchronization:** Fixed reminder alarm scheduling and cancellation when managing reminders inside collection detail views or deleting individual links from preview sheets, keeping AlarmManager in lockstep with Room entities.
+- **Restored Bookmark Reminder Recovery:** Restoring bookmarks from Recently Deleted, collections, or JSON backups now reschedules active future reminders with AlarmManager.
+- **Tag Bookmark Query Filtering:** Tag bookmark queries now filter out soft-deleted items, preventing trashed links from appearing under tag filters.
+- **Auto-Backup Cross-Reference Invalidation:** Added observers for bookmark-tag and bookmark-collection cross-reference tables in Auto-Backup, ensuring tag assignment and collection changes trigger automatic backups.
+- **Browser HTML Import Transaction Atomicity:** Wrapped browser HTML bookmark imports in a database transaction to prevent partial writes during imports.
+- **Quick Save Metadata & Collection Pre-population:** Sharing an already-saved link now displays its existing title, description, thumbnail preview, and assigned collection.
+- **Delete Confirmation Dialog Messaging:** Deleting bookmarks from preview sheets or the top bar now clarifies that items are moved to Recently Deleted rather than permanently deleted.
+- **Backup Data Completeness:** JSON backups and auto-backup now preserve soft-deleted bookmarks and their collection memberships, preventing unrecovered links from being dropped during backup and restore.
+- **Cross-Reference Cleanup:** Permanent deletion now purges associated junction rows across collection and tag cross-reference tables.
+- **Alarm Lifecycle Management:** Pending reminder alarms are now cancelled when bookmarks are deleted, purged, or when storage is reset.
+- **Re-added Bookmark Isolation:** Re-saving a previously deleted URL from the home screen no longer resurfaces historical collection memberships.
+- **Share Intent URL Extraction:** Multi-word shared text from apps with preambles now extracts the target URL instead of prepending https to the full string.
+- **Collection Preview Query Performance:** Limited collection card preview image concatenation in SQLite to prevent unbounded string allocations on large collections.
+- **Quick Save Existing Bookmark Protection:** Cancelling the quick save sheet for an already-saved link now keeps the existing bookmark instead of deleting it.
+- **Bookmark Metadata Preservation on Share:** Re-sharing an existing link no longer overwrites custom titles and descriptions with web-scraped metadata.
+- **HTML Bookmark Import URL Entity Decoding:** HTML import now unescapes HTML entities in bookmark URLs and handles single-quoted attributes and nested empty folder tags.
+- **JSON Import Atomicity & Local Data Retention:** JSON backup imports are executed within a database transaction and skip overwriting local titles, notes, and reminders for existing bookmarks.
+- **Auto-Backup Tag Observation:** Backup manager now observes tag changes so creating or modifying tags triggers auto-backup.
+- **Legacy Database Migration Path:** Added baseline migrations from database versions 1 through 3 to prevent data loss on upgrades from earlier releases.
+
 ## [2.0.3] - 2026-11-23
 
 ### Added

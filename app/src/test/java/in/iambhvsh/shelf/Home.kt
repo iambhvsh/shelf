@@ -2,6 +2,7 @@ package `in`.iambhvsh.shelf
 
 import `in`.iambhvsh.shelf.features.home.HomeState
 import `in`.iambhvsh.shelf.data.Bookmark
+import `in`.iambhvsh.shelf.data.SortOrder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -75,5 +76,36 @@ class HomeStateTest {
         assertFalse(state.showNoteEditor)
         assertEquals(null, state.noteEditorText)
         assertEquals(null, state.tempBookmark)
+    }
+
+    @Test
+    fun testSelectionMode_togglesWithSelectedIds() {
+        var state = HomeState()
+        assertFalse(state.isSelectionMode)
+        assertTrue(state.selectedIds.isEmpty())
+
+        val selected = setOf(1L, 2L, 3L)
+        state = state.copy(selectedIds = selected, isSelectionMode = true)
+        assertTrue(state.isSelectionMode)
+        assertEquals(3, state.selectedIds.size)
+
+        state = state.copy(selectedIds = emptySet(), isSelectionMode = false)
+        assertFalse(state.isSelectionMode)
+        assertTrue(state.selectedIds.isEmpty())
+    }
+
+    @Test
+    fun testSortOrderTransitions_inHomeState() {
+        var state = HomeState()
+        assertEquals(SortOrder.DATE_NEWEST, state.sortOrder)
+
+        state = state.copy(sortOrder = SortOrder.TITLE_ASC)
+        assertEquals(SortOrder.TITLE_ASC, state.sortOrder)
+
+        state = state.copy(sortOrder = SortOrder.TITLE_DESC)
+        assertEquals(SortOrder.TITLE_DESC, state.sortOrder)
+
+        state = state.copy(sortOrder = SortOrder.DATE_OLDEST)
+        assertEquals(SortOrder.DATE_OLDEST, state.sortOrder)
     }
 }

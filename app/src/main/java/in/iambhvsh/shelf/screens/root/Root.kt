@@ -158,6 +158,8 @@ fun Root(
                     collectionViewModel = collectionViewModel,
                     searchState = searchState,
                     searchViewModel = searchViewModel,
+                    settingState = settingState,
+                    settingViewModel = settingViewModel,
                     isSearching = isSearching,
                     onSetSearching = { isSearching = it },
                     isCollectionSearching = isCollectionSearching,

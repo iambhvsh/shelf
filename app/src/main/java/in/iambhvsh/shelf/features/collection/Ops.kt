@@ -5,6 +5,7 @@ import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.data.Collection
 import `in`.iambhvsh.shelf.data.SortOrder
 import `in`.iambhvsh.shelf.util.Resource
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -58,6 +59,7 @@ internal fun CollectionViewModel.saveBookmarkInCollection() {
             _state.update {
                 it.copy(
                     isSavingBookmark = false,
+                    showAddBookmarkDialog = false,
                     addBookmarkUrl = "",
                     toastMessage = "Added to collection"
                 )
@@ -81,6 +83,11 @@ internal fun CollectionViewModel.selectCollection(collection: Collection) {
     collectionJob?.cancel()
     _state.update { it.copy(selectedCollection = collection, collectionBookmarks = emptyList(), isDetailLoading = true) }
     collectionJob = viewModelScope.launch {
+        launch {
+            repository.getTrashedCountForCollection(collection.id).collect { count ->
+                _state.update { it.copy(trashedCountInCollection = count) }
+            }
+        }
         repository.getBookmarksInCollection(collection.id).collect { resource ->
             when (resource) {
                 is Resource.Loading -> _state.update { it.copy(isDetailLoading = true) }
@@ -120,6 +127,11 @@ internal fun CollectionViewModel.selectCollectionById(collectionId: Long) {
     }
 
     collectionJob = viewModelScope.launch {
+        launch {
+            repository.getTrashedCountForCollection(collectionId).collect { count ->
+                _state.update { it.copy(trashedCountInCollection = count) }
+            }
+        }
         repository.getBookmarksInCollection(collectionId).collect { resource ->
             when (resource) {
                 is Resource.Loading -> _state.update { it.copy(isDetailLoading = true) }
@@ -186,6 +198,7 @@ internal fun CollectionViewModel.removeSelectedFromCollection(collectionId: Long
 internal fun CollectionViewModel.deleteBookmark(bookmark: Bookmark) {
     viewModelScope.launch {
         try {
+            reminderManager.cancelReminder(bookmark.id)
             repository.hideBookmarks(listOf(bookmark.id))
             _state.update {
                 it.copy(
@@ -229,6 +242,27 @@ internal fun CollectionViewModel.loadTags() {
             if (resource is Resource.Success) {
                 _state.update { it.copy(tags = resource.data ?: emptyList()) }
             }
+        }
+    }
+}
+
+internal fun CollectionViewModel.restoreCollectionBookmarks(collectionId: Long) {
+    viewModelScope.launch {
+        try {
+            repository.restoreBookmarksInCollection(collectionId)
+            val now = System.currentTimeMillis()
+            val bookmarksResource = repository.getBookmarksInCollection(collectionId).first()
+            if (bookmarksResource is Resource.Success) {
+                bookmarksResource.data?.forEach { bm ->
+                    val time = bm.reminderTime
+                    if (time != null && time > now) {
+                        reminderManager.scheduleReminder(bm.id, time)
+                    }
+                }
+            }
+            _state.update { it.copy(toastMessage = "Restored bookmarks") }
+        } catch (e: Exception) {
+            _state.update { it.copy(error = e.message ?: "Restore failed") }
         }
     }
 }

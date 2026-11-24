@@ -46,8 +46,9 @@ fun Router(
     settingsAppearanceScreen: @Composable () -> Unit,
     settingsGeneralScreen: @Composable () -> Unit,
     settingsSecurityScreen: @Composable () -> Unit,
-    settingsDataScreen: @Composable () -> Unit,
+    settingsDataScreen: @Composable (onNavigateToTrash: () -> Unit) -> Unit,
     settingsAboutScreen: @Composable () -> Unit,
+    settingsTrashScreen: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -166,10 +167,15 @@ fun Router(
             settingsSecurityScreen()
         }
         composable(AppRoute.SettingsData.route) {
-            settingsDataScreen()
+            settingsDataScreen {
+                navController.navigate(AppRoute.SettingsTrash.route)
+            }
         }
         composable(AppRoute.SettingsAbout.route) {
             settingsAboutScreen()
+        }
+        composable(AppRoute.SettingsTrash.route) {
+            settingsTrashScreen()
         }
     }
 }

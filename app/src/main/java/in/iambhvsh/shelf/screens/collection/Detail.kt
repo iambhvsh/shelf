@@ -136,7 +136,7 @@ fun CollectionDetailScreen(
                         TapAction.SHOW_PREVIEW -> viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
                     }
                 },
-                onPhotoClick = { Log.d("CollectionDetail", "Photo click: $it") },
+                onPhotoClick = { viewModel.onEvent(CollectionEvents.PreviewImageClick(it)) },
                 onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(it)) }
             )
         }

@@ -31,7 +31,10 @@ data class CollectionEntity(
     val createdAt: Long = System.currentTimeMillis()
 )
 
-@Entity(tableName = "tags")
+@Entity(
+    tableName = "tags",
+    indices = [Index(value = ["name"], unique = true)]
+)
 data class TagEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

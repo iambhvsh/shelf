@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import `in`.iambhvsh.shelf.features.fetch.UrlUtils
 import `in`.iambhvsh.shelf.features.save.QuickSaveEvents
 import `in`.iambhvsh.shelf.screens.save.QuickSaveScreen
 import `in`.iambhvsh.shelf.features.save.QuickSaveViewModel
@@ -26,11 +27,7 @@ class QuickSaveActivity : ComponentActivity() {
             return
         }
 
-        val url = if (!sharedText.startsWith("http://") && !sharedText.startsWith("https://")) {
-            "https://$sharedText"
-        } else {
-            sharedText
-        }
+        val url = UrlUtils.extractUrl(sharedText)
 
         setContent {
             val viewModel: QuickSaveViewModel = koinViewModel()

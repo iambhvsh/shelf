@@ -10,7 +10,7 @@ import `in`.iambhvsh.shelf.components.common.ExpressiveTextButton
 @Composable
 fun DeleteConfirmationDialog(
     title: String = "Delete",
-    text: String = "Are you sure you want to permanently delete?",
+    text: String = "Are you sure you want to delete this item? It will be moved to Recently Deleted.",
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {

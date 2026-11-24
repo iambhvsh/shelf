@@ -25,6 +25,7 @@ import `in`.iambhvsh.shelf.screens.setting.SettingsDataScreen
 import `in`.iambhvsh.shelf.screens.setting.SettingsGeneralScreen
 import `in`.iambhvsh.shelf.screens.setting.SettingsMainScreen
 import `in`.iambhvsh.shelf.screens.setting.SettingsSecurityScreen
+import `in`.iambhvsh.shelf.screens.setting.SettingsTrashScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,10 +119,11 @@ fun RootBody(
                 viewModel = settingViewModel
             )
         },
-        settingsDataScreen = {
+        settingsDataScreen = { onNavigateToTrash ->
             SettingsDataScreen(
                 state = settingState,
-                viewModel = settingViewModel
+                viewModel = settingViewModel,
+                onNavigateToTrash = onNavigateToTrash
             )
         },
         settingsAboutScreen = {
@@ -130,6 +132,12 @@ fun RootBody(
                 viewModel = settingViewModel,
                 versionName = versionName,
                 context = context
+            )
+        },
+        settingsTrashScreen = {
+            SettingsTrashScreen(
+                state = settingState,
+                viewModel = settingViewModel
             )
         },
         modifier = modifier.fillMaxSize()

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Upload
@@ -53,6 +54,7 @@ import `in`.iambhvsh.shelf.theme.ShelfShapes
 fun SettingsDataScreen(
     state: SettingState,
     viewModel: SettingViewModel,
+    onNavigateToTrash: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -97,6 +99,30 @@ fun SettingsDataScreen(
         verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = topPadding + 8.dp, bottom = bottomPadding)
     ) {
+        item(key = "trash") {
+            val count = state.trashedCount
+            val text = if (count > 0) "$count deleted bookmark${if (count > 1) "s" else ""}" else "View, restore, or permanently delete"
+            SegmentedListItem(
+                onClick = onNavigateToTrash,
+                shapes = ShelfShapes.segmented(0, 1),
+                modifier = Modifier.fillMaxWidth().expressiveBounce(scaleDown = 0.98f),
+                colors = ListItemDefaults.segmentedColors(containerColor = containerColor),
+                leadingContent = {
+                    Icon(imageVector = Icons.Outlined.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                },
+                supportingContent = {
+                    Text(text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                },
+                content = {
+                    Text(text = "Recently deleted", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                }
+            )
+        }
+
+        item(key = "spacer_trash") {
+            Spacer(Modifier.height(8.dp))
+        }
+
         item(key = "export") {
             SegmentedListItem(
                 onClick = { viewModel.onEvent(SettingEvents.ShowExportSheet) },

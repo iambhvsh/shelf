@@ -11,6 +11,7 @@ import `in`.iambhvsh.shelf.components.home.DeleteConfirmationDialog
 import `in`.iambhvsh.shelf.components.home.EditBookmarkSheet
 import `in`.iambhvsh.shelf.components.home.HomeInputSheet
 import `in`.iambhvsh.shelf.components.home.NoteEditorSheet
+import `in`.iambhvsh.shelf.components.home.PhotoPreview
 import `in`.iambhvsh.shelf.components.home.ReminderPickerSheet
 import `in`.iambhvsh.shelf.components.home.TagManagerSheet
 
@@ -53,13 +54,16 @@ fun CollectionDetailSheets(
         },
         onDeleteButtonClick = {
             state.tempBookmark?.let { onSetBookmarkToDelete(it) }
+        },
+        onPhotoClick = { url ->
+            viewModel.onEvent(CollectionEvents.PreviewImageClick(url))
         }
     )
 
     if (bookmarkToDelete != null) {
         DeleteConfirmationDialog(
             title = "Delete Bookmark",
-            text = "Are you sure you want to permanently delete this bookmark?",
+            text = "Are you sure you want to delete this bookmark? It will be moved to Recently Deleted.",
             onConfirm = {
                 viewModel.onEvent(CollectionEvents.DeleteBookmark(bookmarkToDelete))
                 onSetBookmarkToDelete(null)
@@ -121,5 +125,11 @@ fun CollectionDetailSheets(
         value = state.addBookmarkUrl,
         onTextChange = { viewModel.onEvent(CollectionEvents.OnAddBookmarkUrlChange(it)) },
         onSaveClick = { viewModel.onEvent(CollectionEvents.SaveBookmarkInCollection) }
+    )
+
+    PhotoPreview(
+        isDialog = state.isPhotoPreviewDialog,
+        onDismissRequest = { viewModel.onEvent(CollectionEvents.DismissPreviewDialog) },
+        imageURL = state.previewPhotoUrl ?: ""
     )
 }

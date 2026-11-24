@@ -26,7 +26,7 @@ class BookmarkRepositoryImpl(
     }
 
     override suspend fun deleteBookmark(bookmark: Bookmark) {
-        dao.deleteBookmark(bookmark.toEntity())
+        dao.purgeBookmarks(listOf(bookmark.id))
     }
 
     override suspend fun getBookmarksWithoutImage(): List<Bookmark> {
@@ -69,11 +69,16 @@ class BookmarkRepositoryImpl(
     }
 
     override suspend fun insertTag(name: String): Long {
-        return tagDao.insertTag(TagEntity(name = name))
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return -1L
+        val existing = tagDao.findByName(trimmed)
+        if (existing != null) return existing.id
+        val inserted = tagDao.insertTag(TagEntity(name = trimmed))
+        return if (inserted > 0) inserted else (tagDao.findByName(trimmed)?.id ?: -1L)
     }
 
     override suspend fun deleteTag(tagId: Long) {
-        tagDao.deleteTag(tagId)
+        tagDao.purgeTag(tagId)
     }
 
     override suspend fun addTagToBookmark(bookmarkId: Long, tagId: Long) {
@@ -148,17 +153,21 @@ class BookmarkRepositoryImpl(
     }
 
     override suspend fun createCollection(name: String): Long {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return -1L
         return collectionDao.insertCollection(
-            CollectionEntity(name = name)
+            CollectionEntity(name = trimmed)
         )
     }
 
     override suspend fun updateCollectionName(id: Long, name: String) {
-        collectionDao.updateName(id, name)
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        collectionDao.updateName(id, trimmed)
     }
 
     override suspend fun deleteCollection(collection: Collection) {
-        collectionDao.deleteCollection(collection.toEntity())
+        collectionDao.purgeCollection(collection.toEntity())
     }
 
     override fun getAllCollections(): Flow<Resource<List<Collection>>> {
@@ -167,7 +176,9 @@ class BookmarkRepositoryImpl(
             collectionDao.getUnassignedCollectionStats()
         ) { collections, unassignedStats ->
             val mapped: List<Collection> = buildList {
-                add(unassignedStats.toDomain())
+                if (unassignedStats.bookmarkCount > 0) {
+                    add(unassignedStats.toDomain())
+                }
                 addAll(collections.map { it.toDomain() })
             }
             Resource.Success(mapped) as Resource<List<Collection>>
@@ -200,7 +211,47 @@ class BookmarkRepositoryImpl(
         collectionDao.removeBookmarkFromCollection(BookmarkCollectionCrossRef(bookmarkId, collectionId))
     }
 
+    override suspend fun getCollectionIdForBookmark(bookmarkId: Long): Long? {
+        return collectionDao.getCollectionIdForBookmark(bookmarkId)
+    }
+
     override suspend fun updateImageUrl(id: Long, imageUrl: String?) {
         dao.updateImageUrl(id, imageUrl)
+    }
+
+    override fun getTrashedBookmarks(): Flow<Resource<List<Bookmark>>> {
+        return dao.getTrashedBookmarks()
+            .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
+            .onStart { emit(Resource.Loading()) }
+            .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
+    }
+
+    override fun getTrashedCount(): Flow<Int> = dao.getTrashedCount()
+
+    override fun getTrashedCountForCollection(collectionId: Long): Flow<Int> =
+        if (collectionId == Collection.UNCATEGORISED_ID) {
+            dao.getUnassignedTrashedCount()
+        } else {
+            dao.getTrashedCountForCollection(collectionId)
+        }
+
+    override suspend fun unhideBookmarks(ids: List<Long>) {
+        dao.unhideBookmarks(ids)
+    }
+
+    override suspend fun restoreBookmarksInCollection(collectionId: Long) {
+        if (collectionId == Collection.UNCATEGORISED_ID) {
+            dao.restoreUnassignedBookmarks()
+        } else {
+            dao.restoreBookmarksInCollection(collectionId)
+        }
+    }
+
+    override suspend fun permanentlyDeleteBookmarks(ids: List<Long>) {
+        dao.purgeBookmarks(ids)
+    }
+
+    override suspend fun emptyTrash() {
+        dao.emptyTrash()
     }
 }

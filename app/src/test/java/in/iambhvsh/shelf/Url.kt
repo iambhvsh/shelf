@@ -48,4 +48,30 @@ class UrlAndDetectorTest {
         assertEquals(LinkPreviewType.WEBPAGE, detector.detectContentType("https://kotlinlang.org/docs/home.html"))
         assertEquals(LinkPreviewType.WEBPAGE, detector.detectContentType("https://developer.android.com/jetpack/compose"))
     }
+
+    @Test
+    fun testDetectContentType_doesNotMisclassifySubstringDomains() {
+        assertEquals(LinkPreviewType.WEBPAGE, detector.detectContentType("https://dropbox.com/s/sample123/document.pdf"))
+        assertEquals(LinkPreviewType.WEBPAGE, detector.detectContentType("https://www.dropbox.com/sh/abc123xyz"))
+        assertEquals(LinkPreviewType.WEBPAGE, detector.detectContentType("https://box.com/shared/static/file.zip"))
+        assertEquals(LinkPreviewType.WEBPAGE, detector.detectContentType("https://wix.com/website/template"))
+        assertEquals(LinkPreviewType.WEBPAGE, detector.detectContentType("https://myifb.com/post/123"))
+    }
+
+    @Test
+    fun testDetectContentType_identifiesXAndTwitterCorrectly() {
+        assertEquals(LinkPreviewType.PROFILE, detector.detectContentType("https://x.com/AndroidDev"))
+        assertEquals(LinkPreviewType.PROFILE, detector.detectContentType("https://www.x.com/AndroidDev"))
+        assertEquals(LinkPreviewType.PROFILE, detector.detectContentType("https://twitter.com/iambhvsh"))
+    }
+
+    @Test
+    fun testExtractUrl_handlesPreamblesAndBareDomains() {
+        assertEquals("https://youtu.be/dQw4w9WgXcQ", UrlUtils.extractUrl("Watch this video: https://youtu.be/dQw4w9WgXcQ"))
+        assertEquals("https://x.com/AndroidDev/status/123", UrlUtils.extractUrl("Check out this post https://x.com/AndroidDev/status/123 from Twitter"))
+        assertEquals("https://example.com", UrlUtils.extractUrl("example.com"))
+        assertEquals("https://example.com/page", UrlUtils.extractUrl("https://example.com/page"))
+        assertEquals("https://shelf.app/docs", UrlUtils.extractUrl("Check out https://shelf.app/docs."))
+        assertEquals("http://localhost:3000/app", UrlUtils.extractUrl("http://localhost:3000/app"))
+    }
 }

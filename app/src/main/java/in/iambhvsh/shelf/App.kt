@@ -66,7 +66,14 @@ class App : Application(), DefaultLifecycleObserver {
 val shelfModule = module {
     single {
         Room.databaseBuilder(get(), BookmarkDatabase::class.java, "bookmark_db")
-            .addMigrations(BookmarkDatabase.MIGRATION_4_5, BookmarkDatabase.MIGRATION_5_6)
+            .addMigrations(
+                BookmarkDatabase.MIGRATION_1_4,
+                BookmarkDatabase.MIGRATION_2_4,
+                BookmarkDatabase.MIGRATION_3_4,
+                BookmarkDatabase.MIGRATION_4_5,
+                BookmarkDatabase.MIGRATION_5_6,
+                BookmarkDatabase.MIGRATION_6_7
+            )
             .fallbackToDestructiveMigration(true)
             .build()
     }
@@ -85,7 +92,7 @@ val shelfModule = module {
         )
     }
 
-    single { BackupManager(get(), get(), get(), get(), get()) }
+    single { BackupManager(get(), get(), get(), get(), get(), get()) }
     single { ReminderManager(androidContext()) }
     single { ChangelogLoader(androidContext()) }
     single { OkHttpClient() }
@@ -93,7 +100,7 @@ val shelfModule = module {
 
     viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { SearchViewModel(get()) }
-    viewModel { CollectionViewModel(get()) }
-    viewModel { SettingViewModel(get(), get(), get(), get(), get()) }
+    viewModel { CollectionViewModel(get(), get()) }
+    viewModel { SettingViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { QuickSaveViewModel(get()) }
 }

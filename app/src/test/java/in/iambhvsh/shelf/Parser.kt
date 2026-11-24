@@ -100,9 +100,58 @@ class ParserTest {
 
         val (bookmarks, collections) = parser.parse(html)
         assertEquals(1, bookmarks.size)
-        assertEquals("https://example.com/test?a=1&amp;b=2", bookmarks[0].url)
+        assertEquals("https://example.com/test?a=1&b=2", bookmarks[0].url)
         assertEquals("Tom & Jerry 'Special'", bookmarks[0].title)
         assertEquals(listOf("Q&A <Folder>"), bookmarks[0].collections)
         assertEquals(listOf("Q&A <Folder>"), collections)
+    }
+
+    @Test
+    fun testSingleQuotedHrefAndBlankFolderStack() {
+        val html = """
+            <!DOCTYPE NETSCAPE-Bookmark-file-1>
+            <DL><p>
+                <DT><H3>Dev</H3>
+                <DL><p>
+                    <DT><H3></H3>
+                    <DL><p>
+                        <DT><A HREF='https://example.com/single?x=1&amp;y=2'>Single Quote Link</A>
+                    </DL><p>
+                    <DT><A HREF="https://example.com/next">Next Link</A>
+                </DL><p>
+            </DL><p>
+        """.trimIndent()
+
+        val (bookmarks, collections) = parser.parse(html)
+        assertEquals(2, bookmarks.size)
+        assertEquals("https://example.com/single?x=1&y=2", bookmarks[0].url)
+        assertEquals(listOf("Dev"), bookmarks[0].collections)
+        assertEquals("https://example.com/next", bookmarks[1].url)
+        assertEquals(listOf("Dev"), bookmarks[1].collections)
+        assertEquals(listOf("Dev"), collections)
+    }
+
+    @Test
+    fun testDelimiterInUrlAndUnassignedBookmarks() {
+        val html = """
+            <!DOCTYPE NETSCAPE-Bookmark-file-1>
+            <DL><p>
+                <DT><A HREF="https://example.com/item|||special">Pipes In Url</A>
+            </DL><p>
+        """.trimIndent()
+
+        val (bookmarks, collections) = parser.parse(html)
+        assertEquals(1, bookmarks.size)
+        assertEquals("https://example.com/item|||special", bookmarks[0].url)
+        assertEquals("Pipes In Url", bookmarks[0].title)
+        assertTrue(bookmarks[0].collections.isEmpty())
+        assertTrue(collections.isEmpty())
+    }
+
+    @Test
+    fun testMalformedHtml_returnsEmptyListsGracefully() {
+        val (bookmarks, collections) = parser.parse("Not a bookmark file at all")
+        assertTrue(bookmarks.isEmpty())
+        assertTrue(collections.isEmpty())
     }
 }

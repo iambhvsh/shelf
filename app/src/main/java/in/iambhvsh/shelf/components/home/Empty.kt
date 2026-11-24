@@ -23,13 +23,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.theme.HeroFont
+import `in`.iambhvsh.shelf.components.common.ExpressiveFilledTonalButton
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EmptyBookmarkState(
     modifier: Modifier = Modifier,
     title: String = "No bookmarks yet",
-    description: String = "Tap + on the toolbar to save your first bookmark"
+    description: String = "Tap + on the toolbar to save your first bookmark",
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier.padding(32.dp),
@@ -68,5 +71,12 @@ fun EmptyBookmarkState(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+
+        if (actionLabel != null && onAction != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            ExpressiveFilledTonalButton(onClick = onAction) {
+                Text(text = actionLabel)
+            }
+        }
     }
 }

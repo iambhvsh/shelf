@@ -96,6 +96,8 @@ internal fun formatLastBackupTime(millis: Long): String {
 
 internal fun SettingViewModel.resetEverything() {
     viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        val existing = database.bookmarkDao().getAllBookmarksOnce()
+        existing.forEach { reminderManager.cancelReminder(it.id) }
         database.clearAllTables()
         settingsRepository.resetToDefaults()
         backupManager.stopAutoBackup()
@@ -112,6 +114,144 @@ internal fun SettingViewModel.resetEverything() {
                     resetSuccessToast = true
                 )
             }
+        }
+    }
+}
+
+internal fun SettingViewModel.loadTrash() {
+    viewModelScope.launch {
+        _state.update { it.copy(isTrashLoading = true) }
+        bookmarkRepository.getTrashedBookmarks().collect { resource ->
+            when (resource) {
+                is `in`.iambhvsh.shelf.util.Resource.Loading -> _state.update { it.copy(isTrashLoading = true) }
+                is `in`.iambhvsh.shelf.util.Resource.Error -> _state.update { it.copy(isTrashLoading = false) }
+                is `in`.iambhvsh.shelf.util.Resource.Success -> {
+                    val list = resource.data ?: emptyList()
+                    _state.update {
+                        it.copy(
+                            isTrashLoading = false,
+                            trashedBookmarks = list,
+                            trashedCount = list.size,
+                            selectedTrashIds = it.selectedTrashIds.filter { id -> list.any { bm -> bm.id == id } }.toSet()
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+internal fun SettingViewModel.toggleTrashSelection(id: Long) {
+    _state.update {
+        val current = it.selectedTrashIds
+        val updated = if (current.contains(id)) current - id else current + id
+        it.copy(selectedTrashIds = updated)
+    }
+}
+
+internal fun SettingViewModel.selectAllTrash() {
+    _state.update {
+        it.copy(selectedTrashIds = it.trashedBookmarks.map { bm -> bm.id }.toSet())
+    }
+}
+
+internal fun SettingViewModel.clearTrashSelection() {
+    _state.update { it.copy(selectedTrashIds = emptySet()) }
+}
+
+internal fun SettingViewModel.restoreTrashItem(id: Long) {
+    viewModelScope.launch {
+        try {
+            bookmarkRepository.unhideBookmarks(listOf(id))
+            val bm = bookmarkRepository.getBookmarkById(id)
+            val time = bm?.reminderTime
+            if (time != null && time > System.currentTimeMillis()) {
+                reminderManager.scheduleReminder(id, time)
+            }
+            _state.update { it.copy(trashToastMessage = "Bookmark restored") }
+        } catch (e: Exception) {
+            _state.update { it.copy(trashToastMessage = "Restore failed") }
+        }
+    }
+}
+
+internal fun SettingViewModel.deleteTrashItem(id: Long) {
+    viewModelScope.launch {
+        try {
+            reminderManager.cancelReminder(id)
+            bookmarkRepository.permanentlyDeleteBookmarks(listOf(id))
+            _state.update {
+                it.copy(
+                    selectedTrashIds = it.selectedTrashIds - id,
+                    trashToastMessage = "Bookmark deleted"
+                )
+            }
+        } catch (e: Exception) {
+            _state.update { it.copy(trashToastMessage = "Delete failed") }
+        }
+    }
+}
+
+internal fun SettingViewModel.restoreSelectedTrash() {
+    val ids = _state.value.selectedTrashIds.toList()
+    if (ids.isEmpty()) return
+    viewModelScope.launch {
+        try {
+            bookmarkRepository.unhideBookmarks(ids)
+            val now = System.currentTimeMillis()
+            ids.forEach { id ->
+                val bm = bookmarkRepository.getBookmarkById(id)
+                val time = bm?.reminderTime
+                if (time != null && time > now) {
+                    reminderManager.scheduleReminder(id, time)
+                }
+            }
+            _state.update {
+                it.copy(
+                    selectedTrashIds = emptySet(),
+                    trashToastMessage = if (ids.size > 1) "${ids.size} bookmarks restored" else "Bookmark restored"
+                )
+            }
+        } catch (e: Exception) {
+            _state.update { it.copy(trashToastMessage = "Restore failed") }
+        }
+    }
+}
+
+internal fun SettingViewModel.deletePermanentlySelected() {
+    val ids = _state.value.selectedTrashIds.toList()
+    if (ids.isEmpty()) return
+    viewModelScope.launch {
+        try {
+            ids.forEach { reminderManager.cancelReminder(it) }
+            bookmarkRepository.permanentlyDeleteBookmarks(ids)
+            _state.update {
+                it.copy(
+                    selectedTrashIds = emptySet(),
+                    showDeletePermanentlyDialog = false,
+                    trashToastMessage = if (ids.size > 1) "${ids.size} bookmarks deleted" else "Bookmark deleted"
+                )
+            }
+        } catch (e: Exception) {
+            _state.update { it.copy(showDeletePermanentlyDialog = false, trashToastMessage = "Delete failed") }
+        }
+    }
+}
+
+internal fun SettingViewModel.emptyTrash() {
+    viewModelScope.launch {
+        try {
+            _state.value.trashedBookmarks.forEach { reminderManager.cancelReminder(it.id) }
+            bookmarkRepository.emptyTrash()
+            _state.update {
+                it.copy(
+                    selectedTrashIds = emptySet(),
+                    showEmptyTrashDialog = false,
+                    trashToastMessage = "Trash emptied"
+                )
+            }
+        } catch (e: Exception) {
+            _state.update { it.copy(showEmptyTrashDialog = false, trashToastMessage = "Failed to empty trash") }
         }
     }
 }

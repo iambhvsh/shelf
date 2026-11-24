@@ -72,7 +72,7 @@ fun SettingsMainScreen(
         route = AppRoute.SettingsData,
         icon = Icons.Outlined.Storage,
         title = "Data & Storage",
-        subtitle = "Export, Import, Auto backup"
+        subtitle = "Recently deleted, Export, Import, Auto backup"
     )
 
     val aboutCategory = SettingsCategory(

@@ -19,6 +19,9 @@ import `in`.iambhvsh.shelf.features.home.HomeState
 import `in`.iambhvsh.shelf.features.home.HomeViewModel
 import `in`.iambhvsh.shelf.features.search.SearchState
 import `in`.iambhvsh.shelf.features.search.SearchViewModel
+import `in`.iambhvsh.shelf.features.setting.SettingEvents
+import `in`.iambhvsh.shelf.features.setting.SettingState
+import `in`.iambhvsh.shelf.features.setting.SettingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +40,8 @@ fun RootToolbar(
     collectionViewModel: CollectionViewModel,
     searchState: SearchState,
     searchViewModel: SearchViewModel,
+    settingState: SettingState? = null,
+    settingViewModel: SettingViewModel? = null,
     isSearching: Boolean,
     onSetSearching: (Boolean) -> Unit,
     isCollectionSearching: Boolean,
@@ -46,15 +51,22 @@ fun RootToolbar(
     onBack: () -> Unit,
     onConfirmDelete: (() -> Unit) -> Unit
 ) {
+    val isSettingsTrash = isSettingsSubScreen && deepScreenTitle == "Recently Deleted"
+    val isTrashSelection = isSettingsTrash && (settingState?.selectedTrashIds?.isNotEmpty() == true)
     val isAnySearching = isSearching || isCollectionSearching
-    val isAnySelection = state.isSelectionMode || collectionState.isSelectionMode || collectionState.isDetailSelectionMode
+    val isAnySelection = state.isSelectionMode || collectionState.isSelectionMode || collectionState.isDetailSelectionMode || isTrashSelection
     val selectedCount = when {
+        isTrashSelection -> settingState.selectedTrashIds.size
         state.isSelectionMode -> state.selectedIds.size
         collectionState.isSelectionMode -> collectionState.selectedIds.size
         collectionState.isDetailSelectionMode -> collectionState.detailSelectedIds.size
         else -> 0
     }
     val isAllSelected = when {
+        isTrashSelection -> {
+            val trash = settingState.trashedBookmarks
+            trash.isNotEmpty() && settingState.selectedTrashIds.size == trash.size
+        }
         state.isSelectionMode -> state.bookmarkData.isNotEmpty() && state.selectedIds.size == state.bookmarkData.size
         collectionState.isSelectionMode -> collectionState.collections.isNotEmpty() && collectionState.selectedIds.size == collectionState.collections.size
         collectionState.isDetailSelectionMode -> collectionState.collectionBookmarks.isNotEmpty() && collectionState.detailSelectedIds.size == collectionState.collectionBookmarks.size
@@ -119,6 +131,7 @@ fun RootToolbar(
             },
             onCloseSelection = {
                 when {
+                    isTrashSelection -> settingViewModel?.onEvent(SettingEvents.ClearTrashSelection)
                     state.isSelectionMode -> viewModel.homeEvents(HomeEvents.ClearSelection)
                     collectionState.isSelectionMode -> collectionViewModel.onEvent(CollectionEvents.ClearSelection)
                     collectionState.isDetailSelectionMode -> collectionViewModel.onEvent(CollectionEvents.ClearDetailSelection)
@@ -126,6 +139,7 @@ fun RootToolbar(
             },
             onSelectAll = {
                 when {
+                    isSettingsTrash -> settingViewModel?.onEvent(SettingEvents.SelectAllTrash)
                     state.isSelectionMode -> viewModel.homeEvents(HomeEvents.SelectAll)
                     collectionState.isSelectionMode -> collectionViewModel.onEvent(CollectionEvents.SelectAll)
                     collectionState.isDetailSelectionMode -> collectionViewModel.onEvent(CollectionEvents.SelectAllDetail)
@@ -133,12 +147,16 @@ fun RootToolbar(
             },
             onDeselectAll = {
                 when {
+                    isTrashSelection -> settingViewModel?.onEvent(SettingEvents.ClearTrashSelection)
                     state.isSelectionMode -> viewModel.homeEvents(HomeEvents.DeselectAll)
                     collectionState.isSelectionMode -> collectionViewModel.onEvent(CollectionEvents.DeselectAll)
                     collectionState.isDetailSelectionMode -> collectionViewModel.onEvent(CollectionEvents.DeselectAllDetail)
                 }
             },
             onDeleteSelected = when {
+                isTrashSelection -> {
+                    { settingViewModel?.onEvent(SettingEvents.ShowDeletePermanentlyDialog) }
+                }
                 state.isSelectionMode -> { { onConfirmDelete { viewModel.homeEvents(HomeEvents.DeleteSelected) } } }
                 collectionState.isSelectionMode -> { { onConfirmDelete { collectionViewModel.onEvent(CollectionEvents.DeleteSelected) } } }
                 collectionState.isDetailSelectionMode && collectionState.selectedCollection?.id != Collection.UNCATEGORISED_ID -> {
@@ -162,6 +180,13 @@ fun RootToolbar(
                         collectionViewModel.onEvent(CollectionEvents.ShowRenameCollectionDialog(collection.name))
                     }
                 }
+            } else null,
+            isTrashScreen = isSettingsTrash && (settingState?.trashedBookmarks?.isNotEmpty() == true),
+            onRestoreSelected = if (isTrashSelection) {
+                { settingViewModel?.onEvent(SettingEvents.RestoreSelectedTrash) }
+            } else null,
+            onEmptyTrash = if (isSettingsTrash && (settingState?.trashedBookmarks?.isNotEmpty() == true)) {
+                { settingViewModel?.onEvent(SettingEvents.ShowEmptyTrashDialog) }
             } else null,
             onCloseSearch = {
                 scrollBehavior.state.heightOffset = 0f

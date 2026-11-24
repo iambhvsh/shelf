@@ -134,7 +134,7 @@ fun BookmarkCard(
             onRatioDetected = { detectedAspectRatio = it }
         )
 
-        if (!title.isNullOrBlank() || !description.isNullOrBlank()) {
+        if (!title.isNullOrBlank() || !description.isNullOrBlank() || note != null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -150,9 +150,9 @@ fun BookmarkCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                (description.takeUnless { it.isNullOrBlank() } ?: title)?.let {
+                if (!description.isNullOrBlank()) {
                     Text(
-                        text = it,
+                        text = description,
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),

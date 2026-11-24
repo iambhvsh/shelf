@@ -82,7 +82,7 @@ fun CollectionDetailContent(
                             title = item.title,
                             description = item.description,
                             isPinned = item.isPinned,
-                            photoClickUrl = { Log.d("CollectionDetail", "Photo click: $it") },
+                            photoClickUrl = { viewModel.onEvent(CollectionEvents.PreviewImageClick(it)) },
                             bodyClick = {
                                 when (tapAction) {
                                     TapAction.OPEN_BROWSER -> item.url.let { openChromeTab(it, context) }
@@ -93,6 +93,10 @@ fun CollectionDetailContent(
                             onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(item.id)) },
                             isSelected = item.id in state.detailSelectedIds,
                             isSelectionMode = state.isDetailSelectionMode,
+                            onNoteClick = {
+                                viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
+                                viewModel.onEvent(CollectionEvents.ShowNoteEditor(item.note))
+                            },
                             url = item.url,
                             note = item.note,
                             reminderTime = item.reminderTime
@@ -116,7 +120,7 @@ fun CollectionDetailContent(
                             imageUrl = item.imageUrl,
                             title = item.title,
                             description = item.description,
-                            photoClickUrl = { Log.d("CollectionDetail", "Photo click: $it") },
+                            photoClickUrl = { viewModel.onEvent(CollectionEvents.PreviewImageClick(it)) },
                             bodyClick = {
                                 when (tapAction) {
                                     TapAction.OPEN_BROWSER -> item.url.let { openChromeTab(it, context) }
@@ -127,6 +131,11 @@ fun CollectionDetailContent(
                             onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(item.id)) },
                             isSelected = item.id in state.detailSelectedIds,
                             isSelectionMode = state.isDetailSelectionMode,
+                            onNoteClick = {
+                                viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
+                                viewModel.onEvent(CollectionEvents.ShowNoteEditor(item.note))
+                            },
+                            isPinned = item.isPinned,
                             url = item.url,
                             note = item.note,
                             reminderTime = item.reminderTime

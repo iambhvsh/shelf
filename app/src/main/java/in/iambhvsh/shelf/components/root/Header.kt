@@ -66,7 +66,10 @@ fun ShelfHeader(
     onDeleteSelected: (() -> Unit)? = null,
     onAddToCollection: (() -> Unit)? = null,
     onRenameSelected: (() -> Unit)? = null,
-    onCloseSearch: () -> Unit = {}
+    onCloseSearch: () -> Unit = {},
+    isTrashScreen: Boolean = false,
+    onRestoreSelected: (() -> Unit)? = null,
+    onEmptyTrash: (() -> Unit)? = null
 ) {
     val smoothed = rememberSmoothedHeaderValues(scrollBehavior.state)
     val smoothedAlpha = smoothed.alpha
@@ -203,7 +206,10 @@ fun ShelfHeader(
                 onRenameSelected = onRenameSelected,
                 onDeleteSelected = onDeleteSelected,
                 isCollectionDetail = isCollectionDetail,
-                onNewBookmarkClick = onNewBookmarkClick
+                onNewBookmarkClick = onNewBookmarkClick,
+                isTrashScreen = isTrashScreen,
+                onRestoreSelected = onRestoreSelected,
+                onEmptyTrash = onEmptyTrash
             )
         }
     }

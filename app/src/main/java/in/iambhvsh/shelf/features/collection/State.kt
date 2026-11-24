@@ -35,5 +35,8 @@ data class CollectionState(
     val showNoteEditor: Boolean = false,
     val noteEditorText: String? = null,
     val showReminderPicker: Boolean = false,
-    val toastMessage: String? = null
+    val toastMessage: String? = null,
+    val trashedCountInCollection: Int = 0,
+    val isPhotoPreviewDialog: Boolean = false,
+    val previewPhotoUrl: String? = null
 )

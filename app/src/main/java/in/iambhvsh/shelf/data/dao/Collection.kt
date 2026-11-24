@@ -29,6 +29,15 @@ interface CollectionDao {
     @Delete
     suspend fun deleteCollection(collection: CollectionEntity)
 
+    @Query("DELETE FROM bookmark_collection_cross_ref WHERE collectionId = :collectionId")
+    suspend fun deleteCrossRefsForCollection(collectionId: Long)
+
+    @Transaction
+    suspend fun purgeCollection(collection: CollectionEntity) {
+        deleteCrossRefsForCollection(collection.id)
+        deleteCollection(collection)
+    }
+
     @Query("UPDATE collections SET name = :name WHERE id = :id")
     suspend fun updateName(id: Long, name: String)
 
@@ -37,11 +46,14 @@ interface CollectionDao {
                (SELECT COUNT(*) FROM bookmark_collection_cross_ref bcc_cnt
                 INNER JOIN bookmarks b_cnt ON bcc_cnt.bookmarkId = b_cnt.id
                 WHERE bcc_cnt.collectionId = c.id AND b_cnt.isHidden = 0) AS bookmarkCount,
-               (SELECT GROUP_CONCAT(b.imageUrl, '|||')
-                FROM bookmark_collection_cross_ref bcc2
-                INNER JOIN bookmarks b ON bcc2.bookmarkId = b.id
-                WHERE bcc2.collectionId = c.id AND b.imageUrl IS NOT NULL AND b.imageUrl != '' AND b.isHidden = 0
-                LIMIT 4) AS previewUrls
+               (SELECT GROUP_CONCAT(img, '|||')
+                FROM (
+                    SELECT b.imageUrl AS img
+                    FROM bookmark_collection_cross_ref bcc2
+                    INNER JOIN bookmarks b ON bcc2.bookmarkId = b.id
+                    WHERE bcc2.collectionId = c.id AND b.imageUrl IS NOT NULL AND b.imageUrl != '' AND b.isHidden = 0
+                    LIMIT 4
+                )) AS previewUrls
         FROM collections c
         ORDER BY c.createdAt DESC
     """)
@@ -79,16 +91,38 @@ interface CollectionDao {
     suspend fun getBookmarkUrlsForCollection(collectionId: Long): List<String>
 
     @Query("""
+        SELECT b.url FROM bookmarks b
+        INNER JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
+        WHERE bcc.collectionId = :collectionId
+    """)
+    suspend fun getAllBookmarkUrlsForCollection(collectionId: Long): List<String>
+
+    @Query("SELECT collectionId FROM bookmark_collection_cross_ref WHERE bookmarkId = :bookmarkId LIMIT 1")
+    suspend fun getCollectionIdForBookmark(bookmarkId: Long): Long?
+
+    @Query("SELECT COUNT(*) FROM bookmark_collection_cross_ref")
+    fun getCollectionCrossRefCount(): Flow<Int>
+
+    @Query("""
         SELECT -1 AS id, 'Uncategorised' AS name, 0 AS createdAt, 
                COUNT(b.id) AS bookmarkCount,
-               (SELECT GROUP_CONCAT(b2.imageUrl, '|||') 
-                FROM bookmarks b2 
-                LEFT JOIN bookmark_collection_cross_ref bcc2 ON b2.id = bcc2.bookmarkId 
-                WHERE bcc2.collectionId IS NULL AND b2.isHidden = 0 AND b2.imageUrl IS NOT NULL AND b2.imageUrl != '' 
-                LIMIT 4) AS previewUrls
+               (SELECT GROUP_CONCAT(img, '|||') 
+                FROM (
+                    SELECT b2.imageUrl AS img
+                    FROM bookmarks b2 
+                    LEFT JOIN (
+                        SELECT bcc2.bookmarkId FROM bookmark_collection_cross_ref bcc2
+                        INNER JOIN collections c2 ON bcc2.collectionId = c2.id
+                    ) active_bcc2 ON b2.id = active_bcc2.bookmarkId 
+                    WHERE active_bcc2.bookmarkId IS NULL AND b2.isHidden = 0 AND b2.imageUrl IS NOT NULL AND b2.imageUrl != '' 
+                    LIMIT 4
+                )) AS previewUrls
         FROM bookmarks b
-        LEFT JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
-        WHERE bcc.collectionId IS NULL AND b.isHidden = 0
+        LEFT JOIN (
+            SELECT bcc.bookmarkId FROM bookmark_collection_cross_ref bcc
+            INNER JOIN collections c ON bcc.collectionId = c.id
+        ) active_bcc ON b.id = active_bcc.bookmarkId
+        WHERE active_bcc.bookmarkId IS NULL AND b.isHidden = 0
     """)
     fun getUnassignedCollectionStats(): Flow<CollectionWithCount>
 }

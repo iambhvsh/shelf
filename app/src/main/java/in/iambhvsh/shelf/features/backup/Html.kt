@@ -1,10 +1,12 @@
 package `in`.iambhvsh.shelf.features.backup
 
-import `in`.iambhvsh.shelf.data.dao.BookmarkDao
-import `in`.iambhvsh.shelf.data.dao.CollectionDao
+import androidx.room.withTransaction
 import `in`.iambhvsh.shelf.data.BookmarkCollectionCrossRef
+import `in`.iambhvsh.shelf.data.BookmarkDatabase
 import `in`.iambhvsh.shelf.data.BookmarkEntity
 import `in`.iambhvsh.shelf.data.CollectionEntity
+import `in`.iambhvsh.shelf.data.dao.BookmarkDao
+import `in`.iambhvsh.shelf.data.dao.CollectionDao
 import kotlinx.coroutines.flow.first
 
 internal suspend fun exportBookmarksToHtml(
@@ -65,63 +67,76 @@ internal fun escapeHtml(text: String): String {
 internal suspend fun importBookmarksFromHtml(
     html: String,
     bookmarkDao: BookmarkDao,
-    collectionDao: CollectionDao
+    collectionDao: CollectionDao,
+    database: BookmarkDatabase? = null
 ): BrowserImportResult {
-    val parser = BookmarkParser()
-    val (parsedBookmarks, collectionNames) = parser.parse(html)
+    val block: suspend () -> BrowserImportResult = {
+        val parser = BookmarkParser()
+        val (parsedBookmarks, collectionNames) = parser.parse(html)
 
-    val existingInDb = bookmarkDao.getAllBookmarksOnce().associateBy { it.url }.toMutableMap()
-    var imported = 0
-    var skipped = 0
+        val existingInDb = bookmarkDao.getAllBookmarksOnce().associateBy { it.url }.toMutableMap()
+        var imported = 0
+        var skipped = 0
 
-    val bookmarkMap = mutableMapOf<String, Long>()
+        val bookmarkMap = mutableMapOf<String, Long>()
 
-    for (pb in parsedBookmarks) {
-        val existing = existingInDb[pb.url]
-        if (existing != null) {
-            if (existing.isHidden) {
-                bookmarkDao.unhideBookmark(
-                    id = existing.id,
-                    title = if (pb.title.isNotBlank()) pb.title else existing.title,
-                    description = existing.description,
-                    imageUrl = existing.imageUrl,
-                    createdAt = existing.createdAt
-                )
-                imported++
-            } else {
-                if ((existing.title.isNullOrBlank() || existing.title == existing.url) && pb.title.isNotBlank()) {
-                    bookmarkDao.updateTitle(existing.id, pb.title)
+        for (pb in parsedBookmarks) {
+            val existing = existingInDb[pb.url]
+            if (existing != null) {
+                if (existing.isHidden) {
+                    bookmarkDao.unhideBookmark(
+                        id = existing.id,
+                        title = if (pb.title.isNotBlank()) pb.title else existing.title,
+                        description = existing.description,
+                        imageUrl = existing.imageUrl,
+                        createdAt = existing.createdAt
+                    )
+                    imported++
+                } else {
+                    if ((existing.title.isNullOrBlank() || existing.title == existing.url) && pb.title.isNotBlank()) {
+                        bookmarkDao.updateTitle(existing.id, pb.title)
+                    }
+                    skipped++
                 }
-                skipped++
-            }
-            bookmarkMap[pb.url] = existing.id
-        } else {
-            val newId = bookmarkDao.insertWithReturn(
-                BookmarkEntity(
-                    url = pb.url,
-                    title = pb.title,
-                    description = null,
-                    imageUrl = null
+                bookmarkMap[pb.url] = existing.id
+            } else {
+                val newId = bookmarkDao.insertWithReturn(
+                    BookmarkEntity(
+                        url = pb.url,
+                        title = pb.title,
+                        description = null,
+                        imageUrl = null
+                    )
                 )
-            )
-            bookmarkMap[pb.url] = newId
-            existingInDb[pb.url] = BookmarkEntity(id = newId, url = pb.url, title = pb.title, description = null, imageUrl = null)
-            imported++
-        }
-    }
-
-    val existingCollections = collectionDao.getAllCollectionsRaw().first().associateBy { it.name }
-    val nameToId = existingCollections.mapValues { it.value.id }.toMutableMap()
-
-    for (pb in parsedBookmarks) {
-        val bmId = bookmarkMap[pb.url] ?: continue
-        for (cName in pb.collections) {
-            val colId = nameToId.getOrPut(cName) {
-                collectionDao.insertCollection(CollectionEntity(name = cName))
+                bookmarkMap[pb.url] = newId
+                existingInDb[pb.url] = BookmarkEntity(id = newId, url = pb.url, title = pb.title, description = null, imageUrl = null)
+                imported++
             }
-            collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bmId, colId))
         }
+
+        val existingCollections = collectionDao.getAllCollectionsRaw().first().associateBy { it.name }
+        val nameToId = existingCollections.mapValues { it.value.id }.toMutableMap()
+
+        for (pb in parsedBookmarks) {
+            val bmId = bookmarkMap[pb.url] ?: continue
+            for (cName in pb.collections) {
+                val trimmed = cName.trim()
+                if (trimmed.isEmpty()) continue
+                val colId = nameToId.getOrPut(trimmed) {
+                    collectionDao.insertCollection(CollectionEntity(name = trimmed))
+                }
+                if (colId > 0) {
+                    collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bmId, colId))
+                }
+            }
+        }
+
+        BrowserImportResult(imported = imported, skipped = skipped, collections = collectionNames.size)
     }
 
-    return BrowserImportResult(imported = imported, skipped = skipped, collections = collectionNames.size)
+    return if (database != null) {
+        database.withTransaction { block() }
+    } else {
+        block()
+    }
 }

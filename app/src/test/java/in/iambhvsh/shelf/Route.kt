@@ -28,5 +28,6 @@ class NavigationRouteTest {
         assertEquals("settings_security", AppRoute.SettingsSecurity.route)
         assertEquals("settings_data", AppRoute.SettingsData.route)
         assertEquals("settings_about", AppRoute.SettingsAbout.route)
+        assertEquals("settings_trash", AppRoute.SettingsTrash.route)
     }
 }

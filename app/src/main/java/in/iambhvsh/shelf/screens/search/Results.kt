@@ -140,6 +140,7 @@ fun SearchResults(
                             onNoteClick = { onNoteClick?.invoke(item) },
                             isSelected = item.id in selectedIds,
                             isSelectionMode = isSelectionMode,
+                            isPinned = item.isPinned,
                             url = item.url,
                             note = item.note,
                             reminderTime = item.reminderTime

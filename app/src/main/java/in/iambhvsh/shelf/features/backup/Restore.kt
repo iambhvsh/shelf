@@ -1,8 +1,10 @@
 package `in`.iambhvsh.shelf.features.backup
 
+import androidx.room.withTransaction
 import `in`.iambhvsh.shelf.data.BackupBookmark
 import `in`.iambhvsh.shelf.data.BackupData
 import `in`.iambhvsh.shelf.data.BookmarkCollectionCrossRef
+import `in`.iambhvsh.shelf.data.BookmarkDatabase
 import `in`.iambhvsh.shelf.data.BookmarkEntity
 import `in`.iambhvsh.shelf.data.BookmarkTagCrossRef
 import `in`.iambhvsh.shelf.data.CollectionEntity
@@ -75,81 +77,98 @@ suspend fun importBackupFromJson(
     json: Json,
     bookmarkDao: BookmarkDao,
     collectionDao: CollectionDao,
-    tagDao: TagDao
+    tagDao: TagDao,
+    database: BookmarkDatabase? = null
 ): JsonImportResult {
-    val trimmed = jsonString.trim()
-    val (backupData, trailingText) = try {
-        Pair(json.decodeFromString<BackupData>(trimmed), "")
-    } catch (e: Exception) {
-        val sanitized = sanitizeJson(trimmed)
-        if (sanitized != null) {
-            val trailing = trimmed.substring(sanitized.length).trim()
-            Pair(json.decodeFromString<BackupData>(sanitized), trailing)
-        } else {
-            throw e
-        }
-    }
-
-    val allBookmarks = backupData.bookmarks.toMutableList()
-    if (trailingText.isNotEmpty()) {
-        val extra = extractTrailingBookmarks(trailingText, json)
-        for (eb in extra) {
-            if (allBookmarks.none { it.url == eb.url }) {
-                allBookmarks.add(eb)
-            }
-        }
-    }
-
-    val existingInDb = bookmarkDao.getAllBookmarksOnce().associateBy { it.url }.toMutableMap()
-
-    val existingTags = tagDao.getAllTagsOnce().associateBy { it.name }
-    val tagNameToId = existingTags.mapValues { it.value.id }.toMutableMap()
-
-    for (t in backupData.tags) {
-        if (!tagNameToId.containsKey(t.name)) {
-            val tagId = tagDao.insertTag(TagEntity(name = t.name))
-            tagNameToId[t.name] = tagId
-        }
-    }
-
-    var importedCount = 0
-    var updatedCount = 0
-    var skippedCount = 0
-    val urlToBookmarkId = mutableMapOf<String, Long>()
-
-    for (b in allBookmarks) {
-        val existing = existingInDb[b.url]
-        val bookmarkId: Long
-        if (existing != null) {
-            bookmarkId = existing.id
-            urlToBookmarkId[b.url] = bookmarkId
-            if (existing.isHidden) {
-                bookmarkDao.restoreBookmark(
-                    id = existing.id,
-                    title = b.title,
-                    description = b.description,
-                    imageUrl = b.imageUrl,
-                    createdAt = b.createdAt,
-                    isPinned = b.isPinned,
-                    note = b.note,
-                    reminderTime = b.reminderTime
-                )
-                updatedCount++
+    val block: suspend () -> JsonImportResult = {
+        val trimmed = jsonString.trim()
+        val (backupData, trailingText) = try {
+            Pair(json.decodeFromString<BackupData>(trimmed), "")
+        } catch (e: Exception) {
+            val sanitized = sanitizeJson(trimmed)
+            if (sanitized != null) {
+                val trailing = trimmed.substring(sanitized.length).trim()
+                Pair(json.decodeFromString<BackupData>(sanitized), trailing)
             } else {
-                bookmarkDao.updateExistingBookmarkMetadata(
-                    id = existing.id,
-                    title = b.title,
-                    description = b.description,
-                    imageUrl = b.imageUrl,
-                    isPinned = b.isPinned,
-                    note = b.note,
-                    reminderTime = b.reminderTime
-                )
-                skippedCount++
+                throw e
             }
-        } else {
-            bookmarkId = bookmarkDao.insertWithReturn(
-                BookmarkEntity(
+        }
+
+        val allBookmarks = backupData.bookmarks.toMutableList()
+        if (trailingText.isNotEmpty()) {
+            val extra = extractTrailingBookmarks(trailingText, json)
+            for (eb in extra) {
+                if (allBookmarks.none { it.url == eb.url }) {
+                    allBookmarks.add(eb)
+                }
+            }
+        }
+
+        val existingInDb = bookmarkDao.getAllBookmarksOnce().associateBy { it.url }.toMutableMap()
+
+        val existingTags = tagDao.getAllTagsOnce().associateBy { it.name }
+        val tagNameToId = existingTags.mapValues { it.value.id }.toMutableMap()
+
+        for (t in backupData.tags) {
+            val trimmedName = t.name.trim()
+            if (trimmedName.isEmpty()) continue
+            if (!tagNameToId.containsKey(trimmedName)) {
+                val existing = tagDao.findByName(trimmedName)
+                val tagId = if (existing != null) {
+                    existing.id
+                } else {
+                    val inserted = tagDao.insertTag(TagEntity(name = trimmedName))
+                    if (inserted > 0) inserted else (tagDao.findByName(trimmedName)?.id ?: -1L)
+                }
+                if (tagId > 0) {
+                    tagNameToId[trimmedName] = tagId
+                }
+            }
+        }
+
+        var importedCount = 0
+        var updatedCount = 0
+        var skippedCount = 0
+        val urlToBookmarkId = mutableMapOf<String, Long>()
+
+        for (b in allBookmarks) {
+            val existing = existingInDb[b.url]
+            val bookmarkId: Long
+            if (existing != null) {
+                bookmarkId = existing.id
+                urlToBookmarkId[b.url] = bookmarkId
+                if (existing.isHidden) {
+                    bookmarkDao.restoreBookmark(
+                        id = existing.id,
+                        title = b.title,
+                        description = b.description,
+                        imageUrl = b.imageUrl,
+                        createdAt = b.createdAt,
+                        isPinned = b.isPinned,
+                        note = b.note,
+                        reminderTime = b.reminderTime
+                    )
+                    updatedCount++
+                } else {
+                    skippedCount++
+                }
+            } else {
+                bookmarkId = bookmarkDao.insertWithReturn(
+                    BookmarkEntity(
+                        url = b.url,
+                        title = b.title,
+                        description = b.description,
+                        imageUrl = b.imageUrl,
+                        createdAt = b.createdAt,
+                        isHidden = b.isHidden,
+                        isPinned = b.isPinned,
+                        note = b.note,
+                        reminderTime = b.reminderTime
+                    )
+                )
+                urlToBookmarkId[b.url] = bookmarkId
+                existingInDb[b.url] = BookmarkEntity(
+                    id = bookmarkId,
                     url = b.url,
                     title = b.title,
                     description = b.description,
@@ -160,56 +179,64 @@ suspend fun importBackupFromJson(
                     note = b.note,
                     reminderTime = b.reminderTime
                 )
-            )
-            urlToBookmarkId[b.url] = bookmarkId
-            existingInDb[b.url] = BookmarkEntity(
-                id = bookmarkId,
-                url = b.url,
-                title = b.title,
-                description = b.description,
-                imageUrl = b.imageUrl,
-                createdAt = b.createdAt,
-                isHidden = b.isHidden,
-                isPinned = b.isPinned,
-                note = b.note,
-                reminderTime = b.reminderTime
-            )
-            importedCount++
-        }
-
-        b.tags.forEach { tagName ->
-            val tagId = tagNameToId.getOrPut(tagName) {
-                tagDao.insertTag(TagEntity(name = tagName))
+                importedCount++
             }
-            tagDao.addTagToBookmark(BookmarkTagCrossRef(bookmarkId, tagId))
-        }
-    }
 
-    val existingCollections = collectionDao.getAllCollectionsRaw().first().associateBy { it.name }
-    val collectionNameToId = existingCollections.mapValues { it.value.id }.toMutableMap()
-    val skippedUrls = mutableListOf<String>()
-    var restoredCollections = 0
-
-    for (c in backupData.collections) {
-        val collectionId = collectionNameToId.getOrPut(c.name) {
-            collectionDao.insertCollection(CollectionEntity(name = c.name))
-        }
-        restoredCollections++
-        c.bookmarkUrls.forEach { url ->
-            val bmId = urlToBookmarkId[url] ?: existingInDb[url]?.id
-            if (bmId != null) {
-                collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bmId, collectionId))
-            } else {
-                skippedUrls.add(url)
+            b.tags.forEach { rawTagName ->
+                val tagName = rawTagName.trim()
+                if (tagName.isNotEmpty()) {
+                    val tagId = tagNameToId.getOrPut(tagName) {
+                        val existing = tagDao.findByName(tagName)
+                        if (existing != null) {
+                            existing.id
+                        } else {
+                            val inserted = tagDao.insertTag(TagEntity(name = tagName))
+                            if (inserted > 0) inserted else (tagDao.findByName(tagName)?.id ?: -1L)
+                        }
+                    }
+                    if (tagId > 0) {
+                        tagDao.addTagToBookmark(BookmarkTagCrossRef(bookmarkId, tagId))
+                    }
+                }
             }
         }
+
+        val existingCollections = collectionDao.getAllCollectionsRaw().first().associateBy { it.name }
+        val collectionNameToId = existingCollections.mapValues { it.value.id }.toMutableMap()
+        val skippedUrls = mutableListOf<String>()
+        var restoredCollections = 0
+
+        for (c in backupData.collections) {
+            val trimmedColName = c.name.trim()
+            if (trimmedColName.isEmpty()) continue
+            val collectionId = collectionNameToId.getOrPut(trimmedColName) {
+                collectionDao.insertCollection(CollectionEntity(name = trimmedColName))
+            }
+            if (collectionId > 0) {
+                restoredCollections++
+                c.bookmarkUrls.forEach { url ->
+                    val bmId = urlToBookmarkId[url] ?: existingInDb[url]?.id
+                    if (bmId != null && bmId > 0) {
+                        collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bmId, collectionId))
+                    } else {
+                        skippedUrls.add(url)
+                    }
+                }
+            }
+        }
+
+        JsonImportResult(
+            imported = importedCount,
+            updated = updatedCount,
+            skipped = skippedCount,
+            collections = restoredCollections,
+            skippedUrls = skippedUrls
+        )
     }
 
-    return JsonImportResult(
-        imported = importedCount,
-        updated = updatedCount,
-        skipped = skippedCount,
-        collections = restoredCollections,
-        skippedUrls = skippedUrls
-    )
+    return if (database != null) {
+        database.withTransaction { block() }
+    } else {
+        block()
+    }
 }

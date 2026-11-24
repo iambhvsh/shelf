@@ -13,11 +13,27 @@ class SaveTest {
         val state = QuickSaveState(url = "https://example.com")
         assertEquals("https://example.com", state.url)
         assertTrue(state.isSaving)
+        assertFalse(state.isAlreadySaved)
         assertNull(state.bookmarkId)
         assertNull(state.selectedCollection)
         assertTrue(state.selectedTags.isEmpty())
         assertFalse(state.showCollectionPicker)
         assertFalse(state.showTagPicker)
+    }
+
+    @Test
+    fun testQuickSaveState_tracksAlreadySavedStatus() {
+        var state = QuickSaveState(url = "https://example.com")
+        state = state.copy(
+            isAlreadySaved = true,
+            isSaving = false,
+            bookmarkId = 42L,
+            message = "Already saved"
+        )
+        assertTrue(state.isAlreadySaved)
+        assertFalse(state.isSaving)
+        assertEquals(42L, state.bookmarkId)
+        assertEquals("Already saved", state.message)
     }
 
     @Test
@@ -41,5 +57,26 @@ class SaveTest {
 
         state = state.copy(showCollectionPicker = true)
         assertTrue(state.showCollectionPicker)
+    }
+
+    @Test
+    fun testQuickSaveState_populatesExistingBookmarkMetadata() {
+        val col = Collection(id = 5L, name = "Android")
+        var state = QuickSaveState(url = "https://example.com")
+        state = state.copy(
+            bookmarkId = 100L,
+            title = "Existing Title",
+            description = "Existing Description",
+            imageUrl = "https://example.com/thumb.jpg",
+            selectedCollection = col,
+            isAlreadySaved = true,
+            isSaving = false
+        )
+        assertEquals("Existing Title", state.title)
+        assertEquals("Existing Description", state.description)
+        assertEquals("https://example.com/thumb.jpg", state.imageUrl)
+        assertEquals(5L, state.selectedCollection?.id)
+        assertTrue(state.isAlreadySaved)
+        assertFalse(state.isSaving)
     }
 }

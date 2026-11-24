@@ -42,7 +42,16 @@ interface BookmarkRepository {
     suspend fun addBookmarkToCollection(bookmarkId: Long, collectionId: Long)
     suspend fun addBookmarksToCollection(bookmarkIds: List<Long>, collectionId: Long)
     suspend fun removeBookmarkFromCollection(bookmarkId: Long, collectionId: Long)
+    suspend fun getCollectionIdForBookmark(bookmarkId: Long): Long?
     suspend fun updateImageUrl(id: Long, imageUrl: String?)
+
+    fun getTrashedBookmarks(): Flow<Resource<List<Bookmark>>>
+    fun getTrashedCount(): Flow<Int>
+    fun getTrashedCountForCollection(collectionId: Long): Flow<Int>
+    suspend fun unhideBookmarks(ids: List<Long>)
+    suspend fun restoreBookmarksInCollection(collectionId: Long)
+    suspend fun permanentlyDeleteBookmarks(ids: List<Long>)
+    suspend fun emptyTrash()
 }
 
 interface SettingsRepository {

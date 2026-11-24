@@ -10,12 +10,28 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import `in`.iambhvsh.shelf.MainActivity
 import `in`.iambhvsh.shelf.R
+import `in`.iambhvsh.shelf.data.dao.BookmarkDao
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class ReminderReceiver : BroadcastReceiver() {
+class ReminderReceiver : BroadcastReceiver(), KoinComponent {
+
+    private val bookmarkDao: BookmarkDao by inject()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onReceive(context: Context, intent: Intent) {
         val bookmarkId = intent.getLongExtra(ReminderManager.EXTRA_BOOKMARK_ID, -1L)
         if (bookmarkId == -1L) return
+
+        scope.launch {
+            try {
+                bookmarkDao.updateReminderTime(bookmarkId, null)
+            } catch (_: Exception) {}
+        }
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 

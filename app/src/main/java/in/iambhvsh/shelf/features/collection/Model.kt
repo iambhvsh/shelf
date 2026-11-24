@@ -6,6 +6,7 @@ import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.data.Collection
 import `in`.iambhvsh.shelf.data.BookmarkRepository
 import `in`.iambhvsh.shelf.features.fetch.LinkMetadataParser
+import `in`.iambhvsh.shelf.features.reminder.ReminderManager
 import `in`.iambhvsh.shelf.util.Resource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CollectionViewModel(
-    internal val repository: BookmarkRepository
+    internal val repository: BookmarkRepository,
+    internal val reminderManager: ReminderManager
 ) : ViewModel() {
     internal val _state = MutableStateFlow(CollectionState())
     val state = _state.asStateFlow()
@@ -140,7 +142,8 @@ class CollectionViewModel(
             CollectionEvents.HideNoteEditor -> _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
             is CollectionEvents.UpdateNote -> {
                 viewModelScope.launch {
-                    repository.updateNote(event.id, event.note)
+                    val cleanNote = event.note?.trim()?.ifEmpty { null }
+                    repository.updateNote(event.id, cleanNote)
                     _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
                 }
             }
@@ -149,20 +152,25 @@ class CollectionViewModel(
             is CollectionEvents.SetReminder -> {
                 viewModelScope.launch {
                     repository.updateReminderTime(event.id, event.timeInMillis)
+                    reminderManager.scheduleReminder(event.id, event.timeInMillis)
                     _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
                 }
             }
             is CollectionEvents.CancelReminder -> {
                 viewModelScope.launch {
                     repository.updateReminderTime(event.id, null)
+                    reminderManager.cancelReminder(event.id)
                     _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
                 }
             }
             CollectionEvents.ClearToast -> _state.update { it.copy(toastMessage = null) }
+            is CollectionEvents.RestoreCollectionBookmarks -> restoreCollectionBookmarks(event.collectionId)
             CollectionEvents.ShowAddBookmarkDialog -> _state.update { it.copy(showAddBookmarkDialog = true, addBookmarkUrl = "") }
             CollectionEvents.HideAddBookmarkDialog -> _state.update { it.copy(showAddBookmarkDialog = false, addBookmarkUrl = "") }
             is CollectionEvents.OnAddBookmarkUrlChange -> _state.update { it.copy(addBookmarkUrl = event.url) }
             CollectionEvents.SaveBookmarkInCollection -> saveBookmarkInCollection()
+            is CollectionEvents.PreviewImageClick -> _state.update { it.copy(isPhotoPreviewDialog = true, previewPhotoUrl = event.url) }
+            CollectionEvents.DismissPreviewDialog -> _state.update { it.copy(isPhotoPreviewDialog = false, previewPhotoUrl = null) }
         }
     }
 

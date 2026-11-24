@@ -66,6 +66,7 @@ fun rememberRootNavState(
             AppRoute.SettingsSecurity.route -> "Security"
             AppRoute.SettingsData.route -> "Data & Storage"
             AppRoute.SettingsAbout.route -> "About"
+            AppRoute.SettingsTrash.route -> "Recently Deleted"
             else -> null
         }
 

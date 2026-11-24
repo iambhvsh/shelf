@@ -28,4 +28,19 @@ object UrlUtils {
     fun decodeUrl(url: String): String {
         return runCatching { URLDecoder.decode(url, "UTF-8") }.getOrElse { url }
     }
+
+    fun extractUrl(text: String): String {
+        val trimmed = text.trim()
+        val urlRegex = Regex("""https?://[^\s]+""")
+        val match = urlRegex.find(trimmed)
+        if (match != null) {
+            return match.value.trimEnd('.', ',', ';', '!', '?', ')', ']')
+        }
+        val fallback = trimmed.trimEnd('.', ',', ';', '!', '?', ')', ']')
+        return if (!fallback.startsWith("http://") && !fallback.startsWith("https://")) {
+            "https://$fallback"
+        } else {
+            fallback
+        }
+    }
 }

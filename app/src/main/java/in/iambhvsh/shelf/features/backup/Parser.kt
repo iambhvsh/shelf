@@ -17,10 +17,10 @@ class BookmarkParser {
     fun parse(html: String): Pair<List<ParsedBookmark>, List<String>> {
         val normalized = html.replace(Regex(">\\s+<"), "><")
 
-        data class Tag(val position: Int, val type: String, val value: String)
+        data class Tag(val position: Int, val type: String, val value: String, val extra: String = "")
         val tags = mutableListOf<Tag>()
 
-        val aRegex = Regex("<A\\s+[^>]*HREF=\"([^\"]+)\"([^>]*)>(.*?)</A>",
+        val aRegex = Regex("<A\\s+[^>]*HREF=[\"']([^\"']+)[\"']([^>]*)>(.*?)</A>",
             setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
         val h3Regex = Regex("<H3[^>]*>(.*?)</H3>",
             setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
@@ -30,7 +30,7 @@ class BookmarkParser {
             tags.add(Tag(m.range.first, "folder", m.groupValues[1].trim()))
         }
         for (m in aRegex.findAll(normalized)) {
-            tags.add(Tag(m.range.first, "bookmark", "${m.groupValues[1]}|||${m.groupValues[3]}"))
+            tags.add(Tag(m.range.first, "bookmark", m.groupValues[1], m.groupValues[3]))
         }
         for (m in dlEndRegex.findAll(normalized)) {
             tags.add(Tag(m.range.first, "close", ""))
@@ -39,25 +39,26 @@ class BookmarkParser {
         tags.sortBy { it.position }
 
         val bookmarkMap = linkedMapOf<String, MutableParsedBookmark>()
-        val folderStack = ArrayDeque<String>()
+        val folderStack = ArrayDeque<String?>()
         val collectionsWithBookmarks = linkedSetOf<String>()
 
         for (tag in tags) {
             when (tag.type) {
                 "folder" -> {
-                    val name = tag.value.replaceHtmlEntities()
+                    val name = tag.value.replaceHtmlEntities().trim()
                     if (name.isNotBlank()) {
                         folderStack.addLast(name)
+                    } else {
+                        folderStack.addLast(null)
                     }
                 }
                 "bookmark" -> {
-                    val parts = tag.value.split("|||", limit = 2)
-                    val url = parts[0].trim()
-                    val rawTitle = parts.getOrElse(1) { "" }
+                    val url = tag.value.trim().replaceHtmlEntities()
+                    val rawTitle = tag.extra
                         .replace(Regex("<[^>]+>"), "").trim().replaceHtmlEntities()
                     if (url.isNotBlank()) {
                         val currentPath = if (folderStack.isNotEmpty()) {
-                            folderStack.joinToString("/")
+                            folderStack.filterNotNull().filter { it.isNotBlank() }.joinToString("/").ifBlank { null }
                         } else null
 
                         if (currentPath != null) {

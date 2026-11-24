@@ -100,9 +100,14 @@ fun RootOverlays(
     }
 
     if (showDeleteConfirmDialog) {
+        val isCollection = collectionState.isSelectionMode
         DeleteConfirmationDialog(
-            title = "Delete Selected",
-            text = "Are you sure you want to permanently delete these items?",
+            title = if (isCollection) "Delete Collections" else "Delete Selected",
+            text = if (isCollection) {
+                "Are you sure you want to delete the selected collections? Their bookmarks will be kept."
+            } else {
+                "Are you sure you want to delete the selected items? They will be moved to Recently Deleted."
+            },
             onConfirm = {
                 pendingDeleteAction?.invoke()
                 onDismissDeleteConfirm()

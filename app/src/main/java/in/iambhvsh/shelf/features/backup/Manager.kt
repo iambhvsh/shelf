@@ -5,6 +5,7 @@ import `in`.iambhvsh.shelf.data.BackupBookmark
 import `in`.iambhvsh.shelf.data.BackupCollection
 import `in`.iambhvsh.shelf.data.BackupData
 import `in`.iambhvsh.shelf.data.BackupTag
+import `in`.iambhvsh.shelf.data.BookmarkDatabase
 import `in`.iambhvsh.shelf.data.dao.BookmarkDao
 import `in`.iambhvsh.shelf.data.dao.CollectionDao
 import `in`.iambhvsh.shelf.data.dao.TagDao
@@ -28,6 +29,7 @@ import kotlinx.serialization.json.Json
 
 @OptIn(FlowPreview::class)
 class BackupManager(
+    private val database: BookmarkDatabase,
     private val bookmarkDao: BookmarkDao,
     private val collectionDao: CollectionDao,
     private val tagDao: TagDao,
@@ -35,6 +37,7 @@ class BackupManager(
     private val context: Context
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val reminderManager = `in`.iambhvsh.shelf.features.reminder.ReminderManager(context)
     private var autoBackupJob: Job? = null
     private val json = Json {
         prettyPrint = true
@@ -60,9 +63,12 @@ class BackupManager(
         stopAutoBackup()
         autoBackupJob = scope.launch {
             combine(
-                bookmarkDao.getBookmarks(),
-                collectionDao.getAllCollections()
-            ) { bookmarks, collections ->
+                bookmarkDao.getAllBookmarks(),
+                collectionDao.getAllCollections(),
+                tagDao.getAllTags(),
+                tagDao.getTagCrossRefCount(),
+                collectionDao.getCollectionCrossRefCount()
+            ) { bookmarks, collections, _, _, _ ->
                 Pair(bookmarks, collections)
             }
                 .debounce(500)
@@ -87,7 +93,7 @@ class BackupManager(
                         )
                     }
                     val backupCollections = collections.mapNotNull { collection ->
-                        val urls = collectionDao.getBookmarkUrlsForCollection(collection.id)
+                        val urls = collectionDao.getAllBookmarkUrlsForCollection(collection.id)
                         if (collection.name.isNotBlank()) BackupCollection(name = collection.name, bookmarkUrls = urls) else null
                     }
                     BackupData(bookmarks = backupBookmarks, collections = backupCollections, tags = backupTags)
@@ -111,7 +117,7 @@ class BackupManager(
     fun readInternalBackup(): String? = readInternalBackupFile(context)
 
     suspend fun generateBackupJson(): String {
-        val bookmarks = bookmarkDao.getBookmarksOnce()
+        val bookmarks = bookmarkDao.getAllBookmarksOnce()
         val collections = collectionDao.getAllCollectionsRaw().first()
 
         val backupBookmarks = bookmarks.map { bookmark ->
@@ -131,7 +137,7 @@ class BackupManager(
             )
         }
         val backupCollections = collections.mapNotNull { collection ->
-            val urls = collectionDao.getBookmarkUrlsForCollection(collection.id)
+            val urls = collectionDao.getAllBookmarkUrlsForCollection(collection.id)
             if (collection.name.isNotBlank()) BackupCollection(name = collection.name, bookmarkUrls = urls) else null
         }
 
@@ -145,7 +151,7 @@ class BackupManager(
     suspend fun generateExportHtml(): String = exportBookmarksToHtml(bookmarkDao, collectionDao)
 
     suspend fun importFromBrowserBookmarks(html: String): BrowserImportResult =
-        importBookmarksFromHtml(html, bookmarkDao, collectionDao)
+        importBookmarksFromHtml(html, bookmarkDao, collectionDao, database)
 
     suspend fun fetchMissingImages() {
         val parser = LinkMetadataParser()
@@ -161,12 +167,22 @@ class BackupManager(
     }
 
     suspend fun importFromJson(jsonString: String): JsonImportResult {
-        return importBackupFromJson(
+        val result = importBackupFromJson(
             jsonString = jsonString,
             json = json,
             bookmarkDao = bookmarkDao,
             collectionDao = collectionDao,
-            tagDao = tagDao
+            tagDao = tagDao,
+            database = database
         )
+        val now = System.currentTimeMillis()
+        val all = bookmarkDao.getAllBookmarksOnce()
+        for (bm in all) {
+            val time = bm.reminderTime
+            if (time != null && time > now && !bm.isHidden) {
+                reminderManager.scheduleReminder(bm.id, time)
+            }
+        }
+        return result
     }
 }

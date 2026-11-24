@@ -80,4 +80,45 @@ class CollectionStateTest {
         state = state.copy(sortOrder = SortOrder.DATE_OLDEST)
         assertEquals(SortOrder.DATE_OLDEST, state.sortOrder)
     }
+
+    @Test
+    fun testVirtualCollectionHandling_inCollectionState() {
+        val virtualCol = Collection(
+            id = Collection.UNCATEGORISED_ID,
+            name = "Uncategorised",
+            bookmarkCount = 3,
+            previewUrls = emptyList(),
+            isVirtual = true
+        )
+        assertTrue(virtualCol.isVirtual)
+
+        val normalCol = Collection(
+            id = 5L,
+            name = "Articles",
+            bookmarkCount = 10,
+            previewUrls = emptyList(),
+            isVirtual = false
+        )
+        assertFalse(normalCol.isVirtual)
+
+        var state = CollectionState(collections = listOf(virtualCol, normalCol))
+        assertEquals(2, state.collections.size)
+        assertTrue(state.collections.any { it.isVirtual })
+        assertTrue(state.collections.any { !it.isVirtual })
+    }
+
+    @Test
+    fun testPhotoPreviewState_transitionsCleanly() {
+        var state = CollectionState()
+        assertFalse(state.isPhotoPreviewDialog)
+        assertNull(state.previewPhotoUrl)
+
+        state = state.copy(isPhotoPreviewDialog = true, previewPhotoUrl = "https://example.com/image.jpg")
+        assertTrue(state.isPhotoPreviewDialog)
+        assertEquals("https://example.com/image.jpg", state.previewPhotoUrl)
+
+        state = state.copy(isPhotoPreviewDialog = false, previewPhotoUrl = null)
+        assertFalse(state.isPhotoPreviewDialog)
+        assertNull(state.previewPhotoUrl)
+    }
 }

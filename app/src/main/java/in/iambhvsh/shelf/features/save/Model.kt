@@ -6,6 +6,7 @@ import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.data.BookmarkRepository
 import `in`.iambhvsh.shelf.features.fetch.LinkMetadataParser
 import `in`.iambhvsh.shelf.util.Resource
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -15,6 +16,7 @@ class QuickSaveViewModel(
     private val repository: BookmarkRepository
 ) : ViewModel() {
     private val parser = LinkMetadataParser()
+    private var metadataJob: Job? = null
 
     private val _state = MutableStateFlow(QuickSaveState())
     val state = _state.asStateFlow()
@@ -36,12 +38,10 @@ class QuickSaveViewModel(
                 val bookmarkId = _state.value.bookmarkId ?: return
                 viewModelScope.launch {
                     val collection = _state.value.collections.find { it.id == event.collectionId }
-                    
-                    val previousCollection = _state.value.selectedCollection
-                    if (previousCollection != null) {
-                        repository.removeBookmarkFromCollection(bookmarkId, previousCollection.id)
+                    val currentColId = repository.getCollectionIdForBookmark(bookmarkId)
+                    if (currentColId != null) {
+                        repository.removeBookmarkFromCollection(bookmarkId, currentColId)
                     }
-                    
                     if (collection != null) {
                         repository.addBookmarkToCollection(bookmarkId, collection.id)
                     }
@@ -69,7 +69,9 @@ class QuickSaveViewModel(
                 val bookmarkId = _state.value.bookmarkId ?: return
                 viewModelScope.launch {
                     val newTagId = repository.insertTag(event.name)
-                    repository.addTagToBookmark(bookmarkId, newTagId)
+                    if (newTagId > 0) {
+                        repository.addTagToBookmark(bookmarkId, newTagId)
+                    }
                 }
             }
             
@@ -83,7 +85,9 @@ class QuickSaveViewModel(
             }
 
             QuickSaveEvents.CancelSave -> {
+                metadataJob?.cancel()
                 val bookmarkId = _state.value.bookmarkId ?: return
+                if (_state.value.isAlreadySaved) return
                 viewModelScope.launch {
                     val initialBookmark = Bookmark(id = bookmarkId, url = _state.value.url, title = null, description = null, imageUrl = null)
                     repository.deleteBookmark(initialBookmark)
@@ -104,13 +108,28 @@ class QuickSaveViewModel(
             val exists = repository.existsByUrl(url)
             val initialBookmark = Bookmark(url = url, title = url, description = null, imageUrl = null)
             val id = repository.saveAndReturnId(initialBookmark)
-            _state.update { it.copy(
-                bookmarkId = id,
-                message = if (exists) "Already saved" else "Saved successfully"
-            ) }
+            val existingBookmark = if (exists) repository.getBookmarkById(id) else null
+            val existingColId = if (exists) repository.getCollectionIdForBookmark(id) else null
+
+            _state.update { current ->
+                val matchingCol = if (existingColId != null) current.collections.find { it.id == existingColId } else current.selectedCollection
+                current.copy(
+                    bookmarkId = id,
+                    title = existingBookmark?.title ?: current.title,
+                    description = existingBookmark?.description ?: current.description,
+                    imageUrl = existingBookmark?.imageUrl ?: current.imageUrl,
+                    selectedCollection = matchingCol,
+                    isAlreadySaved = exists,
+                    message = if (exists) "Already saved" else "Saved successfully"
+                )
+            }
             
             fetchBookmarkTags(id)
-            fetchMetadataInBackground(id, url)
+            if (!exists) {
+                fetchMetadataInBackground(id, url)
+            } else {
+                _state.update { it.copy(isSaving = false) }
+            }
         }
     }
     
@@ -125,15 +144,19 @@ class QuickSaveViewModel(
     }
 
     private fun fetchMetadataInBackground(id: Long, url: String) {
-        viewModelScope.launch {
+        metadataJob?.cancel()
+        metadataJob = viewModelScope.launch {
             try {
                 val meta = parser.parse(url)
-                val title = meta?.title ?: url
+                val title = meta?.title?.takeIf { it.isNotBlank() } ?: url
+                val description = meta?.description?.takeIf { it.isNotBlank() }
                 
-                repository.updateBookmarkDetails(id, title, meta?.description)
-                repository.updateImageUrl(id, meta?.imageUrl)
+                repository.updateBookmarkDetails(id, title, description)
+                if (!meta?.imageUrl.isNullOrBlank()) {
+                    repository.updateImageUrl(id, meta.imageUrl)
+                }
                 
-                _state.update { it.copy(title = title, description = meta?.description, imageUrl = meta?.imageUrl, isSaving = false) }
+                _state.update { it.copy(title = title, description = description, imageUrl = meta?.imageUrl, isSaving = false) }
             } catch (e: Exception) {
                 _state.update { it.copy(isSaving = false) }
             }
@@ -144,7 +167,16 @@ class QuickSaveViewModel(
         viewModelScope.launch {
             repository.getAllCollections().collect { result ->
                 if (result is Resource.Success) {
-                    _state.update { it.copy(collections = result.data ?: emptyList()) }
+                    val cols = result.data ?: emptyList()
+                    val bmId = _state.value.bookmarkId
+                    val colId = if (bmId != null) repository.getCollectionIdForBookmark(bmId) else null
+                    val matching = if (colId != null) cols.find { it.id == colId } else null
+                    _state.update { current ->
+                        current.copy(
+                            collections = cols,
+                            selectedCollection = matching ?: current.selectedCollection
+                        )
+                    }
                 }
             }
         }

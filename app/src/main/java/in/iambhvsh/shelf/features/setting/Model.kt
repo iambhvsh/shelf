@@ -4,7 +4,9 @@ import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import `in`.iambhvsh.shelf.features.backup.BackupManager
+import `in`.iambhvsh.shelf.features.reminder.ReminderManager
 import `in`.iambhvsh.shelf.data.BookmarkDatabase
+import `in`.iambhvsh.shelf.data.BookmarkRepository
 import `in`.iambhvsh.shelf.data.UpdateManager
 import `in`.iambhvsh.shelf.data.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +19,9 @@ class SettingViewModel(
     internal val backupManager: BackupManager,
     internal val updateManager: UpdateManager,
     internal val changelogLoader: ChangelogLoader,
-    internal val database: BookmarkDatabase
+    internal val database: BookmarkDatabase,
+    internal val bookmarkRepository: BookmarkRepository,
+    internal val reminderManager: ReminderManager
 ) : ViewModel() {
 
     internal val _state = MutableStateFlow(
@@ -46,6 +50,11 @@ class SettingViewModel(
                 if (_state.value.autoBackupEnabled) {
                     _state.update { it.copy(lastBackupTimeText = formatLastBackupTime(millis)) }
                 }
+            }
+        }
+        viewModelScope.launch {
+            bookmarkRepository.getTrashedCount().collect { count ->
+                _state.update { it.copy(trashedCount = count) }
             }
         }
     }
@@ -164,6 +173,20 @@ class SettingViewModel(
                 settingsRepository.setFirstLaunchPermissionsShown(true)
                 _state.update { it.copy(showPermissionsSheet = false) }
             }
+            SettingEvents.LoadTrash -> loadTrash()
+            is SettingEvents.ToggleTrashSelection -> toggleTrashSelection(event.id)
+            SettingEvents.SelectAllTrash -> selectAllTrash()
+            SettingEvents.ClearTrashSelection -> clearTrashSelection()
+            is SettingEvents.RestoreTrashItem -> restoreTrashItem(event.id)
+            is SettingEvents.DeleteTrashItem -> deleteTrashItem(event.id)
+            SettingEvents.RestoreSelectedTrash -> restoreSelectedTrash()
+            SettingEvents.ShowDeletePermanentlyDialog -> _state.update { it.copy(showDeletePermanentlyDialog = true) }
+            SettingEvents.HideDeletePermanentlyDialog -> _state.update { it.copy(showDeletePermanentlyDialog = false) }
+            SettingEvents.ConfirmDeletePermanently -> deletePermanentlySelected()
+            SettingEvents.ShowEmptyTrashDialog -> _state.update { it.copy(showEmptyTrashDialog = true) }
+            SettingEvents.HideEmptyTrashDialog -> _state.update { it.copy(showEmptyTrashDialog = false) }
+            SettingEvents.ConfirmEmptyTrash -> emptyTrash()
+            SettingEvents.ClearTrashToast -> _state.update { it.copy(trashToastMessage = null) }
         }
     }
 }

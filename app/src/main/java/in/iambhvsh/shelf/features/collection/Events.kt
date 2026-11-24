@@ -58,4 +58,7 @@ sealed class CollectionEvents {
     data class OnAddBookmarkUrlChange(val url: String) : CollectionEvents()
     object SaveBookmarkInCollection : CollectionEvents()
     object ClearToast : CollectionEvents()
+    data class RestoreCollectionBookmarks(val collectionId: Long) : CollectionEvents()
+    data class PreviewImageClick(val url: String) : CollectionEvents()
+    object DismissPreviewDialog : CollectionEvents()
 }

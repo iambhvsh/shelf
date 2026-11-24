@@ -23,7 +23,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +56,9 @@ fun RightActionSlot(
     onDeleteSelected: (() -> Unit)?,
     isCollectionDetail: Boolean = false,
     onNewBookmarkClick: (() -> Unit)? = null,
+    isTrashScreen: Boolean = false,
+    onRestoreSelected: (() -> Unit)? = null,
+    onEmptyTrash: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     AnimatedContent(
@@ -99,6 +104,20 @@ fun RightActionSlot(
                         Icon(
                             painter = painterResource(R.drawable.selectall_icon),
                             contentDescription = "Select all",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                if (onRestoreSelected != null) {
+                    TopBarButton(
+                        onClick = onRestoreSelected,
+                        contentDescription = "Restore",
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Restore,
+                            contentDescription = "Restore",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(22.dp)
                         )

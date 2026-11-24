@@ -30,6 +30,25 @@ class UpdateManagerImpl(
         private const val API_URL = "https://api.github.com/repos/iambhvsh/shelf/releases/latest"
         private const val CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000L
         private const val APK_FILE_NAME = "shelf_update.apk"
+
+        internal fun isVersionNewer(current: String, fetched: String): Boolean {
+            return try {
+                val cleanCurrent = current.removePrefix("v").substringBefore("-")
+                val cleanFetched = fetched.removePrefix("v").substringBefore("-")
+                val currentParts = cleanCurrent.split(".").map { it.toIntOrNull() ?: 0 }
+                val fetchedParts = cleanFetched.split(".").map { it.toIntOrNull() ?: 0 }
+
+                for (i in 0 until maxOf(currentParts.size, fetchedParts.size)) {
+                    val c = currentParts.getOrElse(i) { 0 }
+                    val f = fetchedParts.getOrElse(i) { 0 }
+                    if (f > c) return true
+                    if (c > f) return false
+                }
+                false
+            } catch (_: Exception) {
+                false
+            }
+        }
     }
 
     private var downloadId: Long = -1
@@ -200,23 +219,6 @@ class UpdateManagerImpl(
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(context, "Failed to start installation.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun isVersionNewer(current: String, fetched: String): Boolean {
-        return try {
-            val currentParts = current.split(".").map { it.toInt() }
-            val fetchedParts = fetched.split(".").map { it.toInt() }
-            
-            for (i in 0 until maxOf(currentParts.size, fetchedParts.size)) {
-                val c = currentParts.getOrElse(i) { 0 }
-                val f = fetchedParts.getOrElse(i) { 0 }
-                if (f > c) return true
-                if (c > f) return false
-            }
-            false
-        } catch (e: Exception) {
-            fetched != current
         }
     }
 }

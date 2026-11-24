@@ -17,7 +17,7 @@ interface BookmarkDao {
     @Insert
     suspend fun insertWithReturn(bookmarkEntity: BookmarkEntity): Long
 
-    @Query("SELECT EXISTS(SELECT 1 FROM bookmarks WHERE url = :url AND isHidden = 0)")
+    @Query("SELECT EXISTS(SELECT 1 FROM bookmarks WHERE (url = :url OR RTRIM(url, '/') = RTRIM(:url, '/')) AND isHidden = 0)")
     suspend fun existsByUrl(url: String): Boolean
 
     @Query("SELECT * FROM bookmarks WHERE isHidden = 0")
@@ -54,10 +54,10 @@ interface BookmarkDao {
     @Query("UPDATE bookmarks SET isPinned = :isPinned WHERE id = :id")
     suspend fun updatePinStatus(id: Long, isPinned: Boolean)
 
-    @Query("SELECT * FROM bookmarks WHERE url = :url AND isHidden = 1 LIMIT 1")
+    @Query("SELECT * FROM bookmarks WHERE (url = :url OR RTRIM(url, '/') = RTRIM(:url, '/')) AND isHidden = 1 LIMIT 1")
     suspend fun findHiddenByUrl(url: String): BookmarkEntity?
     
-    @Query("SELECT * FROM bookmarks WHERE url = :url LIMIT 1")
+    @Query("SELECT * FROM bookmarks WHERE (url = :url OR RTRIM(url, '/') = RTRIM(:url, '/')) LIMIT 1")
     suspend fun findByUrl(url: String): BookmarkEntity?
 
     @Query("UPDATE bookmarks SET title = :title, description = :description WHERE id = :id")
@@ -73,7 +73,18 @@ interface BookmarkDao {
     """)
     fun getBookmarksByTags(tagIds: List<Long>): Flow<List<BookmarkEntity>>
 
-    @Query("UPDATE bookmarks SET isHidden = 0, title = :title, description = :description, imageUrl = :imageUrl, createdAt = :createdAt WHERE id = :id")
+    @Query("""
+        UPDATE bookmarks SET 
+            isHidden = 0, 
+            title = :title, 
+            description = :description, 
+            imageUrl = :imageUrl, 
+            createdAt = :createdAt,
+            isPinned = 0,
+            note = NULL,
+            reminderTime = NULL
+        WHERE id = :id
+    """)
     suspend fun unhideBookmark(id: Long, title: String?, description: String?, imageUrl: String?, createdAt: Long)
 
     @Query("UPDATE bookmarks SET title = :title WHERE id = :id")
@@ -139,6 +150,8 @@ interface BookmarkDao {
         if (existsByUrl(bookmark.url)) return false
         val hidden = findHiddenByUrl(bookmark.url)
         if (hidden != null) {
+            deleteBookmarkCollectionCrossRefs(listOf(hidden.id))
+            deleteBookmarkTagCrossRefs(listOf(hidden.id))
             unhideBookmark(hidden.id, bookmark.title, bookmark.description, bookmark.imageUrl, bookmark.createdAt)
         } else {
             insert(bookmark)
@@ -152,6 +165,8 @@ interface BookmarkDao {
         if (existing != null && !existing.isHidden) return existing.id
         val hidden = findHiddenByUrl(bookmark.url)
         if (hidden != null) {
+            deleteBookmarkCollectionCrossRefs(listOf(hidden.id))
+            deleteBookmarkTagCrossRefs(listOf(hidden.id))
             unhideBookmark(hidden.id, bookmark.title, bookmark.description, bookmark.imageUrl, bookmark.createdAt)
             return hidden.id
         }
@@ -160,8 +175,88 @@ interface BookmarkDao {
 
     @Query("""
         SELECT b.* FROM bookmarks b 
-        LEFT JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId 
-        WHERE bcc.collectionId IS NULL AND b.isHidden = 0
+        LEFT JOIN (
+            SELECT bcc.bookmarkId FROM bookmark_collection_cross_ref bcc
+            INNER JOIN collections c ON bcc.collectionId = c.id
+        ) active_bcc ON b.id = active_bcc.bookmarkId 
+        WHERE active_bcc.bookmarkId IS NULL AND b.isHidden = 0
     """)
     fun getUnassignedBookmarks(): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT * FROM bookmarks WHERE isHidden = 1 ORDER BY createdAt DESC")
+    fun getTrashedBookmarks(): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT COUNT(*) FROM bookmarks WHERE isHidden = 1")
+    fun getTrashedCount(): Flow<Int>
+
+    @Query("""
+        SELECT COUNT(*) FROM bookmarks b
+        INNER JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
+        WHERE bcc.collectionId = :collectionId AND b.isHidden = 1
+    """)
+    fun getTrashedCountForCollection(collectionId: Long): Flow<Int>
+
+    @Query("""
+        SELECT COUNT(b.id) FROM bookmarks b
+        LEFT JOIN (
+            SELECT bcc.bookmarkId FROM bookmark_collection_cross_ref bcc
+            INNER JOIN collections c ON bcc.collectionId = c.id
+        ) active_bcc ON b.id = active_bcc.bookmarkId
+        WHERE active_bcc.bookmarkId IS NULL AND b.isHidden = 1
+    """)
+    fun getUnassignedTrashedCount(): Flow<Int>
+
+    @Query("""
+        UPDATE bookmarks SET isHidden = 0 
+        WHERE id IN (
+            SELECT bookmarkId FROM bookmark_collection_cross_ref 
+            WHERE collectionId = :collectionId
+        ) AND isHidden = 1
+    """)
+    suspend fun restoreBookmarksInCollection(collectionId: Long)
+
+    @Query("""
+        UPDATE bookmarks SET isHidden = 0 
+        WHERE id IN (
+            SELECT b.id FROM bookmarks b
+            LEFT JOIN (
+                SELECT bcc.bookmarkId FROM bookmark_collection_cross_ref bcc
+                INNER JOIN collections c ON bcc.collectionId = c.id
+            ) active_bcc ON b.id = active_bcc.bookmarkId
+            WHERE active_bcc.bookmarkId IS NULL AND b.isHidden = 1
+        )
+    """)
+    suspend fun restoreUnassignedBookmarks()
+
+    @Query("DELETE FROM bookmarks WHERE id IN (:ids)")
+    suspend fun deleteBookmarksPermanently(ids: List<Long>)
+
+    @Query("DELETE FROM bookmark_collection_cross_ref WHERE bookmarkId IN (:ids)")
+    suspend fun deleteBookmarkCollectionCrossRefs(ids: List<Long>)
+
+    @Query("DELETE FROM bookmark_tag_cross_ref WHERE bookmarkId IN (:ids)")
+    suspend fun deleteBookmarkTagCrossRefs(ids: List<Long>)
+
+    @Transaction
+    suspend fun purgeBookmarks(ids: List<Long>) {
+        deleteBookmarkCollectionCrossRefs(ids)
+        deleteBookmarkTagCrossRefs(ids)
+        deleteBookmarksPermanently(ids)
+    }
+
+    @Query("DELETE FROM bookmark_collection_cross_ref WHERE bookmarkId IN (SELECT id FROM bookmarks WHERE isHidden = 1)")
+    suspend fun emptyTrashCollectionCrossRefs()
+
+    @Query("DELETE FROM bookmark_tag_cross_ref WHERE bookmarkId IN (SELECT id FROM bookmarks WHERE isHidden = 1)")
+    suspend fun emptyTrashTagCrossRefs()
+
+    @Query("DELETE FROM bookmarks WHERE isHidden = 1")
+    suspend fun emptyTrashBookmarks()
+
+    @Transaction
+    suspend fun emptyTrash() {
+        emptyTrashCollectionCrossRefs()
+        emptyTrashTagCrossRefs()
+        emptyTrashBookmarks()
+    }
 }
