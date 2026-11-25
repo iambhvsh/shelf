@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.0.5] - 2026-11-25
+## [2.0.6] - 2026-11-25
 
 ### Fixed
 - **CancellationException Propagation:** Re-throw `CancellationException` in network fetcher, service layer, backup manager, home/collection/setting ops, and updater so coroutine cancellation is never swallowed.
@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 - **Home/Collection tempBookmark Refresh:** `loadBookmarks` and `selectCollection` now refresh the in-memory `tempBookmark` from the live list after load so sheet-bound state never reads stale data.
 - **Collection Delete Fallback:** `deleteCollectionById` falls back to `selectedCollection` when the target collection is not found in the loaded list, preventing silent no-ops.
 - **Update Installer Safety:** `installUpdateSuspending` re-throws `CancellationException` before showing the install toast, and closes OkHttp response bodies and `DownloadManager` cursors reliably.
+
+## [2.0.5] - 2026-11-25
 
 ### Changed
 - **Collection Detail Selection Actions:** Separated deleting bookmarks from removing them from a collection in the selection top bar. The trash action now moves selected bookmarks to Recently Deleted with confirmation (including inside Uncategorised), while a dedicated folder-off button removes bookmarks from the current collection without hiding them.
