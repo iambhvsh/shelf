@@ -24,6 +24,7 @@ internal fun SettingViewModel.importData(jsonString: String) {
         _state.update { it.copy(importState = ImportState.Loading) }
         try {
             val result = backupManager.importFromJson(jsonString)
+            backupManager.refreshImportedThumbnailsAsync(checkExistingImages = true)
             _state.update {
                 it.copy(
                     importState = ImportState.Success(
@@ -58,7 +59,7 @@ internal fun SettingViewModel.importBrowserBookmarks(html: String) {
         _state.update { it.copy(browserImportState = BrowserImportState.Loading) }
         try {
             val result = backupManager.importFromBrowserBookmarks(html)
-            backupManager.fetchMissingImages()
+            backupManager.refreshImportedThumbnailsAsync(checkExistingImages = false)
             _state.update {
                 it.copy(
                     browserImportState = BrowserImportState.Success(
@@ -102,10 +103,11 @@ internal fun SettingViewModel.resetEverything() {
         settingsRepository.resetToDefaults()
         backupManager.stopAutoBackup()
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-            _state.update {
+            _state.update { current ->
                 SettingState(
                     themeMode = `in`.iambhvsh.shelf.theme.ThemeMode.SYSTEM,
                     dynamicColor = true,
+                    isDynamicColorSupported = current.isDynamicColorSupported,
                     accentColor = `in`.iambhvsh.shelf.theme.AccentColor.PERIWINKLE,
                     viewMode = ViewMode.GRID,
                     tapAction = TapAction.SHOW_PREVIEW,
@@ -119,7 +121,8 @@ internal fun SettingViewModel.resetEverything() {
 }
 
 internal fun SettingViewModel.loadTrash() {
-    viewModelScope.launch {
+    trashJob?.cancel()
+    trashJob = viewModelScope.launch {
         _state.update { it.copy(isTrashLoading = true) }
         bookmarkRepository.getTrashedBookmarks().collect { resource ->
             when (resource) {

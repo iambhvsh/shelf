@@ -36,9 +36,10 @@ fun Media(
     onLongClick: () -> Unit,
     photoClickUrl: (String) -> Unit,
     onRatioDetected: (Float) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onImageFailed: (() -> Unit)? = null
 ) {
-    var imageFailed by remember { mutableStateOf(false) }
+    var imageFailed by remember(imageUrl) { mutableStateOf(false) }
 
     val high = MaterialTheme.colorScheme.surfaceContainerHigh
     val low = MaterialTheme.colorScheme.surfaceContainerLow
@@ -80,7 +81,10 @@ fun Media(
                         onRatioDetected(ratio)
                     }
                 },
-                onError = { imageFailed = true }
+                onError = {
+                    imageFailed = true
+                    onImageFailed?.invoke()
+                }
             )
 
             Box(

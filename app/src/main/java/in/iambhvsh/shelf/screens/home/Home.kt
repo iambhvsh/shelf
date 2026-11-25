@@ -157,6 +157,9 @@ fun HomeScreen(
                 onNoteClick = { item ->
                     viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
                     viewModel.homeEvents(HomeEvents.ShowNoteEditor(item.note))
+                },
+                onImageFailed = { item ->
+                    viewModel.homeEvents(HomeEvents.RefreshBookmarkImage(item.id, item.url, item.imageUrl))
                 }
             )
         }

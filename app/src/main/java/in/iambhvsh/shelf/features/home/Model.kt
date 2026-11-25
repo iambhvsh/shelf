@@ -27,6 +27,7 @@ class HomeViewModel(
     internal var bookmarkJob: Job? = null
     internal var tempBookmarkTagsJob: Job? = null
     internal var isFetchingMetadata = false
+    internal val attemptedImageRefreshes = mutableSetOf<String>()
 
     init {
         loadBookmarks()
@@ -234,6 +235,18 @@ class HomeViewModel(
                     repository.updateBookmarkDetails(events.id, events.title, events.description)
                 }
                 _state.update { it.copy(showRenameDialog = false) }
+            }
+            is HomeEvents.RefreshBookmarkImage -> {
+                viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    `in`.iambhvsh.shelf.features.fetch.refreshStaleImage(
+                        id = events.id,
+                        url = events.url,
+                        failedImageUrl = events.failedImageUrl,
+                        parser = parser,
+                        attempted = attemptedImageRefreshes,
+                        updateImageUrl = { id, imageUrl -> repository.updateImageUrl(id, imageUrl) }
+                    )
+                }
             }
             HomeEvents.ClearToast -> _state.update { it.copy(toastMessage = null) }
         }

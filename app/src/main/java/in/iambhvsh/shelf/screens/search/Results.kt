@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.components.home.BookmarkCard
@@ -44,6 +45,7 @@ fun SearchResults(
     onPhotoClick: ((String) -> Unit)? = null,
     onLongClick: ((Long) -> Unit)? = null,
     onNoteClick: ((Bookmark) -> Unit)? = null,
+    onImageFailed: ((Bookmark) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val gridState = rememberLazyStaggeredGridState()
@@ -60,6 +62,13 @@ fun SearchResults(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        awaitPointerEvent()
+                    }
+                }
+            }
     ) {
         if (query.isNotEmpty() && results.isEmpty()) {
             Box(
@@ -113,7 +122,8 @@ fun SearchResults(
                             isSelectionMode = isSelectionMode,
                             url = item.url,
                             note = item.note,
-                            reminderTime = item.reminderTime
+                            reminderTime = item.reminderTime,
+                            onImageFailed = { onImageFailed?.invoke(item) }
                         )
                     }
                 }
@@ -143,7 +153,8 @@ fun SearchResults(
                             isPinned = item.isPinned,
                             url = item.url,
                             note = item.note,
-                            reminderTime = item.reminderTime
+                            reminderTime = item.reminderTime,
+                            onImageFailed = { onImageFailed?.invoke(item) }
                         )
                     }
                 }

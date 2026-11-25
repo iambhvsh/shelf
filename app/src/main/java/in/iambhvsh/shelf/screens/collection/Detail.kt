@@ -137,7 +137,10 @@ fun CollectionDetailScreen(
                     }
                 },
                 onPhotoClick = { viewModel.onEvent(CollectionEvents.PreviewImageClick(it)) },
-                onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(it)) }
+                onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(it)) },
+                onImageFailed = { item ->
+                    viewModel.onEvent(CollectionEvents.RefreshBookmarkImage(item.id, item.url, item.imageUrl))
+                }
             )
         }
     }

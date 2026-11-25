@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.5] - 2026-11-25
+
+### Changed
+- **Collection Detail Selection Actions:** Separated deleting bookmarks from removing them from a collection in the selection top bar. The trash action now moves selected bookmarks to Recently Deleted with confirmation (including inside Uncategorised), while a dedicated folder-off button removes bookmarks from the current collection without hiding them.
+
+### Fixed
+- **Navigation Re-entrancy and Touch Isolation:** Guarded forward and back navigation against repeated taps during transitions, gave every route an opaque surface background, and isolated pointer events across transitioning routes, visible top bars, and active search overlays so underlying cards cannot receive clicks.
+- **Dynamic Color Toggle After Reset:** Preserved `isDynamicColorSupported` when resetting settings so the Dynamic Color option stays visible in Appearance without requiring an app restart.
+- **Imported Backup Thumbnail Recovery:** Added reachable-image verification and bounded background re-fetching after JSON and browser HTML backup imports, alongside single-attempt thumbnail recovery on image load failures in Grid, List, and Search views so expired CDN previews update automatically.
+- **Grid Note Chip Editing:** Bound the selected bookmark before opening the note editor from Grid bookmark note chips so edited notes save reliably.
+- **Recently Deleted Observer Lifecycle:** Cancelled prior trash flow collectors in `SettingViewModel` before starting a new observation when reopening Recently Deleted.
+
 ## [2.0.4] - 2026-11-24
 
 ### Added

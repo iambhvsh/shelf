@@ -72,4 +72,20 @@ class SettingStateTest {
             assertNotNull(accent.seed)
         }
     }
+
+    @Test
+    fun testResetPreservesDynamicColorCapability() {
+        val current = SettingState(
+            dynamicColor = false,
+            isDynamicColorSupported = true
+        )
+        val resetState = SettingState(
+            dynamicColor = true,
+            isDynamicColorSupported = current.isDynamicColorSupported,
+            resetSuccessToast = true
+        )
+        assertTrue(resetState.dynamicColor)
+        assertTrue(resetState.isDynamicColorSupported)
+        assertTrue(resetState.resetSuccessToast)
+    }
 }

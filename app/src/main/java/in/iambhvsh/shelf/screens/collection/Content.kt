@@ -99,7 +99,10 @@ fun CollectionDetailContent(
                             },
                             url = item.url,
                             note = item.note,
-                            reminderTime = item.reminderTime
+                            reminderTime = item.reminderTime,
+                            onImageFailed = {
+                                viewModel.onEvent(CollectionEvents.RefreshBookmarkImage(item.id, item.url, item.imageUrl))
+                            }
                         )
                     }
                 }
@@ -138,7 +141,10 @@ fun CollectionDetailContent(
                             isPinned = item.isPinned,
                             url = item.url,
                             note = item.note,
-                            reminderTime = item.reminderTime
+                            reminderTime = item.reminderTime,
+                            onImageFailed = {
+                                viewModel.onEvent(CollectionEvents.RefreshBookmarkImage(item.id, item.url, item.imageUrl))
+                            }
                         )
                     }
                 }

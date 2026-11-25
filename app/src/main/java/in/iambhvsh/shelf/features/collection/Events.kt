@@ -25,6 +25,7 @@ sealed class CollectionEvents {
     object DeselectAllDetail : CollectionEvents()
     object ClearDetailSelection : CollectionEvents()
     data class RemoveSelectedFromCollection(val collectionId: Long) : CollectionEvents()
+    object DeleteSelectedDetail : CollectionEvents()
     data class DeleteBookmark(val bookmark: Bookmark) : CollectionEvents()
     data class SetSortOrder(val sortOrder: SortOrder) : CollectionEvents()
     object ShowSortSheet : CollectionEvents()
@@ -61,4 +62,5 @@ sealed class CollectionEvents {
     data class RestoreCollectionBookmarks(val collectionId: Long) : CollectionEvents()
     data class PreviewImageClick(val url: String) : CollectionEvents()
     object DismissPreviewDialog : CollectionEvents()
+    data class RefreshBookmarkImage(val id: Long, val url: String, val failedImageUrl: String?) : CollectionEvents()
 }

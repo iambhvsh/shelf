@@ -41,3 +41,21 @@ import kotlinx.coroutines.withContext
         return (linkPreviewData.title.isNullOrEmpty() || linkPreviewData.title == "null") && (linkPreviewData.description.isNullOrEmpty() || linkPreviewData.description == "null")
     }
 }
+
+internal suspend fun refreshStaleImage(
+    id: Long,
+    url: String,
+    failedImageUrl: String?,
+    parser: LinkMetadataParser,
+    attempted: MutableSet<String>,
+    updateImageUrl: suspend (Long, String) -> Unit
+) {
+    val key = "$id:${failedImageUrl ?: ""}"
+    val shouldAttempt = synchronized(attempted) { attempted.add(key) }
+    if (!shouldAttempt) return
+    val meta = parser.parse(url) ?: return
+    val newUrl = meta.imageUrl?.trim()
+    if (!newUrl.isNullOrBlank() && newUrl != failedImageUrl) {
+        updateImageUrl(id, newUrl)
+    }
+}

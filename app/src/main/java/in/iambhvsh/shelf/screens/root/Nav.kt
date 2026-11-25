@@ -86,6 +86,15 @@ fun rememberRootNavState(
     }
 }
 
+fun canNavigateFromEntry(currentEntryId: String?, entryId: String): Boolean =
+    currentEntryId == entryId
+
+fun canPopDeepScreen(
+    isDeepScreen: Boolean,
+    currentEntryId: String?,
+    displayedEntryId: String?
+): Boolean = isDeepScreen && displayedEntryId != null && currentEntryId == displayedEntryId
+
 fun navigateRootTab(navController: NavController, currentRoute: String?, tab: Int) {
     val targetRoute = when (tab) {
         0 -> AppRoute.Home.route

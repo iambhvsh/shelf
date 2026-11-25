@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,6 +35,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -64,6 +66,7 @@ fun ShelfHeader(
     onSelectAll: () -> Unit = {},
     onDeselectAll: () -> Unit = {},
     onDeleteSelected: (() -> Unit)? = null,
+    onRemoveFromCollection: (() -> Unit)? = null,
     onAddToCollection: (() -> Unit)? = null,
     onRenameSelected: (() -> Unit)? = null,
     onCloseSearch: () -> Unit = {},
@@ -91,12 +94,28 @@ fun ShelfHeader(
     )
 
     val surface = MaterialTheme.colorScheme.surface
+    val isHeaderInteractive by remember {
+        derivedStateOf { smoothedAlpha.value > 0.05f }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer { alpha = smoothedAlpha.value }
             .background(surface)
+            .then(
+                if (isHeaderInteractive) {
+                    Modifier.pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent()
+                            }
+                        }
+                    }
+                } else {
+                    Modifier
+                }
+            )
     ) {
         CenterAlignedTopAppBar(
             scrollBehavior = scrollBehavior,
@@ -205,6 +224,7 @@ fun ShelfHeader(
                 onAddToCollection = onAddToCollection,
                 onRenameSelected = onRenameSelected,
                 onDeleteSelected = onDeleteSelected,
+                onRemoveFromCollection = onRemoveFromCollection,
                 isCollectionDetail = isCollectionDetail,
                 onNewBookmarkClick = onNewBookmarkClick,
                 isTrashScreen = isTrashScreen,

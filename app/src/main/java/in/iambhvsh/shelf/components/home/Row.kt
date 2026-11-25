@@ -57,7 +57,8 @@ fun BookmarkListItem(
     isPinned: Boolean = false,
     url: String,
     note: String? = null,
-    reminderTime: Long? = null
+    reminderTime: Long? = null,
+    onImageFailed: (() -> Unit)? = null
 ) {
     val host = remember(url) {
         try {
@@ -197,7 +198,10 @@ fun BookmarkListItem(
                     .clickable {
                         if (isSelectionMode) onLongClick() else photoClickUrl(imageUrl)
                     },
-                onError = { imageFailed = true },
+                onError = {
+                    imageFailed = true
+                    onImageFailed?.invoke()
+                },
                 onSuccess = { state ->
                     val size = state.painter.intrinsicSize
                     if (size.width.isFinite() && size.width > 0 && size.height > 0) {

@@ -159,16 +159,17 @@ fun RootToolbar(
                 }
                 state.isSelectionMode -> { { onConfirmDelete { viewModel.homeEvents(HomeEvents.DeleteSelected) } } }
                 collectionState.isSelectionMode -> { { onConfirmDelete { collectionViewModel.onEvent(CollectionEvents.DeleteSelected) } } }
-                collectionState.isDetailSelectionMode && collectionState.selectedCollection?.id != Collection.UNCATEGORISED_ID -> {
-                    {
-                        val id = collectionState.selectedCollection?.id
-                        if (id != null) {
-                            collectionViewModel.onEvent(CollectionEvents.RemoveSelectedFromCollection(id))
-                        }
-                    }
-                }
+                collectionState.isDetailSelectionMode -> { { onConfirmDelete { collectionViewModel.onEvent(CollectionEvents.DeleteSelectedDetail) } } }
                 else -> null
             },
+            onRemoveFromCollection = if (collectionState.isDetailSelectionMode && collectionState.selectedCollection?.id != Collection.UNCATEGORISED_ID) {
+                {
+                    val id = collectionState.selectedCollection?.id
+                    if (id != null) {
+                        collectionViewModel.onEvent(CollectionEvents.RemoveSelectedFromCollection(id))
+                    }
+                }
+            } else null,
             onAddToCollection = if (state.isSelectionMode) {
                 { viewModel.homeEvents(HomeEvents.ShowCollectionPicker) }
             } else null,

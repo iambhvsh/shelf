@@ -73,12 +73,16 @@ fun BookmarkGrid(
                 isSelected = selectedIds.contains(item.id),
                 isSelectionMode = isSelectionMode,
                 onNoteClick = {
+                    viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
                     viewModel.homeEvents(HomeEvents.ShowNoteEditor(item.note))
                 },
                 isPinned = item.isPinned,
                 url = item.url,
                 note = item.note,
-                reminderTime = item.reminderTime
+                reminderTime = item.reminderTime,
+                onImageFailed = {
+                    viewModel.homeEvents(HomeEvents.RefreshBookmarkImage(item.id, item.url, item.imageUrl))
+                }
             )
         }
     }

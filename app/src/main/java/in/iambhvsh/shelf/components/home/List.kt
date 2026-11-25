@@ -62,6 +62,9 @@ fun BookmarkList(
                 onNoteClick = { 
                     viewModel.homeEvents(HomeEvents.BookmarkPreviewClick(item))
                     viewModel.homeEvents(HomeEvents.ShowNoteEditor(item.note))
+                },
+                onImageFailed = {
+                    viewModel.homeEvents(HomeEvents.RefreshBookmarkImage(item.id, item.url, item.imageUrl))
                 }
             )
         }

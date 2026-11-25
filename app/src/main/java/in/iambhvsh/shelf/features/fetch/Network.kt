@@ -43,4 +43,32 @@ class NetworkFetcher {
             null
         }
     }
+
+    fun isImageUrlReachable(url: String): Boolean {
+        if (url.isBlank()) return false
+        return try {
+            val headRequest = Request.Builder()
+                .url(url)
+                .head()
+                .header("User-Agent", "Mozilla/5.0")
+                .build()
+            client.newCall(headRequest).execute().use { response ->
+                when (response.code) {
+                    in 200..299 -> true
+                    405 -> {
+                        val rangeRequest = Request.Builder()
+                            .url(url)
+                            .header("Range", "bytes=0-0")
+                            .header("User-Agent", "Mozilla/5.0")
+                            .build()
+                        client.newCall(rangeRequest).execute().use { it.isSuccessful || it.code == 206 }
+                    }
+                    in 400..599 -> false
+                    else -> response.isSuccessful
+                }
+            }
+        } catch (_: Exception) {
+            true
+        }
+    }
 }

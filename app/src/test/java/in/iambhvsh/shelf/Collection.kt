@@ -121,4 +121,23 @@ class CollectionStateTest {
         assertFalse(state.isPhotoPreviewDialog)
         assertNull(state.previewPhotoUrl)
     }
+
+    @Test
+    fun testDeleteSelectedDetail_clearsSelectionStateCleanly() {
+        var state = CollectionState(
+            detailSelectedIds = setOf(10L, 20L),
+            isDetailSelectionMode = true
+        )
+        assertTrue(state.isDetailSelectionMode)
+        assertEquals(2, state.detailSelectedIds.size)
+
+        state = state.copy(
+            detailSelectedIds = emptySet(),
+            isDetailSelectionMode = false,
+            toastMessage = "Deleted bookmarks"
+        )
+        assertFalse(state.isDetailSelectionMode)
+        assertTrue(state.detailSelectedIds.isEmpty())
+        assertEquals("Deleted bookmarks", state.toastMessage)
+    }
 }

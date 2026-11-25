@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.FolderOff
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,6 +55,7 @@ fun RightActionSlot(
     onAddToCollection: (() -> Unit)?,
     onRenameSelected: (() -> Unit)?,
     onDeleteSelected: (() -> Unit)?,
+    onRemoveFromCollection: (() -> Unit)? = null,
     isCollectionDetail: Boolean = false,
     onNewBookmarkClick: (() -> Unit)? = null,
     isTrashScreen: Boolean = false,
@@ -146,6 +148,20 @@ fun RightActionSlot(
                         Icon(
                             imageVector = Icons.Outlined.Edit,
                             contentDescription = "Rename",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                if (onRemoveFromCollection != null) {
+                    TopBarButton(
+                        onClick = onRemoveFromCollection,
+                        contentDescription = "Remove from collection",
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.FolderOff,
+                            contentDescription = "Remove from collection",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(22.dp)
                         )

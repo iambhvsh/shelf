@@ -16,6 +16,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +27,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -153,16 +158,45 @@ class BackupManager(
     suspend fun importFromBrowserBookmarks(html: String): BrowserImportResult =
         importBookmarksFromHtml(html, bookmarkDao, collectionDao, database)
 
-    suspend fun fetchMissingImages() {
+    fun refreshImportedThumbnailsAsync(checkExistingImages: Boolean) {
+        scope.launch {
+            fetchMissingImages(checkExistingImages = checkExistingImages)
+        }
+    }
+
+    suspend fun fetchMissingImages(checkExistingImages: Boolean = false) {
         val parser = LinkMetadataParser()
-        val missing = bookmarkDao.getBookmarksWithoutImageOnce()
-        for (bm in missing) {
-            try {
-                val meta = parser.parse(bm.url)
-                if (!meta?.imageUrl.isNullOrBlank()) {
-                    bookmarkDao.updateImageUrl(bm.id, meta.imageUrl)
+        val networkFetcher = `in`.iambhvsh.shelf.features.fetch.NetworkFetcher()
+        val candidates = if (checkExistingImages) {
+            bookmarkDao.getBookmarksOnce()
+        } else {
+            bookmarkDao.getBookmarksWithoutImageOnce()
+        }
+        if (candidates.isEmpty()) return
+
+        val semaphore = Semaphore(4)
+        coroutineScope {
+            candidates.map { bm ->
+                async(Dispatchers.IO) {
+                    semaphore.withPermit {
+                        try {
+                            val currentImage = bm.imageUrl
+                            val needsRefresh = currentImage.isNullOrBlank() ||
+                                (checkExistingImages && !networkFetcher.isImageUrlReachable(currentImage))
+                            if (!needsRefresh) return@withPermit
+
+                            val meta = parser.parse(bm.url) ?: return@withPermit
+                            val newImage = meta.imageUrl?.trim()
+                            if (!newImage.isNullOrBlank() && newImage != currentImage) {
+                                bookmarkDao.updateImageUrl(bm.id, newImage)
+                            }
+                            if ((bm.title.isNullOrBlank() || bm.title == bm.url) && !meta.title.isNullOrBlank()) {
+                                bookmarkDao.updateTitle(bm.id, meta.title)
+                            }
+                        } catch (_: Exception) { }
+                    }
                 }
-            } catch (_: Exception) { }
+            }.awaitAll()
         }
     }
 

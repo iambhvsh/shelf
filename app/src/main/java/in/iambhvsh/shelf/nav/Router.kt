@@ -6,15 +6,22 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import `in`.iambhvsh.shelf.screens.root.canNavigateFromEntry
 
 private val navItems = listOf(
     AppRoute.Home.route,
@@ -135,12 +142,20 @@ fun Router(
             ) + fadeOut()
         }
     ) {
-        composable(AppRoute.Home.route) {
-            homeScreen()
+        composable(AppRoute.Home.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                homeScreen()
+            }
         }
-        composable(AppRoute.Collections.route) {
-            collectionsScreen { id ->
-                navController.navigate(AppRoute.CollectionDetail.createRoute(id))
+        composable(AppRoute.Collections.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                collectionsScreen { id ->
+                    if (canNavigateFromEntry(navController.currentBackStackEntry?.id, backStackEntry.id)) {
+                        navController.navigate(AppRoute.CollectionDetail.createRoute(id)) {
+                            launchSingleTop = true
+                        }
+                    }
+                }
             }
         }
         composable(
@@ -150,32 +165,81 @@ fun Router(
             )
         ) { backStackEntry ->
             val collectionId = backStackEntry.arguments?.getLong("collectionId") ?: 0L
-            collectionDetailScreen(collectionId)
-        }
-        composable(AppRoute.Settings.route) {
-            settingsMainScreen { targetRoute ->
-                navController.navigate(targetRoute.route)
+            RouteSurface(backStackEntry, navController) {
+                collectionDetailScreen(collectionId)
             }
         }
-        composable(AppRoute.SettingsAppearance.route) {
-            settingsAppearanceScreen()
-        }
-        composable(AppRoute.SettingsGeneral.route) {
-            settingsGeneralScreen()
-        }
-        composable(AppRoute.SettingsSecurity.route) {
-            settingsSecurityScreen()
-        }
-        composable(AppRoute.SettingsData.route) {
-            settingsDataScreen {
-                navController.navigate(AppRoute.SettingsTrash.route)
+        composable(AppRoute.Settings.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                settingsMainScreen { targetRoute ->
+                    if (canNavigateFromEntry(navController.currentBackStackEntry?.id, backStackEntry.id)) {
+                        navController.navigate(targetRoute.route) {
+                            launchSingleTop = true
+                        }
+                    }
+                }
             }
         }
-        composable(AppRoute.SettingsAbout.route) {
-            settingsAboutScreen()
+        composable(AppRoute.SettingsAppearance.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                settingsAppearanceScreen()
+            }
         }
-        composable(AppRoute.SettingsTrash.route) {
-            settingsTrashScreen()
+        composable(AppRoute.SettingsGeneral.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                settingsGeneralScreen()
+            }
         }
+        composable(AppRoute.SettingsSecurity.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                settingsSecurityScreen()
+            }
+        }
+        composable(AppRoute.SettingsData.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                settingsDataScreen {
+                    if (canNavigateFromEntry(navController.currentBackStackEntry?.id, backStackEntry.id)) {
+                        navController.navigate(AppRoute.SettingsTrash.route) {
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            }
+        }
+        composable(AppRoute.SettingsAbout.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                settingsAboutScreen()
+            }
+        }
+        composable(AppRoute.SettingsTrash.route) { backStackEntry ->
+            RouteSurface(backStackEntry, navController) {
+                settingsTrashScreen()
+            }
+        }
+    }
+}
+
+@Composable
+private fun RouteSurface(
+    entry: NavBackStackEntry,
+    navController: NavHostController,
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+            .pointerInput(entry, navController) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (navController.currentBackStackEntry?.id != entry.id) {
+                            event.changes.forEach { it.consume() }
+                        }
+                    }
+                }
+            }
+    ) {
+        content()
     }
 }

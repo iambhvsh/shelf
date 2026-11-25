@@ -195,6 +195,26 @@ internal fun CollectionViewModel.removeSelectedFromCollection(collectionId: Long
     }
 }
 
+internal fun CollectionViewModel.deleteSelectedDetail() {
+    val ids = _state.value.detailSelectedIds.toList()
+    if (ids.isEmpty()) return
+    viewModelScope.launch {
+        try {
+            ids.forEach { reminderManager.cancelReminder(it) }
+            repository.hideBookmarks(ids)
+            _state.update {
+                it.copy(
+                    detailSelectedIds = emptySet(),
+                    isDetailSelectionMode = false,
+                    toastMessage = "Deleted bookmark" + if (ids.size > 1) "s" else ""
+                )
+            }
+        } catch (e: Exception) {
+            _state.update { it.copy(error = e.message ?: "Delete failed") }
+        }
+    }
+}
+
 internal fun CollectionViewModel.deleteBookmark(bookmark: Bookmark) {
     viewModelScope.launch {
         try {

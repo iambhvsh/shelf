@@ -50,7 +50,8 @@ fun BookmarkCard(
     isPinned: Boolean = false,
     url: String,
     note: String? = null,
-    reminderTime: Long? = null
+    reminderTime: Long? = null,
+    onImageFailed: (() -> Unit)? = null
 ) {
     val host = remember(url) { url.toUri().host.orEmpty() }
     val cleanHost = remember(host) {
@@ -131,7 +132,8 @@ fun BookmarkCard(
             isSelectionMode = isSelectionMode,
             onLongClick = onLongClick,
             photoClickUrl = photoClickUrl,
-            onRatioDetected = { detectedAspectRatio = it }
+            onRatioDetected = { detectedAspectRatio = it },
+            onImageFailed = onImageFailed
         )
 
         if (!title.isNullOrBlank() || !description.isNullOrBlank() || note != null) {

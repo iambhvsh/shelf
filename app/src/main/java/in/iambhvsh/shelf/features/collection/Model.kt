@@ -25,6 +25,7 @@ class CollectionViewModel(
     internal var tempBookmarkTagsJob: Job? = null
     internal var rawCollectionBookmarks: List<Bookmark> = emptyList()
     internal val parser = LinkMetadataParser()
+    internal val attemptedImageRefreshes = mutableSetOf<String>()
 
     init {
         loadCollections()
@@ -88,6 +89,7 @@ class CollectionViewModel(
             }
             CollectionEvents.DeselectAllDetail -> _state.update { it.copy(detailSelectedIds = emptySet(), isDetailSelectionMode = false) }
             is CollectionEvents.RemoveSelectedFromCollection -> removeSelectedFromCollection(event.collectionId)
+            CollectionEvents.DeleteSelectedDetail -> deleteSelectedDetail()
             is CollectionEvents.SetSortOrder -> {
                 _state.update { it.copy(sortOrder = event.sortOrder, showSortSheet = false, collectionBookmarks = sortBookmarks(rawCollectionBookmarks, event.sortOrder)) }
             }
@@ -171,6 +173,18 @@ class CollectionViewModel(
             CollectionEvents.SaveBookmarkInCollection -> saveBookmarkInCollection()
             is CollectionEvents.PreviewImageClick -> _state.update { it.copy(isPhotoPreviewDialog = true, previewPhotoUrl = event.url) }
             CollectionEvents.DismissPreviewDialog -> _state.update { it.copy(isPhotoPreviewDialog = false, previewPhotoUrl = null) }
+            is CollectionEvents.RefreshBookmarkImage -> {
+                viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    `in`.iambhvsh.shelf.features.fetch.refreshStaleImage(
+                        id = event.id,
+                        url = event.url,
+                        failedImageUrl = event.failedImageUrl,
+                        parser = parser,
+                        attempted = attemptedImageRefreshes,
+                        updateImageUrl = { id, imageUrl -> repository.updateImageUrl(id, imageUrl) }
+                    )
+                }
+            }
         }
     }
 

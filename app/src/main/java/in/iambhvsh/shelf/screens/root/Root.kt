@@ -166,7 +166,11 @@ fun Root(
                     onSetCollectionSearching = { isCollectionSearching = it },
                     collectionSearchQuery = collectionSearchQuery,
                     onSetCollectionSearchQuery = { collectionSearchQuery = it },
-                    onBack = { navController.popBackStack() },
+                    onBack = {
+                        if (canPopDeepScreen(navState.isDeepScreen, navController.currentBackStackEntry?.id, navBackStackEntry?.id)) {
+                            navController.popBackStack()
+                        }
+                    },
                     onConfirmDelete = { action ->
                         pendingDeleteAction = action
                         showDeleteConfirmDialog = true

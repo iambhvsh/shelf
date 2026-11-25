@@ -40,6 +40,7 @@ class SettingViewModel(
         )
     )
     val state = _state.asStateFlow()
+    internal var trashJob: kotlinx.coroutines.Job? = null
 
     init {
         if (settingsRepository.getAutoBackupEnabled()) {
