@@ -3,11 +3,15 @@ package `in`.iambhvsh.shelf.features.home
 import androidx.lifecycle.viewModelScope
 import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.data.SortOrder
+import `in`.iambhvsh.shelf.features.fetch.UrlUtils
 import `in`.iambhvsh.shelf.util.Resource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 
 internal fun HomeViewModel.checkForUpdates() {
@@ -33,6 +37,8 @@ internal fun HomeViewModel.deleteSelected() {
                     toastMessage = "Deleted bookmark" + if (ids.size > 1) "s" else ""
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _state.update {
                 it.copy(error = e.message ?: "Delete failed")
@@ -44,15 +50,11 @@ internal fun HomeViewModel.deleteSelected() {
 internal fun HomeViewModel.saveBookmark() {
     val rawUrl = _state.value.inputUrl.trim()
     if (rawUrl.isEmpty()) return
-    val url = if (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://")) {
-        "https://$rawUrl"
-    } else {
-        rawUrl
-    }
+    val url = UrlUtils.ensureHttpScheme(rawUrl)
 
-    val normalizedInput = url.removeSuffix("/")
+    val normalizedInput = UrlUtils.normalizeUrlKey(url)
     val isDuplicate = _state.value.bookmarkData.any {
-        it.url.removeSuffix("/") == normalizedInput
+        UrlUtils.normalizeUrlKey(it.url) == normalizedInput
     }
     if (isDuplicate) {
         _state.update {
@@ -84,9 +86,14 @@ internal fun HomeViewModel.saveBookmark() {
                     duplicateToastKey = if (inserted) it.duplicateToastKey else it.duplicateToastKey + 1
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _state.update {
-                it.copy(error = e.message ?: "Unknown error")
+                it.copy(
+                    isLoading = false,
+                    error = e.message ?: "Unknown error"
+                )
             }
         }
     }
@@ -106,7 +113,17 @@ internal fun HomeViewModel.loadTags() {
     viewModelScope.launch {
         repository.getAllTags().collect { resource ->
             if (resource is Resource.Success) {
-                _state.update { it.copy(tags = resource.data ?: emptyList()) }
+                val loadedTags = resource.data ?: emptyList()
+                val validIds = loadedTags.map { it.id }.toSet()
+                var filtersPruned = false
+                _state.update { current ->
+                    val filtered = current.activeTagFilters.intersect(validIds)
+                    filtersPruned = filtered.size != current.activeTagFilters.size
+                    current.copy(tags = loadedTags, activeTagFilters = filtered)
+                }
+                if (filtersPruned) {
+                    loadBookmarks()
+                }
             }
         }
     }
@@ -155,11 +172,15 @@ internal fun HomeViewModel.loadBookmarks() {
                     val items = data.data ?: emptyList()
                     rawBookmarks = items
                     val sortOrder = _state.value.sortOrder
-                    val sortedItems = sortBookmarks(items, sortOrder)
-                    _state.update {
-                        it.copy(
+                    val sortedItems = sortBookmarks(items, sortOrder, defaultDispatcher)
+                    _state.update { current ->
+                        val refreshedTemp = current.tempBookmark?.let { tmp ->
+                            items.find { it.id == tmp.id } ?: tmp
+                        }
+                        current.copy(
                             isLoading = false,
-                            bookmarkData = sortedItems
+                            bookmarkData = sortedItems,
+                            tempBookmark = refreshedTemp
                         )
                     }
                     fetchMissingMetadataOnStart()
@@ -172,23 +193,38 @@ internal fun HomeViewModel.loadBookmarks() {
 internal fun HomeViewModel.fetchMissingMetadataOnStart() {
     viewModelScope.launch {
         val missing = repository.getBookmarksWithoutImage()
-        if (missing.isEmpty() || isFetchingMetadata) return@launch
+        val candidates = synchronized(attemptedStartupMetadataIds) {
+            missing.filter { attemptedStartupMetadataIds.add(it.id) }
+        }
+        if (candidates.isEmpty()) return@launch
         isFetchingMetadata = true
-        missing.map { bm ->
-            async {
-                try {
-                    val meta = parser.parse(bm.url)
-                    if (!meta?.imageUrl.isNullOrBlank()) {
-                        repository.updateImageUrl(bm.id, meta.imageUrl)
+        try {
+            candidates.map { bm ->
+                async {
+                    startupMetadataSemaphore.withPermit {
+                        try {
+                            val meta = parser.parse(bm.url)
+                            if (!meta?.imageUrl.isNullOrBlank()) {
+                                repository.updateImageUrl(bm.id, meta.imageUrl)
+                            }
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: Exception) {
+                        }
                     }
-                } catch (_: Exception) { }
-            }
-        }.forEach { it.await() }
-        isFetchingMetadata = false
+                }
+            }.awaitAll()
+        } finally {
+            isFetchingMetadata = false
+        }
     }
 }
 
-internal suspend fun sortBookmarks(bookmarks: List<Bookmark>, sortOrder: SortOrder): List<Bookmark> = withContext(Dispatchers.Default) {
+internal suspend fun sortBookmarks(
+    bookmarks: List<Bookmark>,
+    sortOrder: SortOrder,
+    dispatcher: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.Default
+): List<Bookmark> = withContext(dispatcher) {
     when (sortOrder) {
         SortOrder.DATE_NEWEST -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenByDescending { it.createdAt })
         SortOrder.DATE_OLDEST -> bookmarks.sortedWith(compareByDescending<Bookmark> { it.isPinned }.thenBy { it.createdAt })

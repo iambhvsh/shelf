@@ -23,6 +23,8 @@ class LinkPreviewService(
         } else {
             null
         }
+    } catch (e: kotlinx.coroutines.CancellationException) {
+        throw e
     } catch (e: Exception) {
         e.printStackTrace()
         null

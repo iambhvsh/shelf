@@ -2,6 +2,7 @@
 
 package `in`.iambhvsh.shelf.components.common
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.Button
@@ -14,6 +15,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 
 @Composable
@@ -25,13 +27,15 @@ fun ExpressiveButton(
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     content: @Composable RowScope.() -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
-        modifier = modifier.expressiveBounce(scaleDown = 0.97f),
+        modifier = modifier.expressiveBounce(scaleDown = 0.97f, interactionSource = interactionSource),
         enabled = enabled,
         shapes = ButtonDefaults.shapes(),
         colors = colors,
         contentPadding = contentPadding,
+        interactionSource = interactionSource,
         content = content
     )
 }
@@ -45,13 +49,15 @@ fun ExpressiveFilledTonalButton(
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     content: @Composable RowScope.() -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     FilledTonalButton(
         onClick = onClick,
-        modifier = modifier.expressiveBounce(scaleDown = 0.97f),
+        modifier = modifier.expressiveBounce(scaleDown = 0.97f, interactionSource = interactionSource),
         enabled = enabled,
         shapes = ButtonDefaults.shapes(),
         colors = colors,
         contentPadding = contentPadding,
+        interactionSource = interactionSource,
         content = content
     )
 }
@@ -65,13 +71,15 @@ fun ExpressiveOutlinedButton(
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     content: @Composable RowScope.() -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.expressiveBounce(scaleDown = 0.97f),
+        modifier = modifier.expressiveBounce(scaleDown = 0.97f, interactionSource = interactionSource),
         enabled = enabled,
         shapes = ButtonDefaults.shapes(),
         colors = colors,
         contentPadding = contentPadding,
+        interactionSource = interactionSource,
         content = content
     )
 }
@@ -85,13 +93,15 @@ fun ExpressiveTextButton(
     contentPadding: PaddingValues = ButtonDefaults.TextButtonContentPadding,
     content: @Composable RowScope.() -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     TextButton(
         onClick = onClick,
-        modifier = modifier.expressiveBounce(scaleDown = 0.97f),
+        modifier = modifier.expressiveBounce(scaleDown = 0.97f, interactionSource = interactionSource),
         enabled = enabled,
         shapes = ButtonDefaults.shapes(),
         colors = colors,
         contentPadding = contentPadding,
+        interactionSource = interactionSource,
         content = content
     )
 }
@@ -104,12 +114,14 @@ fun ExpressiveIconButton(
     colors: IconButtonColors = IconButtonDefaults.iconButtonColors(),
     content: @Composable () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     IconButton(
         onClick = onClick,
-        modifier = modifier.expressiveBounce(scaleDown = 0.92f),
+        modifier = modifier.expressiveBounce(scaleDown = 0.92f, interactionSource = interactionSource),
         enabled = enabled,
         shapes = IconButtonDefaults.shapes(),
         colors = colors,
+        interactionSource = interactionSource,
         content = content
     )
 }

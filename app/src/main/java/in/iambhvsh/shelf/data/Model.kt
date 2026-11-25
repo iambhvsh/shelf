@@ -14,6 +14,11 @@ data class Bookmark(
     val createdAt: Long = System.currentTimeMillis()
 )
 
+data class BookmarkStatus(
+    val bookmark: Bookmark,
+    val isHidden: Boolean
+)
+
 data class Collection(
     val id: Long = 0,
     val name: String,

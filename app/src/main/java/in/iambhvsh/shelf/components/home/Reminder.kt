@@ -23,6 +23,89 @@ import `in`.iambhvsh.shelf.components.common.expressiveBounce
 import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import `in`.iambhvsh.shelf.theme.ShelfShapes
 import java.util.Calendar
+import java.util.TimeZone
+
+internal fun localTodayUtcMidnightMillis(
+    nowMillis: Long = System.currentTimeMillis(),
+    localTimeZone: TimeZone = TimeZone.getDefault()
+): Long {
+    val localCal = Calendar.getInstance(localTimeZone).apply {
+        timeInMillis = nowMillis
+    }
+    return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        clear()
+        set(Calendar.YEAR, localCal.get(Calendar.YEAR))
+        set(Calendar.MONTH, localCal.get(Calendar.MONTH))
+        set(Calendar.DAY_OF_MONTH, localCal.get(Calendar.DAY_OF_MONTH))
+    }.timeInMillis
+}
+
+internal fun combineUtcDateWithLocalTime(
+    utcDateMillis: Long,
+    hour: Int,
+    minute: Int,
+    targetTimeZone: TimeZone = TimeZone.getDefault()
+): Long {
+    val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        timeInMillis = utcDateMillis
+    }
+    return Calendar.getInstance(targetTimeZone).apply {
+        set(Calendar.YEAR, utcCal.get(Calendar.YEAR))
+        set(Calendar.MONTH, utcCal.get(Calendar.MONTH))
+        set(Calendar.DAY_OF_MONTH, utcCal.get(Calendar.DAY_OF_MONTH))
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minute)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
+
+internal fun computeLaterTodayReminder(
+    nowMillis: Long = System.currentTimeMillis(),
+    timeZone: TimeZone = TimeZone.getDefault()
+): Long {
+    val cal = Calendar.getInstance(timeZone).apply {
+        timeInMillis = nowMillis
+        set(Calendar.HOUR_OF_DAY, 20)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    if (cal.timeInMillis <= nowMillis) {
+        cal.add(Calendar.DAY_OF_YEAR, 1)
+    }
+    return cal.timeInMillis
+}
+
+internal fun computeTomorrowMorningReminder(
+    nowMillis: Long = System.currentTimeMillis(),
+    timeZone: TimeZone = TimeZone.getDefault()
+): Long {
+    return Calendar.getInstance(timeZone).apply {
+        timeInMillis = nowMillis
+        add(Calendar.DAY_OF_YEAR, 1)
+        set(Calendar.HOUR_OF_DAY, 9)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
+
+internal fun computeWeekendReminder(
+    nowMillis: Long = System.currentTimeMillis(),
+    timeZone: TimeZone = TimeZone.getDefault()
+): Long {
+    val cal = Calendar.getInstance(timeZone).apply {
+        timeInMillis = nowMillis
+    }
+    val daysUntilSaturday = (Calendar.SATURDAY - cal.get(Calendar.DAY_OF_WEEK) + 7) % 7
+    cal.add(Calendar.DAY_OF_YEAR, if (daysUntilSaturday == 0) 7 else daysUntilSaturday)
+    cal.set(Calendar.HOUR_OF_DAY, 10)
+    cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+    return cal.timeInMillis
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -40,7 +123,7 @@ fun ReminderPickerSheet(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = System.currentTimeMillis()
+        initialSelectedDateMillis = localTodayUtcMidnightMillis()
     )
     val timePickerState = rememberTimePickerState(
         initialHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
@@ -83,11 +166,13 @@ fun ReminderPickerSheet(
                         showTimePicker = false
                         val selectedDate = datePickerState.selectedDateMillis
                         if (selectedDate != null) {
-                            val cal = Calendar.getInstance()
-                            cal.timeInMillis = selectedDate
-                            cal.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-                            cal.set(Calendar.MINUTE, timePickerState.minute)
-                            onSetReminder(cal.timeInMillis)
+                            onSetReminder(
+                                combineUtcDateWithLocalTime(
+                                    utcDateMillis = selectedDate,
+                                    hour = timePickerState.hour,
+                                    minute = timePickerState.minute
+                                )
+                            )
                         }
                     }
                 ) {
@@ -128,15 +213,7 @@ fun ReminderPickerSheet(
 
             Column(verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap)) {
                 SegmentedListItem(
-                    onClick = {
-                        val cal = Calendar.getInstance()
-                        cal.set(Calendar.HOUR_OF_DAY, 20)
-                        cal.set(Calendar.MINUTE, 0)
-                        if (cal.timeInMillis < System.currentTimeMillis()) {
-                            cal.add(Calendar.DAY_OF_YEAR, 1)
-                        }
-                        onSetReminder(cal.timeInMillis)
-                    },
+                    onClick = { onSetReminder(computeLaterTodayReminder()) },
                     shapes = ShelfShapes.segmented(0, 4),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -147,13 +224,7 @@ fun ReminderPickerSheet(
                 )
 
                 SegmentedListItem(
-                    onClick = {
-                        val cal = Calendar.getInstance()
-                        cal.add(Calendar.DAY_OF_YEAR, 1)
-                        cal.set(Calendar.HOUR_OF_DAY, 9)
-                        cal.set(Calendar.MINUTE, 0)
-                        onSetReminder(cal.timeInMillis)
-                    },
+                    onClick = { onSetReminder(computeTomorrowMorningReminder()) },
                     shapes = ShelfShapes.segmented(1, 4),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -164,14 +235,7 @@ fun ReminderPickerSheet(
                 )
 
                 SegmentedListItem(
-                    onClick = {
-                        val cal = Calendar.getInstance()
-                        val daysUntilSaturday = (Calendar.SATURDAY - cal.get(Calendar.DAY_OF_WEEK) + 7) % 7
-                        cal.add(Calendar.DAY_OF_YEAR, if (daysUntilSaturday == 0) 7 else daysUntilSaturday)
-                        cal.set(Calendar.HOUR_OF_DAY, 10)
-                        cal.set(Calendar.MINUTE, 0)
-                        onSetReminder(cal.timeInMillis)
-                    },
+                    onClick = { onSetReminder(computeWeekendReminder()) },
                     shapes = ShelfShapes.segmented(2, 4),
                     modifier = Modifier
                         .fillMaxWidth()

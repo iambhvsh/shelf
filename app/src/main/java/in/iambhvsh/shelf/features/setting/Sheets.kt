@@ -7,11 +7,15 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import `in`.iambhvsh.shelf.components.home.UpdateSheet
 import `in`.iambhvsh.shelf.components.setting.AboutSheet
 import `in`.iambhvsh.shelf.components.setting.AccentColorSheet
@@ -20,6 +24,9 @@ import `in`.iambhvsh.shelf.components.setting.OptionSheet
 import `in`.iambhvsh.shelf.components.setting.PermissionsSheet
 import `in`.iambhvsh.shelf.components.setting.RadioOptionSheet
 import `in`.iambhvsh.shelf.theme.ThemeMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingDialogsAndSheets(
@@ -28,16 +35,33 @@ fun SettingDialogsAndSheets(
     versionName: String,
     context: Context
 ) {
+    val scope = rememberCoroutineScope()
+    val latestExportState by rememberUpdatedState(state.exportState)
+    val latestBrowserExportState by rememberUpdatedState(state.browserExportState)
+
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri: Uri? ->
-        if (uri != null) {
-            val json = (state.exportState as? ExportState.Ready)?.json
-            if (json != null) {
-                context.contentResolver.openOutputStream(uri, "wt")?.use { it.write(json.toByteArray()) }
+        val json = (latestExportState as? ExportState.Ready)?.json
+        if (uri != null && json != null) {
+            scope.launch(Dispatchers.IO) {
+                try {
+                    val stream = context.contentResolver.openOutputStream(uri, "wt")
+                        ?: throw IllegalStateException("Unable to open output stream")
+                    stream.use { it.write(json.toByteArray()) }
+                } catch (_: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Failed to save backup file", Toast.LENGTH_SHORT).show()
+                    }
+                } finally {
+                    withContext(Dispatchers.Main) {
+                        viewModel.onEvent(SettingEvents.DismissExport)
+                    }
+                }
             }
+        } else {
+            viewModel.onEvent(SettingEvents.DismissExport)
         }
-        viewModel.onEvent(SettingEvents.DismissExport)
     }
 
     val importLauncher = rememberLauncherForActivityResult(
@@ -45,8 +69,22 @@ fun SettingDialogsAndSheets(
     ) { result ->
         val uri = result.data?.data
         if (uri != null) {
-            val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: ""
-            if (json.isNotBlank()) viewModel.onEvent(SettingEvents.ImportData(json))
+            scope.launch(Dispatchers.IO) {
+                try {
+                    val json = context.contentResolver.openInputStream(uri)?.use { stream ->
+                        stream.bufferedReader().use { it.readText() }
+                    }.orEmpty()
+                    if (json.isNotBlank()) {
+                        withContext(Dispatchers.Main) {
+                            viewModel.onEvent(SettingEvents.ImportData(json))
+                        }
+                    }
+                } catch (_: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Failed to read backup file", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
     }
 
@@ -55,21 +93,48 @@ fun SettingDialogsAndSheets(
     ) { result ->
         val uri = result.data?.data
         if (uri != null) {
-            val html = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: ""
-            if (html.isNotBlank()) viewModel.onEvent(SettingEvents.ImportBrowserBookmarks(html))
+            scope.launch(Dispatchers.IO) {
+                try {
+                    val html = context.contentResolver.openInputStream(uri)?.use { stream ->
+                        stream.bufferedReader().use { it.readText() }
+                    }.orEmpty()
+                    if (html.isNotBlank()) {
+                        withContext(Dispatchers.Main) {
+                            viewModel.onEvent(SettingEvents.ImportBrowserBookmarks(html))
+                        }
+                    }
+                } catch (_: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Failed to read bookmarks file", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
     }
 
     val exportHtmlLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/html")
     ) { uri: Uri? ->
-        if (uri != null) {
-            val html = (state.browserExportState as? ExportState.Ready)?.json
-            if (html != null) {
-                context.contentResolver.openOutputStream(uri, "wt")?.use { it.write(html.toByteArray()) }
+        val html = (latestBrowserExportState as? ExportState.Ready)?.json
+        if (uri != null && html != null) {
+            scope.launch(Dispatchers.IO) {
+                try {
+                    val stream = context.contentResolver.openOutputStream(uri, "wt")
+                        ?: throw IllegalStateException("Unable to open output stream")
+                    stream.use { it.write(html.toByteArray()) }
+                } catch (_: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Failed to save HTML export", Toast.LENGTH_SHORT).show()
+                    }
+                } finally {
+                    withContext(Dispatchers.Main) {
+                        viewModel.onEvent(SettingEvents.DismissBrowserExport)
+                    }
+                }
             }
+        } else {
+            viewModel.onEvent(SettingEvents.DismissBrowserExport)
         }
-        viewModel.onEvent(SettingEvents.DismissBrowserExport)
     }
 
     LaunchedEffect(state.exportState) {

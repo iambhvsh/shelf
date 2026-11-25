@@ -4,7 +4,9 @@ import androidx.lifecycle.viewModelScope
 import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.data.Collection
 import `in`.iambhvsh.shelf.data.SortOrder
+import `in`.iambhvsh.shelf.features.fetch.UrlUtils
 import `in`.iambhvsh.shelf.util.Resource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -17,15 +19,11 @@ internal fun CollectionViewModel.saveBookmarkInCollection() {
         return
     }
 
-    val url = if (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://")) {
-        "https://$rawUrl"
-    } else {
-        rawUrl
-    }
+    val url = UrlUtils.ensureHttpScheme(rawUrl)
 
-    val normalizedInput = url.removeSuffix("/")
+    val normalizedInput = UrlUtils.normalizeUrlKey(url)
     val isDuplicate = _state.value.collectionBookmarks.any {
-        it.url.removeSuffix("/") == normalizedInput
+        UrlUtils.normalizeUrlKey(it.url) == normalizedInput
     }
 
     if (isDuplicate) {
@@ -43,14 +41,28 @@ internal fun CollectionViewModel.saveBookmarkInCollection() {
         try {
             _state.update { it.copy(isSavingBookmark = true) }
             val meta = parser.parse(url)
+            val targetUrl = meta?.url ?: url
+            val existingActive = repository.existsByUrl(targetUrl)
+
+            if (collectionId == Collection.UNCATEGORISED_ID && existingActive) {
+                _state.update {
+                    it.copy(
+                        isSavingBookmark = false,
+                        showAddBookmarkDialog = false,
+                        addBookmarkUrl = "",
+                        toastMessage = "Link already exists in your bookmarks"
+                    )
+                }
+                return@launch
+            }
 
             val bookmark = Bookmark(
-                url = meta?.url ?: url,
+                url = targetUrl,
                 title = meta?.title,
                 description = meta?.description,
                 imageUrl = meta?.imageUrl
             )
-            
+
             val insertedId = repository.saveAndReturnId(bookmark)
             if (insertedId > 0 && collectionId != Collection.UNCATEGORISED_ID) {
                 repository.addBookmarkToCollection(insertedId, collectionId)
@@ -61,9 +73,11 @@ internal fun CollectionViewModel.saveBookmarkInCollection() {
                     isSavingBookmark = false,
                     showAddBookmarkDialog = false,
                     addBookmarkUrl = "",
-                    toastMessage = "Added to collection"
+                    toastMessage = if (collectionId == Collection.UNCATEGORISED_ID) "Bookmark saved" else "Added to collection"
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _state.update {
                 it.copy(
@@ -96,7 +110,16 @@ internal fun CollectionViewModel.selectCollection(collection: Collection) {
                     val items = resource.data ?: emptyList()
                     rawCollectionBookmarks = items
                     val sortOrder = _state.value.sortOrder
-                    _state.update { it.copy(isDetailLoading = false, collectionBookmarks = sortBookmarks(items, sortOrder)) }
+                    _state.update { current ->
+                        val refreshedTemp = current.tempBookmark?.let { tmp ->
+                            items.find { it.id == tmp.id } ?: tmp
+                        }
+                        current.copy(
+                            isDetailLoading = false,
+                            collectionBookmarks = sortBookmarks(items, sortOrder),
+                            tempBookmark = refreshedTemp
+                        )
+                    }
                 }
             }
         }
@@ -145,11 +168,15 @@ internal fun CollectionViewModel.selectCollectionById(collectionId: Long) {
                     } else {
                         _state.value.collections.find { it.id == collectionId }
                     }
-                    _state.update {
-                        it.copy(
-                            selectedCollection = col ?: it.selectedCollection,
+                    _state.update { current ->
+                        val refreshedTemp = current.tempBookmark?.let { tmp ->
+                            items.find { it.id == tmp.id } ?: tmp
+                        }
+                        current.copy(
+                            selectedCollection = col ?: current.selectedCollection,
                             isDetailLoading = false,
-                            collectionBookmarks = sortBookmarks(items, sortOrder)
+                            collectionBookmarks = sortBookmarks(items, sortOrder),
+                            tempBookmark = refreshedTemp
                         )
                     }
                 }
@@ -179,7 +206,9 @@ internal fun CollectionViewModel.deleteSelected() {
 internal fun CollectionViewModel.deleteCollectionById(collectionId: Long) {
     if (collectionId == Collection.UNCATEGORISED_ID) return
     viewModelScope.launch {
-        val collection = _state.value.collections.find { it.id == collectionId } ?: return@launch
+        val collection = _state.value.collections.find { it.id == collectionId }
+            ?: _state.value.selectedCollection?.takeIf { it.id == collectionId }
+            ?: return@launch
         repository.deleteCollection(collection)
         _state.update { it.copy(toastMessage = "Deleted collection") }
         backToCollections()
@@ -209,6 +238,8 @@ internal fun CollectionViewModel.deleteSelectedDetail() {
                     toastMessage = "Deleted bookmark" + if (ids.size > 1) "s" else ""
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _state.update { it.copy(error = e.message ?: "Delete failed") }
         }
@@ -216,6 +247,7 @@ internal fun CollectionViewModel.deleteSelectedDetail() {
 }
 
 internal fun CollectionViewModel.deleteBookmark(bookmark: Bookmark) {
+    tempBookmarkTagsJob?.cancel()
     viewModelScope.launch {
         try {
             reminderManager.cancelReminder(bookmark.id)
@@ -228,6 +260,8 @@ internal fun CollectionViewModel.deleteBookmark(bookmark: Bookmark) {
                     tempBookmarkTags = emptyList()
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _state.update { it.copy(error = e.message ?: "Delete failed") }
         }
@@ -271,7 +305,8 @@ internal fun CollectionViewModel.restoreCollectionBookmarks(collectionId: Long) 
         try {
             repository.restoreBookmarksInCollection(collectionId)
             val now = System.currentTimeMillis()
-            val bookmarksResource = repository.getBookmarksInCollection(collectionId).first()
+            val bookmarksResource = repository.getBookmarksInCollection(collectionId)
+                .first { it !is Resource.Loading }
             if (bookmarksResource is Resource.Success) {
                 bookmarksResource.data?.forEach { bm ->
                     val time = bm.reminderTime
@@ -281,6 +316,8 @@ internal fun CollectionViewModel.restoreCollectionBookmarks(collectionId: Long) 
                 }
             }
             _state.update { it.copy(toastMessage = "Restored bookmarks") }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _state.update { it.copy(error = e.message ?: "Restore failed") }
         }

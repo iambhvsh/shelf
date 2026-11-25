@@ -17,6 +17,10 @@ class BookmarkRepositoryImpl(
     private val tagDao: TagDao
 ) : BookmarkRepository {
 
+    private companion object {
+        const val SQLITE_BATCH_SIZE = 900
+    }
+
     override suspend fun insert(bookmark: Bookmark): Boolean {
         return dao.insertOrUnhide(bookmark.toEntity())
     }
@@ -34,7 +38,10 @@ class BookmarkRepositoryImpl(
     }
 
     override suspend fun hideBookmarks(ids: List<Long>) {
-        dao.hideBookmarks(ids)
+        if (ids.isEmpty()) return
+        ids.distinct().chunked(SQLITE_BATCH_SIZE).forEach { batch ->
+            dao.hideBookmarks(batch)
+        }
     }
 
     override suspend fun togglePinStatus(id: Long, isPinned: Boolean) {
@@ -57,16 +64,11 @@ class BookmarkRepositoryImpl(
         dao.updateTitleAndDescription(id, title, description)
     }
 
-    override fun getAllTags(): Flow<Resource<List<Tag>>> = flow {
-        emit(Resource.Loading())
-        try {
-            tagDao.getAllTags().collect { tags ->
-                emit(Resource.Success(tags.map { it.toDomain() }))
-            }
-        } catch (e: Exception) {
-            emit(Resource.Error("Failed to fetch tags: ${e.localizedMessage}"))
-        }
-    }
+    override fun getAllTags(): Flow<Resource<List<Tag>>> =
+        tagDao.getAllTags()
+            .map { tags -> Resource.Success(tags.map { it.toDomain() }) as Resource<List<Tag>> }
+            .onStart { emit(Resource.Loading()) }
+            .catch { e -> emit(Resource.Error("Failed to fetch tags: ${e.localizedMessage}")) }
 
     override suspend fun insertTag(name: String): Long {
         val trimmed = name.trim()
@@ -89,27 +91,17 @@ class BookmarkRepositoryImpl(
         tagDao.removeTagFromBookmark(bookmarkId, tagId)
     }
 
-    override fun getTagsForBookmark(bookmarkId: Long): Flow<Resource<List<Tag>>> = flow {
-        emit(Resource.Loading())
-        try {
-            tagDao.getTagsForBookmark(bookmarkId).collect { tags ->
-                emit(Resource.Success(tags.map { it.toDomain() }))
-            }
-        } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "Unknown Error"))
-        }
-    }
+    override fun getTagsForBookmark(bookmarkId: Long): Flow<Resource<List<Tag>>> =
+        tagDao.getTagsForBookmark(bookmarkId)
+            .map { tags -> Resource.Success(tags.map { it.toDomain() }) as Resource<List<Tag>> }
+            .onStart { emit(Resource.Loading()) }
+            .catch { e -> emit(Resource.Error(e.localizedMessage ?: "Unknown Error")) }
 
-    override fun getBookmarksForTag(tagId: Long): Flow<Resource<List<Long>>> = flow {
-        emit(Resource.Loading())
-        try {
-            tagDao.getBookmarksForTag(tagId).collect { list ->
-                emit(Resource.Success(list))
-            }
-        } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "Unknown Error"))
-        }
-    }
+    override fun getBookmarksForTag(tagId: Long): Flow<Resource<List<Long>>> =
+        tagDao.getBookmarksForTag(tagId)
+            .map { list -> Resource.Success(list) as Resource<List<Long>> }
+            .onStart { emit(Resource.Loading()) }
+            .catch { e -> emit(Resource.Error(e.localizedMessage ?: "Unknown Error")) }
 
     override suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>> {
         return dao.searchBookmarks(text)
@@ -119,7 +111,8 @@ class BookmarkRepositoryImpl(
     }
 
     override suspend fun searchBookmarksWithTags(text: String, tagIds: List<Long>): Flow<Resource<List<Bookmark>>> {
-        return dao.searchBookmarksWithTags(text, tagIds)
+        if (tagIds.isEmpty()) return searchBookmarks(text)
+        return dao.searchBookmarksWithTags(text, tagIds.distinct().take(SQLITE_BATCH_SIZE))
             .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
             .onStart { emit(Resource.Loading()) }
             .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
@@ -143,13 +136,20 @@ class BookmarkRepositoryImpl(
     }
 
     override fun getBookmarksByTags(tagIds: List<Long>): Flow<Resource<List<Bookmark>>> {
-        return dao.getBookmarksByTags(tagIds)
+        if (tagIds.isEmpty()) return getBookmarks()
+        return dao.getBookmarksByTags(tagIds.distinct().take(SQLITE_BATCH_SIZE))
             .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>> }
-            .catch { emit(Resource.Error(it.localizedMessage ?: "Unknown Error")) }
+            .onStart { emit(Resource.Loading()) }
+            .catch { e -> emit(Resource.Error(e.localizedMessage ?: "Unknown Error")) }
     }
 
     override suspend fun existsByUrl(url: String): Boolean {
         return dao.existsByUrl(url)
+    }
+
+    override suspend fun findBookmarkStatusByUrl(url: String): BookmarkStatus? {
+        val entity = dao.findByUrl(url) ?: return null
+        return BookmarkStatus(bookmark = entity.toDomain(), isHidden = entity.isHidden)
     }
 
     override suspend fun createCollection(name: String): Long {
@@ -204,7 +204,10 @@ class BookmarkRepositoryImpl(
     }
 
     override suspend fun addBookmarksToCollection(bookmarkIds: List<Long>, collectionId: Long) {
-        collectionDao.addBookmarksToCollection(bookmarkIds.map { BookmarkCollectionCrossRef(it, collectionId) })
+        if (bookmarkIds.isEmpty()) return
+        bookmarkIds.distinct().chunked(SQLITE_BATCH_SIZE).forEach { batch ->
+            collectionDao.addBookmarksToCollection(batch.map { BookmarkCollectionCrossRef(it, collectionId) })
+        }
     }
 
     override suspend fun removeBookmarkFromCollection(bookmarkId: Long, collectionId: Long) {
@@ -236,7 +239,10 @@ class BookmarkRepositoryImpl(
         }
 
     override suspend fun unhideBookmarks(ids: List<Long>) {
-        dao.unhideBookmarks(ids)
+        if (ids.isEmpty()) return
+        ids.distinct().chunked(SQLITE_BATCH_SIZE).forEach { batch ->
+            dao.unhideBookmarks(batch)
+        }
     }
 
     override suspend fun restoreBookmarksInCollection(collectionId: Long) {
@@ -248,7 +254,10 @@ class BookmarkRepositoryImpl(
     }
 
     override suspend fun permanentlyDeleteBookmarks(ids: List<Long>) {
-        dao.purgeBookmarks(ids)
+        if (ids.isEmpty()) return
+        ids.distinct().chunked(SQLITE_BATCH_SIZE).forEach { batch ->
+            dao.purgeBookmarks(batch)
+        }
     }
 
     override suspend fun emptyTrash() {

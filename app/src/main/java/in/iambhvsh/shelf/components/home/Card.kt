@@ -1,9 +1,11 @@
 package `in`.iambhvsh.shelf.components.home
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -71,17 +73,20 @@ fun BookmarkCard(
     var detectedAspectRatio by remember(imageUrl) { mutableStateOf(cachedRatio) }
     val cardAspectRatio = detectedAspectRatio ?: initialAspectRatio
 
+    val interactionSource = remember { MutableInteractionSource() }
     val cardShape = if (isSelected) MaterialTheme.shapes.extraLargeIncreased else MaterialTheme.shapes.largeIncreased
     val cardModifier = modifier
         .fillMaxWidth()
         .wrapContentHeight()
-        .expressiveBounce(scaleDown = 0.96f)
+        .expressiveBounce(scaleDown = 0.96f, interactionSource = interactionSource)
         .clip(cardShape)
         .then(
             if (isSelected) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, cardShape)
             else Modifier
         )
         .combinedClickable(
+            interactionSource = interactionSource,
+            indication = LocalIndication.current,
             onClick = {
                 if (isSelectionMode) onLongClick() else bodyClick()
             },
@@ -111,7 +116,7 @@ fun BookmarkCard(
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
                     contentDescription = "Has Reminder",
-                    modifier = Modifier.size(16.dp).padding(end = if (isPinned) 4.dp else 0.dp),
+                    modifier = Modifier.padding(end = if (isPinned) 4.dp else 0.dp).size(16.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -169,7 +174,9 @@ fun BookmarkCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp)
-                            .clickable { onNoteClick() }
+                            .clickable {
+                                if (isSelectionMode) onLongClick() else onNoteClick()
+                            }
                     ) {
                         Text(
                             text = note,

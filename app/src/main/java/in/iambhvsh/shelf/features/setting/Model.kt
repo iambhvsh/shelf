@@ -9,6 +9,8 @@ import `in`.iambhvsh.shelf.data.BookmarkDatabase
 import `in`.iambhvsh.shelf.data.BookmarkRepository
 import `in`.iambhvsh.shelf.data.UpdateManager
 import `in`.iambhvsh.shelf.data.SettingsRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -21,7 +23,8 @@ class SettingViewModel(
     internal val changelogLoader: ChangelogLoader,
     internal val database: BookmarkDatabase,
     internal val bookmarkRepository: BookmarkRepository,
-    internal val reminderManager: ReminderManager
+    internal val reminderManager: ReminderManager,
+    internal val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     internal val _state = MutableStateFlow(
@@ -119,6 +122,7 @@ class SettingViewModel(
             SettingEvents.DismissAutoBackupInfoDialog -> _state.update { it.copy(showAutoBackupInfoDialog = false) }
             is SettingEvents.ToggleAppLock -> {
                 settingsRepository.setAppLockEnabled(event.enabled)
+                `in`.iambhvsh.shelf.SessionManager.isUnlocked = true
                 _state.update { it.copy(appLockEnabled = event.enabled) }
             }
             is SettingEvents.ToggleAppLockUsePin -> {

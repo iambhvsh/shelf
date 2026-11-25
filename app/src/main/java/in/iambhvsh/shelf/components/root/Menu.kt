@@ -89,7 +89,7 @@ fun MoreActionDropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onSearchClick: () -> Unit,
-    onSortClick: () -> Unit,
+    onSortClick: (() -> Unit)? = null,
     onAddClick: (() -> Unit)? = null,
     addLabel: String = "Add Bookmark",
     modifier: Modifier = Modifier
@@ -149,27 +149,29 @@ fun MoreActionDropdownMenu(
                     onSearchClick()
                 }
             )
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        text = "Sort & Filter",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.filter_icon),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                },
-                onClick = {
-                    onDismissRequest()
-                    onSortClick()
-                }
-            )
+            if (onSortClick != null) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "Sort & Filter",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.filter_icon),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    },
+                    onClick = {
+                        onDismissRequest()
+                        onSortClick()
+                    }
+                )
+            }
         }
     }
 }

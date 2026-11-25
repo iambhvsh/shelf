@@ -5,7 +5,9 @@ import okhttp3.Request
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
-class NetworkFetcher {
+class NetworkFetcher(
+    private val httpClient: OkHttpClient = client
+) {
 
     companion object {
         private val client = OkHttpClient.Builder()
@@ -24,7 +26,7 @@ class NetworkFetcher {
                 .header("Accept-Language", "en-US,en;q=0.9")
                 .build()
 
-            client.newCall(request).execute().use { response ->
+            httpClient.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return null
 
                 val contentType = response.header("Content-Type") ?: ""
@@ -38,6 +40,8 @@ class NetworkFetcher {
                     Jsoup.parse(stream, null, finalUrl)
                 }
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             e.printStackTrace()
             null
@@ -52,7 +56,7 @@ class NetworkFetcher {
                 .head()
                 .header("User-Agent", "Mozilla/5.0")
                 .build()
-            client.newCall(headRequest).execute().use { response ->
+            httpClient.newCall(headRequest).execute().use { response ->
                 when (response.code) {
                     in 200..299 -> true
                     405 -> {
@@ -61,12 +65,14 @@ class NetworkFetcher {
                             .header("Range", "bytes=0-0")
                             .header("User-Agent", "Mozilla/5.0")
                             .build()
-                        client.newCall(rangeRequest).execute().use { it.isSuccessful || it.code == 206 }
+                        httpClient.newCall(rangeRequest).execute().use { it.isSuccessful || it.code == 206 }
                     }
                     in 400..599 -> false
                     else -> response.isSuccessful
                 }
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (_: Exception) {
             true
         }

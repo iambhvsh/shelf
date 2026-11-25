@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -85,6 +86,12 @@ fun CollectionDetailScreen(
         viewModel.onEvent(CollectionEvents.SelectCollectionById(collectionId))
     }
 
+    DisposableEffect(collectionId) {
+        onDispose {
+            viewModel.onEvent(CollectionEvents.ClearSelectedCollection)
+        }
+    }
+
     val isSearching = searchResults != null
     var cachedResults by remember { mutableStateOf(searchResults ?: emptyList()) }
     var cachedQuery by remember { mutableStateOf(searchQuery) }
@@ -126,8 +133,8 @@ fun CollectionDetailScreen(
                 results = searchResults ?: cachedResults,
                 query = if (isSearching) searchQuery else cachedQuery,
                 viewMode = viewMode,
-                selectedIds = state.detailSelectedIds,
-                isSelectionMode = state.isDetailSelectionMode,
+                selectedIds = emptySet(),
+                isSelectionMode = false,
                 isLoading = state.isDetailLoading,
                 onBodyClick = { item ->
                     when (tapAction) {
@@ -137,7 +144,10 @@ fun CollectionDetailScreen(
                     }
                 },
                 onPhotoClick = { viewModel.onEvent(CollectionEvents.PreviewImageClick(it)) },
-                onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(it)) },
+                onNoteClick = { item ->
+                    viewModel.onEvent(CollectionEvents.ShowDetailBodySheet(item))
+                    viewModel.onEvent(CollectionEvents.ShowNoteEditor(item.note))
+                },
                 onImageFailed = { item ->
                     viewModel.onEvent(CollectionEvents.RefreshBookmarkImage(item.id, item.url, item.imageUrl))
                 }

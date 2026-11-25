@@ -10,6 +10,7 @@ data class QuickSaveState(
     val imageUrl: String? = null,
     val bookmarkId: Long? = null,
     val isAlreadySaved: Boolean = false,
+    val wasRestoredFromTrash: Boolean = false,
     val isSaving: Boolean = true,
     val message: String? = null,
     val selectedCollection: Collection? = null,

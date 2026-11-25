@@ -1,10 +1,14 @@
 package `in`.iambhvsh.shelf
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.room.Room
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import `in`.iambhvsh.shelf.data.BookmarkDatabase
 import `in`.iambhvsh.shelf.data.BookmarkRepository
 import `in`.iambhvsh.shelf.data.BookmarkRepositoryImpl
@@ -31,6 +35,7 @@ import org.koin.dsl.module
 class App : Application(), DefaultLifecycleObserver {
 
     private val settingsRepository: SettingsRepository by inject()
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super<Application>.onCreate()
@@ -102,5 +107,9 @@ val shelfModule = module {
     viewModel { SearchViewModel(get()) }
     viewModel { CollectionViewModel(get(), get()) }
     viewModel { SettingViewModel(get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { QuickSaveViewModel(get()) }
+    viewModel {
+        val appScope = (get<Context>().applicationContext as? App)?.applicationScope
+            ?: CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        QuickSaveViewModel(get(), externalScope = appScope)
+    }
 }

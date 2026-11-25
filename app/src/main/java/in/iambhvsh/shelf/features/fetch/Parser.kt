@@ -1,9 +1,14 @@
 package `in`.iambhvsh.shelf.features.fetch
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
- class LinkMetadataParser {
+open class LinkMetadataParser(
+    private val service: LinkPreviewService = LinkPreviewService(),
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) {
 
     companion object {
         private val AGENTS = arrayOf(
@@ -12,24 +17,21 @@ import kotlinx.coroutines.withContext
         )
     }
 
-    suspend fun parse(url: String): LinkPreviewData? = withContext(Dispatchers.IO) {
-        return@withContext try {
-            try {
-                var linkPreviewEntity: LinkPreviewData? = null
-                AGENTS.forEach {
-                    linkPreviewEntity = LinkPreviewService().getLinkPreviewData(
-                        url, it
-                    )
-                    val isResultNull = checkNullParserResult(linkPreviewEntity)
-                    if (!isResultNull) {
-                        return@withContext linkPreviewEntity
-                    }
+    open suspend fun parse(url: String): LinkPreviewData? = withContext(ioDispatcher) {
+        try {
+            var bestResult: LinkPreviewData? = null
+            for (agent in AGENTS) {
+                val parsed = service.getLinkPreviewData(url, agent)
+                if (bestResult == null && parsed != null) {
+                    bestResult = parsed
                 }
-                return@withContext linkPreviewEntity
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return@withContext null
+                if (!checkNullParserResult(parsed)) {
+                    return@withContext parsed
+                }
             }
+            bestResult
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             e.printStackTrace()
             null

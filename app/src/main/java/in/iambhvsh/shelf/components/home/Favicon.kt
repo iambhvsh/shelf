@@ -24,7 +24,7 @@ fun Favicon(
     cleanHost: String,
     modifier: Modifier = Modifier
 ) {
-    var faviconFailed by remember { mutableStateOf(false) }
+    var faviconFailed by remember(host) { mutableStateOf(false) }
     val faviconShape = ShelfShapes.expressiveShapeFor(cleanHost)
 
     if (faviconFailed) {

@@ -11,6 +11,8 @@ import `in`.iambhvsh.shelf.data.dao.CollectionDao
 import `in`.iambhvsh.shelf.data.dao.TagDao
 import `in`.iambhvsh.shelf.data.SettingsRepository
 import `in`.iambhvsh.shelf.features.fetch.LinkMetadataParser
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -33,13 +35,16 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @OptIn(FlowPreview::class)
-class BackupManager(
+open class BackupManager(
     private val database: BookmarkDatabase,
     private val bookmarkDao: BookmarkDao,
     private val collectionDao: CollectionDao,
     private val tagDao: TagDao,
     private val settingsRepository: SettingsRepository,
-    private val context: Context
+    private val context: Context,
+    private val linkMetadataParser: LinkMetadataParser = LinkMetadataParser(),
+    private val networkFetcher: `in`.iambhvsh.shelf.features.fetch.NetworkFetcher = `in`.iambhvsh.shelf.features.fetch.NetworkFetcher(),
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val reminderManager = `in`.iambhvsh.shelf.features.reminder.ReminderManager(context)
@@ -59,12 +64,12 @@ class BackupManager(
         }
     }
 
-    fun refreshLastBackupTime() {
+    open fun refreshLastBackupTime() {
         val file = getInternalBackupFile(context)
         _lastBackupTimeMillis.value = if (file.exists()) file.lastModified() else 0L
     }
 
-    fun startAutoBackup() {
+    open fun startAutoBackup() {
         stopAutoBackup()
         autoBackupJob = scope.launch {
             combine(
@@ -114,14 +119,14 @@ class BackupManager(
         }
     }
 
-    fun stopAutoBackup() {
+    open fun stopAutoBackup() {
         autoBackupJob?.cancel()
         autoBackupJob = null
     }
 
-    fun readInternalBackup(): String? = readInternalBackupFile(context)
+    open fun readInternalBackup(): String? = readInternalBackupFile(context)
 
-    suspend fun generateBackupJson(): String {
+    open suspend fun generateBackupJson(): String {
         val bookmarks = bookmarkDao.getAllBookmarksOnce()
         val collections = collectionDao.getAllCollectionsRaw().first()
 
@@ -153,20 +158,18 @@ class BackupManager(
         return json.encodeToString(data)
     }
 
-    suspend fun generateExportHtml(): String = exportBookmarksToHtml(bookmarkDao, collectionDao)
+    open suspend fun generateExportHtml(): String = exportBookmarksToHtml(bookmarkDao, collectionDao)
 
-    suspend fun importFromBrowserBookmarks(html: String): BrowserImportResult =
+    open suspend fun importFromBrowserBookmarks(html: String): BrowserImportResult =
         importBookmarksFromHtml(html, bookmarkDao, collectionDao, database)
 
-    fun refreshImportedThumbnailsAsync(checkExistingImages: Boolean) {
+    open fun refreshImportedThumbnailsAsync(checkExistingImages: Boolean) {
         scope.launch {
             fetchMissingImages(checkExistingImages = checkExistingImages)
         }
     }
 
     suspend fun fetchMissingImages(checkExistingImages: Boolean = false) {
-        val parser = LinkMetadataParser()
-        val networkFetcher = `in`.iambhvsh.shelf.features.fetch.NetworkFetcher()
         val candidates = if (checkExistingImages) {
             bookmarkDao.getBookmarksOnce()
         } else {
@@ -177,7 +180,7 @@ class BackupManager(
         val semaphore = Semaphore(4)
         coroutineScope {
             candidates.map { bm ->
-                async(Dispatchers.IO) {
+                async(ioDispatcher) {
                     semaphore.withPermit {
                         try {
                             val currentImage = bm.imageUrl
@@ -185,7 +188,7 @@ class BackupManager(
                                 (checkExistingImages && !networkFetcher.isImageUrlReachable(currentImage))
                             if (!needsRefresh) return@withPermit
 
-                            val meta = parser.parse(bm.url) ?: return@withPermit
+                            val meta = linkMetadataParser.parse(bm.url) ?: return@withPermit
                             val newImage = meta.imageUrl?.trim()
                             if (!newImage.isNullOrBlank() && newImage != currentImage) {
                                 bookmarkDao.updateImageUrl(bm.id, newImage)
@@ -193,14 +196,16 @@ class BackupManager(
                             if ((bm.title.isNullOrBlank() || bm.title == bm.url) && !meta.title.isNullOrBlank()) {
                                 bookmarkDao.updateTitle(bm.id, meta.title)
                             }
-                        } catch (_: Exception) { }
+                        } catch (e: Exception) {
+                            if (e is CancellationException) throw e
+                        }
                     }
                 }
             }.awaitAll()
         }
     }
 
-    suspend fun importFromJson(jsonString: String): JsonImportResult {
+    open suspend fun importFromJson(jsonString: String): JsonImportResult {
         val result = importBackupFromJson(
             jsonString = jsonString,
             json = json,

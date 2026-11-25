@@ -6,11 +6,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 
-class ReminderManager(private val context: Context) {
+open class ReminderManager(private val context: Context) {
 
-    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
 
-    fun scheduleReminder(bookmarkId: Long, timeInMillis: Long) {
+    open fun scheduleReminder(bookmarkId: Long, timeInMillis: Long) {
+        val manager = alarmManager ?: return
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra(EXTRA_BOOKMARK_ID, bookmarkId)
         }
@@ -22,15 +23,21 @@ class ReminderManager(private val context: Context) {
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (alarmManager.canScheduleExactAlarms()) {
-                alarmManager.setExactAndAllowWhileIdle(
+            if (manager.canScheduleExactAlarms()) {
+                manager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    timeInMillis,
+                    pendingIntent
+                )
+            } else {
+                manager.setAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
                     timeInMillis,
                     pendingIntent
                 )
             }
         } else {
-            alarmManager.setExactAndAllowWhileIdle(
+            manager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 timeInMillis,
                 pendingIntent
@@ -38,7 +45,8 @@ class ReminderManager(private val context: Context) {
         }
     }
 
-    fun cancelReminder(bookmarkId: Long) {
+    open fun cancelReminder(bookmarkId: Long) {
+        val manager = alarmManager ?: return
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra(EXTRA_BOOKMARK_ID, bookmarkId)
         }
@@ -48,7 +56,7 @@ class ReminderManager(private val context: Context) {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        alarmManager.cancel(pendingIntent)
+        manager.cancel(pendingIntent)
     }
 
     companion object {

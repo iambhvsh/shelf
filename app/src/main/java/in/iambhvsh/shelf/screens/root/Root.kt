@@ -94,6 +94,16 @@ fun Root(
     LaunchedEffect(isCollectionSearching) {
         if (isCollectionSearching) focusRequester.requestFocus()
     }
+    LaunchedEffect(settingState.resetSuccessToast) {
+        if (settingState.resetSuccessToast) {
+            isSearching = false
+            isCollectionSearching = false
+            collectionSearchQuery = ""
+            searchViewModel.onQueryChange("")
+            viewModel.clearTransientState()
+            collectionViewModel.clearTransientState()
+        }
+    }
     LaunchedEffect(navState.currentRoute) {
         if (!navState.isDeepScreen) {
             enterAlwaysScrollBehavior.state.heightOffset = 0f

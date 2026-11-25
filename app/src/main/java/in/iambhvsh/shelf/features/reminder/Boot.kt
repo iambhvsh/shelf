@@ -18,21 +18,36 @@ class BootReceiver : BroadcastReceiver(), KoinComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
+        val action = intent.action
+        if (action != Intent.ACTION_BOOT_COMPLETED && action != Intent.ACTION_MY_PACKAGE_REPLACED) return
         val pendingResult = goAsync()
         scope.launch {
             try {
-                val now = System.currentTimeMillis()
                 val bookmarks = bookmarkDao.getAllBookmarksOnce()
-                for (bm in bookmarks) {
-                    val time = bm.reminderTime
-                    if (time != null && time > now && !bm.isHidden) {
-                        reminderManager.scheduleReminder(bm.id, time)
-                    }
-                }
+                reschedulePendingReminders(
+                    bookmarks = bookmarks,
+                    nowMillis = System.currentTimeMillis(),
+                    schedule = { id, time -> reminderManager.scheduleReminder(id, time) }
+                )
             } finally {
                 pendingResult.finish()
             }
         }
     }
+}
+
+internal inline fun reschedulePendingReminders(
+    bookmarks: List<`in`.iambhvsh.shelf.data.BookmarkEntity>,
+    nowMillis: Long,
+    schedule: (Long, Long) -> Unit
+): Int {
+    var scheduledCount = 0
+    for (bm in bookmarks) {
+        val time = bm.reminderTime
+        if (time != null && time > nowMillis && !bm.isHidden) {
+            schedule(bm.id, time)
+            scheduledCount++
+        }
+    }
+    return scheduledCount
 }

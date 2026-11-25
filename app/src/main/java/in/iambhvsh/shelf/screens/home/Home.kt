@@ -2,8 +2,6 @@ package `in`.iambhvsh.shelf.screens.home
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -55,16 +53,6 @@ fun HomeScreen(
     val clipboard = LocalClipboard.current
     var bookmarkToDelete by remember { mutableStateOf<Bookmark?>(null) }
 
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-        val permissionLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { }
-        )
-        LaunchedEffect(Unit) {
-            permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
-
     LaunchedEffect(sharedUrl) {
         if (sharedUrl != null) {
             viewModel.homeEvents(HomeEvents.OnTextFieldValueChange(sharedUrl))
@@ -95,6 +83,7 @@ fun HomeScreen(
     LaunchedEffect(state.duplicateToastKey) {
         if (state.duplicateToastKey > 0) {
             Toast.makeText(context, "URL already exists", Toast.LENGTH_SHORT).show()
+            viewModel.homeEvents(HomeEvents.ClearDuplicateToast)
         }
     }
 

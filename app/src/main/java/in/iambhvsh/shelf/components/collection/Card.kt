@@ -1,9 +1,11 @@
 package `in`.iambhvsh.shelf.components.collection
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -32,18 +35,21 @@ fun CollectionCard(
     isSelectionMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     val cardShape = if (isSelected) MaterialTheme.shapes.extraLargeIncreased else MaterialTheme.shapes.largeIncreased
 
     val cardModifier = modifier
         .fillMaxWidth()
         .wrapContentHeight()
-        .expressiveBounce(scaleDown = 0.96f)
+        .expressiveBounce(scaleDown = 0.96f, interactionSource = interactionSource)
         .clip(cardShape)
         .then(
             if (isSelected) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, cardShape)
             else Modifier
         )
         .combinedClickable(
+            interactionSource = interactionSource,
+            indication = LocalIndication.current,
             onClick = {
                 if (isSelectionMode) onLongClick() else onClick()
             },

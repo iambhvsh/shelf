@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -35,13 +36,15 @@ fun BookmarkGrid(
     hasTags: Boolean = false
 ) {
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val topPadding = statusBarTop + 68.dp + if (hasTags) 48.dp else 0.dp
+    val bottomPadding = navBarBottom + 100.dp
 
     LazyVerticalStaggeredGrid(
         state = gridState,
         modifier = Modifier.fillMaxSize(),
         columns = StaggeredGridCells.Adaptive(160.dp),
-        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = 108.dp),
+        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = bottomPadding),
         verticalItemSpacing = 6.dp,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {

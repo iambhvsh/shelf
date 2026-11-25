@@ -7,6 +7,7 @@ import `in`.iambhvsh.shelf.data.BookmarkEntity
 import `in`.iambhvsh.shelf.data.CollectionEntity
 import `in`.iambhvsh.shelf.data.dao.BookmarkDao
 import `in`.iambhvsh.shelf.data.dao.CollectionDao
+import `in`.iambhvsh.shelf.features.fetch.UrlUtils
 import kotlinx.coroutines.flow.first
 
 internal suspend fun exportBookmarksToHtml(
@@ -24,8 +25,8 @@ internal suspend fun exportBookmarksToHtml(
 
     val collectionBookmarkIds = mutableMapOf<Long, MutableSet<Long>>()
     for (c in collections) {
-        val urls = collectionDao.getBookmarkUrlsForCollection(c.id)
-        val ids = bookmarks.filter { it.url in urls }.map { it.id }.toMutableSet()
+        val urlKeys = collectionDao.getBookmarkUrlsForCollection(c.id).map { UrlUtils.normalizeUrlKey(it) }.toSet()
+        val ids = bookmarks.filter { UrlUtils.normalizeUrlKey(it.url) in urlKeys }.map { it.id }.toMutableSet()
         collectionBookmarkIds[c.id] = ids
     }
 
@@ -74,23 +75,33 @@ internal suspend fun importBookmarksFromHtml(
         val parser = BookmarkParser()
         val (parsedBookmarks, collectionNames) = parser.parse(html)
 
-        val existingInDb = bookmarkDao.getAllBookmarksOnce().associateBy { it.url }.toMutableMap()
+        val existingInDb = mutableMapOf<String, BookmarkEntity>()
+        for (entity in bookmarkDao.getAllBookmarksOnce()
+            .sortedWith(compareBy<BookmarkEntity> { it.isHidden }.thenByDescending { it.id })) {
+            existingInDb.putIfAbsent(UrlUtils.normalizeUrlKey(entity.url), entity)
+        }
         var imported = 0
         var skipped = 0
 
         val bookmarkMap = mutableMapOf<String, Long>()
 
         for (pb in parsedBookmarks) {
-            val existing = existingInDb[pb.url]
+            val normalizedKey = UrlUtils.normalizeUrlKey(pb.url)
+            val existing = existingInDb[normalizedKey]
             if (existing != null) {
                 if (existing.isHidden) {
-                    bookmarkDao.unhideBookmark(
+                    val resolvedTitle = if (pb.title.isNotBlank()) pb.title else existing.title
+                    bookmarkDao.restoreBookmark(
                         id = existing.id,
-                        title = if (pb.title.isNotBlank()) pb.title else existing.title,
+                        title = resolvedTitle,
                         description = existing.description,
                         imageUrl = existing.imageUrl,
-                        createdAt = existing.createdAt
+                        createdAt = existing.createdAt,
+                        isPinned = existing.isPinned,
+                        note = existing.note,
+                        reminderTime = existing.reminderTime
                     )
+                    existingInDb[normalizedKey] = existing.copy(isHidden = false, title = resolvedTitle)
                     imported++
                 } else {
                     if ((existing.title.isNullOrBlank() || existing.title == existing.url) && pb.title.isNotBlank()) {
@@ -98,7 +109,7 @@ internal suspend fun importBookmarksFromHtml(
                     }
                     skipped++
                 }
-                bookmarkMap[pb.url] = existing.id
+                bookmarkMap[normalizedKey] = existing.id
             } else {
                 val newId = bookmarkDao.insertWithReturn(
                     BookmarkEntity(
@@ -108,8 +119,8 @@ internal suspend fun importBookmarksFromHtml(
                         imageUrl = null
                     )
                 )
-                bookmarkMap[pb.url] = newId
-                existingInDb[pb.url] = BookmarkEntity(id = newId, url = pb.url, title = pb.title, description = null, imageUrl = null)
+                bookmarkMap[normalizedKey] = newId
+                existingInDb[normalizedKey] = BookmarkEntity(id = newId, url = pb.url, title = pb.title, description = null, imageUrl = null)
                 imported++
             }
         }
@@ -118,7 +129,7 @@ internal suspend fun importBookmarksFromHtml(
         val nameToId = existingCollections.mapValues { it.value.id }.toMutableMap()
 
         for (pb in parsedBookmarks) {
-            val bmId = bookmarkMap[pb.url] ?: continue
+            val bmId = bookmarkMap[UrlUtils.normalizeUrlKey(pb.url)] ?: continue
             for (cName in pb.collections) {
                 val trimmed = cName.trim()
                 if (trimmed.isEmpty()) continue

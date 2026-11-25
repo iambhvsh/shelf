@@ -154,4 +154,55 @@ class ParserTest {
         assertTrue(bookmarks.isEmpty())
         assertTrue(collections.isEmpty())
     }
+
+    @Test
+    fun testUnsafeSchemes_areFilteredAndDoNotCreateEmptyFolders() {
+        val html = """
+            <!DOCTYPE NETSCAPE-Bookmark-file-1>
+            <DL><p>
+                <DT><H3>UnsafeOnly</H3>
+                <DL><p>
+                    <DT><A HREF="javascript:alert(1)">Bookmarklet</A>
+                    <DT><A HREF="file:///etc/passwd">Local</A>
+                    <DT><A HREF="chrome://settings">Settings</A>
+                    <DT><A HREF="data:text/html,hi">Data</A>
+                    <DT><A HREF="about:blank">Blank</A>
+                </DL><p>
+                <DT><H3>Safe</H3>
+                <DL><p>
+                    <DT><A HREF="HTTP://example.com/ok">Safe Link</A>
+                </DL><p>
+            </DL><p>
+        """.trimIndent()
+
+        val (bookmarks, collections) = parser.parse(html)
+        assertEquals(1, bookmarks.size)
+        assertEquals("HTTP://example.com/ok", bookmarks[0].url)
+        assertEquals(listOf("Safe"), collections)
+    }
+
+    @Test
+    fun testDeepNestedFoldersAndFallbackUrlTitle() {
+        val html = """
+            <!DOCTYPE NETSCAPE-Bookmark-file-1>
+            <dl>
+                <dt><h3 add_date="1700">Engineering</h3>
+                <dl>
+                    <dt><h3>Kotlin</h3>
+                    <dl>
+                        <dt><h3>Coroutines</h3>
+                        <dl>
+                            <dt><a href="https://kotlinlang.org/coroutines" add_date="1701">   </a>
+                        </dl>
+                    </dl>
+                </dl>
+            </dl>
+        """.trimIndent()
+
+        val (bookmarks, collections) = parser.parse(html)
+        assertEquals(listOf("Engineering/Kotlin/Coroutines"), collections)
+        assertEquals(1, bookmarks.size)
+        assertEquals("https://kotlinlang.org/coroutines", bookmarks[0].url)
+        assertEquals(listOf("Engineering/Kotlin/Coroutines"), bookmarks[0].collections)
+    }
 }

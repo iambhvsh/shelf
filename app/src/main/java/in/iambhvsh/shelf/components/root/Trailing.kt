@@ -51,7 +51,7 @@ fun RightActionSlot(
     onSelectAll: () -> Unit,
     onDeselectAll: () -> Unit,
     onSearchClick: () -> Unit,
-    onSortClick: () -> Unit,
+    onSortClick: (() -> Unit)?,
     onAddToCollection: (() -> Unit)?,
     onRenameSelected: (() -> Unit)?,
     onDeleteSelected: (() -> Unit)?,
@@ -183,7 +183,8 @@ fun RightActionSlot(
                 }
             }
         } else {
-            val showRightActions = currentTab == 0 || currentTab == 1
+            val showTrashAction = isTrashScreen && onEmptyTrash != null
+            val showRightActions = currentTab == 0 || currentTab == 1 || showTrashAction
             AnimatedVisibility(
                 visible = showRightActions,
                 enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
@@ -191,34 +192,55 @@ fun RightActionSlot(
                 exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
                         scaleOut(targetScale = 0.88f, animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
             ) {
-                var showMenu by remember { mutableStateOf(false) }
-
-                Box(
-                    modifier = Modifier.padding(end = 16.dp),
-                    contentAlignment = Alignment.CenterEnd
-                ) {
-                    TopBarButton(
-                        onClick = { showMenu = true },
-                        contentDescription = "More options",
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = MaterialTheme.colorScheme.onSurface
+                if (showTrashAction && currentTab != 0 && currentTab != 1) {
+                    Box(
+                        modifier = Modifier.padding(end = 16.dp),
+                        contentAlignment = Alignment.CenterEnd
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
+                        TopBarButton(
+                            onClick = onEmptyTrash,
+                            contentDescription = "Empty trash",
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.error
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.delete_icon),
+                                contentDescription = "Empty trash",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+                } else {
+                    var showMenu by remember { mutableStateOf(false) }
+
+                    Box(
+                        modifier = Modifier.padding(end = 16.dp),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        TopBarButton(
+                            onClick = { showMenu = true },
                             contentDescription = "More options",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(22.dp)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "More options",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+
+                        MoreActionDropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false },
+                            onSearchClick = onSearchClick,
+                            onSortClick = onSortClick,
+                            onAddClick = if (isCollectionDetail) onNewBookmarkClick else null,
+                            addLabel = "Add Bookmark"
                         )
                     }
-
-                    MoreActionDropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false },
-                        onSearchClick = onSearchClick,
-                        onSortClick = onSortClick,
-                        onAddClick = if (isCollectionDetail) onNewBookmarkClick else null,
-                        addLabel = "Add Bookmark"
-                    )
                 }
             }
         }

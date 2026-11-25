@@ -16,7 +16,9 @@ import kotlinx.coroutines.launch
 
 class CollectionViewModel(
     internal val repository: BookmarkRepository,
-    internal val reminderManager: ReminderManager
+    internal val reminderManager: ReminderManager,
+    internal val parser: LinkMetadataParser = LinkMetadataParser(),
+    internal val ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.IO
 ) : ViewModel() {
     internal val _state = MutableStateFlow(CollectionState())
     val state = _state.asStateFlow()
@@ -24,7 +26,6 @@ class CollectionViewModel(
     internal var tagsJob: Job? = null
     internal var tempBookmarkTagsJob: Job? = null
     internal var rawCollectionBookmarks: List<Bookmark> = emptyList()
-    internal val parser = LinkMetadataParser()
     internal val attemptedImageRefreshes = mutableSetOf<String>()
 
     init {
@@ -42,7 +43,19 @@ class CollectionViewModel(
             is CollectionEvents.SelectCollectionById -> selectCollectionById(event.collectionId)
             CollectionEvents.ClearSelectedCollection -> {
                 collectionJob?.cancel()
-                _state.update { it.copy(selectedCollection = null, collectionBookmarks = emptyList(), isDetailSelectionMode = false, detailSelectedIds = emptySet()) }
+                tempBookmarkTagsJob?.cancel()
+                _state.update {
+                    it.copy(
+                        selectedCollection = null,
+                        collectionBookmarks = emptyList(),
+                        isDetailSelectionMode = false,
+                        detailSelectedIds = emptySet(),
+                        tempBookmark = null,
+                        tempBookmarkTags = emptyList(),
+                        showAddBookmarkDialog = false,
+                        addBookmarkUrl = ""
+                    )
+                }
             }
             is CollectionEvents.ToggleSelection -> {
                 if (event.id == Collection.UNCATEGORISED_ID) return
@@ -118,15 +131,20 @@ class CollectionViewModel(
             is CollectionEvents.ShowEditDialog -> {
                 _state.update { it.copy(showRenameBookmarkDialog = true, tempBookmark = event.bookmark, isDetailBodySheet = false) }
             }
-            CollectionEvents.HideEditDialog -> _state.update { it.copy(showRenameBookmarkDialog = false, tempBookmark = null) }
+            CollectionEvents.HideEditDialog -> {
+                tempBookmarkTagsJob?.cancel()
+                _state.update { it.copy(showRenameBookmarkDialog = false, tempBookmark = null, tempBookmarkTags = emptyList()) }
+            }
             is CollectionEvents.UpdateBookmarkDetails -> {
+                tempBookmarkTagsJob?.cancel()
                 viewModelScope.launch {
                     repository.updateBookmarkDetails(event.id, event.title?.trim(), event.description?.trim())
-                    _state.update { it.copy(showRenameBookmarkDialog = false, tempBookmark = null, toastMessage = "Bookmark updated") }
+                    _state.update { it.copy(showRenameBookmarkDialog = false, tempBookmark = null, tempBookmarkTags = emptyList(), toastMessage = "Bookmark updated") }
                 }
             }
             CollectionEvents.ShowTagManager -> _state.update { it.copy(showTagManager = true, isDetailBodySheet = false) }
             CollectionEvents.HideTagManager -> {
+                tempBookmarkTagsJob?.cancel()
                 _state.update { it.copy(showTagManager = false, tempBookmark = null, tempBookmarkTags = emptyList()) }
             }
             is CollectionEvents.CreateTag -> viewModelScope.launch { repository.insertTag(event.name) }
@@ -141,28 +159,42 @@ class CollectionViewModel(
             is CollectionEvents.ShowNoteEditor -> {
                 _state.update { it.copy(showNoteEditor = true, noteEditorText = event.initialNote, isDetailBodySheet = false) }
             }
-            CollectionEvents.HideNoteEditor -> _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
+            CollectionEvents.HideNoteEditor -> {
+                tempBookmarkTagsJob?.cancel()
+                _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null, tempBookmarkTags = emptyList()) }
+            }
             is CollectionEvents.UpdateNote -> {
+                tempBookmarkTagsJob?.cancel()
                 viewModelScope.launch {
                     val cleanNote = event.note?.trim()?.ifEmpty { null }
                     repository.updateNote(event.id, cleanNote)
-                    _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
+                    _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null, tempBookmarkTags = emptyList()) }
                 }
             }
             CollectionEvents.ShowReminderPicker -> _state.update { it.copy(showReminderPicker = true, isDetailBodySheet = false) }
-            CollectionEvents.HideReminderPicker -> _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+            CollectionEvents.HideReminderPicker -> {
+                tempBookmarkTagsJob?.cancel()
+                _state.update { it.copy(showReminderPicker = false, tempBookmark = null, tempBookmarkTags = emptyList()) }
+            }
             is CollectionEvents.SetReminder -> {
+                tempBookmarkTagsJob?.cancel()
                 viewModelScope.launch {
                     repository.updateReminderTime(event.id, event.timeInMillis)
                     reminderManager.scheduleReminder(event.id, event.timeInMillis)
-                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null, tempBookmarkTags = emptyList()) }
                 }
             }
             is CollectionEvents.CancelReminder -> {
                 viewModelScope.launch {
                     repository.updateReminderTime(event.id, null)
                     reminderManager.cancelReminder(event.id)
-                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+                    _state.update {
+                        if (it.isDetailBodySheet) it.copy(showReminderPicker = false)
+                        else {
+                            tempBookmarkTagsJob?.cancel()
+                            it.copy(showReminderPicker = false, tempBookmark = null, tempBookmarkTags = emptyList())
+                        }
+                    }
                 }
             }
             CollectionEvents.ClearToast -> _state.update { it.copy(toastMessage = null) }
@@ -174,7 +206,7 @@ class CollectionViewModel(
             is CollectionEvents.PreviewImageClick -> _state.update { it.copy(isPhotoPreviewDialog = true, previewPhotoUrl = event.url) }
             CollectionEvents.DismissPreviewDialog -> _state.update { it.copy(isPhotoPreviewDialog = false, previewPhotoUrl = null) }
             is CollectionEvents.RefreshBookmarkImage -> {
-                viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                viewModelScope.launch(ioDispatcher) {
                     `in`.iambhvsh.shelf.features.fetch.refreshStaleImage(
                         id = event.id,
                         url = event.url,
@@ -190,6 +222,17 @@ class CollectionViewModel(
 
     fun backToCollections() {
         collectionJob?.cancel()
-        _state.update { it.copy(selectedCollection = null, collectionBookmarks = emptyList()) }
+        tempBookmarkTagsJob?.cancel()
+        _state.update { it.copy(selectedCollection = null, collectionBookmarks = emptyList(), tempBookmark = null, tempBookmarkTags = emptyList()) }
+    }
+
+    fun clearTransientState() {
+        collectionJob?.cancel()
+        tempBookmarkTagsJob?.cancel()
+        synchronized(attemptedImageRefreshes) { attemptedImageRefreshes.clear() }
+        rawCollectionBookmarks = emptyList()
+        _state.value = CollectionState()
+        loadCollections()
+        loadTags()
     }
 }

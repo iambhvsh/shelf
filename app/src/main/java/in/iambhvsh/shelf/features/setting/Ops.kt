@@ -1,6 +1,7 @@
 package `in`.iambhvsh.shelf.features.setting
 
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -14,6 +15,7 @@ internal fun SettingViewModel.exportData() {
             val jsonString = backupManager.generateBackupJson()
             _state.update { it.copy(exportState = ExportState.Ready(jsonString)) }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(exportState = ExportState.Error(e.message ?: "Export failed")) }
         }
     }
@@ -37,6 +39,7 @@ internal fun SettingViewModel.importData(jsonString: String) {
                 )
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(importState = ImportState.Error(e.message ?: "Import failed")) }
         }
     }
@@ -49,6 +52,7 @@ internal fun SettingViewModel.exportBrowserData() {
             val html = backupManager.generateExportHtml()
             _state.update { it.copy(browserExportState = ExportState.Ready(html)) }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(browserExportState = ExportState.Error(e.message ?: "Export failed")) }
         }
     }
@@ -70,6 +74,7 @@ internal fun SettingViewModel.importBrowserBookmarks(html: String) {
                 )
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(browserImportState = BrowserImportState.Error(e.message ?: "Import failed")) }
         }
     }
@@ -96,7 +101,7 @@ internal fun formatLastBackupTime(millis: Long): String {
 }
 
 internal fun SettingViewModel.resetEverything() {
-    viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+    viewModelScope.launch(ioDispatcher) {
         val existing = database.bookmarkDao().getAllBookmarksOnce()
         existing.forEach { reminderManager.cancelReminder(it.id) }
         database.clearAllTables()
@@ -173,6 +178,7 @@ internal fun SettingViewModel.restoreTrashItem(id: Long) {
             }
             _state.update { it.copy(trashToastMessage = "Bookmark restored") }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(trashToastMessage = "Restore failed") }
         }
     }
@@ -190,6 +196,7 @@ internal fun SettingViewModel.deleteTrashItem(id: Long) {
                 )
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(trashToastMessage = "Delete failed") }
         }
     }
@@ -216,6 +223,7 @@ internal fun SettingViewModel.restoreSelectedTrash() {
                 )
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(trashToastMessage = "Restore failed") }
         }
     }
@@ -236,6 +244,7 @@ internal fun SettingViewModel.deletePermanentlySelected() {
                 )
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(showDeletePermanentlyDialog = false, trashToastMessage = "Delete failed") }
         }
     }
@@ -254,6 +263,7 @@ internal fun SettingViewModel.emptyTrash() {
                 )
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             _state.update { it.copy(showEmptyTrashDialog = false, trashToastMessage = "Failed to empty trash") }
         }
     }

@@ -6,17 +6,19 @@ import java.net.URLDecoder
 
 object UrlUtils {
     fun makeAbsoluteUrl(url: String, baseUrl: String): String = try {
+        val trimmed = url.trim()
         when {
-            url.startsWith("http") -> url
-            url.startsWith("//") -> "${URI.create(baseUrl).scheme}:$url"
-            url.startsWith("/") -> "${getBaseUrl(baseUrl).trimEnd('/')}$url"
-            else                -> {
+            trimmed.startsWith("http://", ignoreCase = true) ||
+                trimmed.startsWith("https://", ignoreCase = true) -> trimmed
+            trimmed.startsWith("//") -> "${URI.create(baseUrl).scheme}:$trimmed"
+            trimmed.startsWith("/") -> "${getBaseUrl(baseUrl).trimEnd('/')}$trimmed"
+            else -> {
                 val baseUri = URI.create(baseUrl)
                 val basePath = baseUri.path.substringBeforeLast('/', "")
-                "${baseUri.scheme}://${baseUri.authority}$basePath/$url"
+                "${baseUri.scheme}://${baseUri.authority}$basePath/$trimmed"
             }
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         url
     }
 
@@ -29,18 +31,61 @@ object UrlUtils {
         return runCatching { URLDecoder.decode(url, "UTF-8") }.getOrElse { url }
     }
 
+    fun ensureHttpScheme(rawUrl: String): String {
+        val trimmed = rawUrl.trim()
+        if (trimmed.isEmpty()) return ""
+        val cleaned = normalizeSchemeCasing(trimmed)
+        return if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) {
+            cleaned
+        } else {
+            "https://$cleaned"
+        }
+    }
+
+    fun normalizeUrlKey(url: String): String {
+        val normalized = normalizeSchemeCasing(url.trim())
+        return normalized.trimEnd('/')
+    }
+
     fun extractUrl(text: String): String {
         val trimmed = text.trim()
-        val urlRegex = Regex("""https?://[^\s]+""")
+        val urlRegex = Regex("""https?://\S+""", RegexOption.IGNORE_CASE)
         val match = urlRegex.find(trimmed)
         if (match != null) {
-            return match.value.trimEnd('.', ',', ';', '!', '?', ')', ']')
+            return normalizeSchemeCasing(trimTrailingUrlPunctuation(match.value))
         }
-        val fallback = trimmed.trimEnd('.', ',', ';', '!', '?', ')', ']')
-        return if (!fallback.startsWith("http://") && !fallback.startsWith("https://")) {
-            "https://$fallback"
-        } else {
-            fallback
+        val fallback = trimTrailingUrlPunctuation(trimmed)
+        return ensureHttpScheme(fallback)
+    }
+
+    private fun normalizeSchemeCasing(url: String): String {
+        return when {
+            url.startsWith("https://", ignoreCase = true) -> "https://" + url.substring(8)
+            url.startsWith("http://", ignoreCase = true) -> "http://" + url.substring(7)
+            else -> url
         }
+    }
+
+    private fun trimTrailingUrlPunctuation(raw: String): String {
+        var s = raw
+        while (s.isNotEmpty()) {
+            val last = s.last()
+            when {
+                last == '.' || last == ',' || last == ';' || last == '!' || last == '?' || last == ']' -> {
+                    s = s.dropLast(1)
+                }
+                last == ')' -> {
+                    val opens = s.count { it == '(' }
+                    val closes = s.count { it == ')' }
+                    if (closes > opens) {
+                        s = s.dropLast(1)
+                    } else {
+                        break
+                    }
+                }
+                else -> break
+            }
+        }
+        return s
     }
 }

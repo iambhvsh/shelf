@@ -13,20 +13,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
 
 class HomeViewModel(
     internal val repository: BookmarkRepository,
     internal val reminderManager: ReminderManager,
-    internal val updateManager: UpdateManager
+    internal val updateManager: UpdateManager,
+    internal val parser: LinkMetadataParser = LinkMetadataParser(),
+    internal val ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.IO,
+    internal val defaultDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.Default
 ) : ViewModel() {
     internal val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
-    internal val parser = LinkMetadataParser()
     internal var rawBookmarks: List<Bookmark> = emptyList()
     internal var bookmarkJob: Job? = null
     internal var tempBookmarkTagsJob: Job? = null
     internal var isFetchingMetadata = false
+    internal val startupMetadataSemaphore = Semaphore(4)
+    internal val attemptedStartupMetadataIds = mutableSetOf<Long>()
     internal val attemptedImageRefreshes = mutableSetOf<String>()
 
     init {
@@ -44,10 +49,10 @@ class HomeViewModel(
             }
             HomeEvents.SaveBookmark -> saveBookmark()
             HomeEvents.OnDialogDismissClick -> {
-                _state.update { it.copy(isDialog = !it.isDialog) }
+                _state.update { it.copy(isDialog = false, error = "") }
             }
             HomeEvents.FabClick -> {
-                _state.update { it.copy(isDialog = true) }
+                _state.update { it.copy(isDialog = true, error = "") }
             }
             is HomeEvents.PreviewImageClick -> {
                 _state.update {
@@ -106,6 +111,7 @@ class HomeViewModel(
             }
             HomeEvents.DeleteSelected -> deleteSelected()
             is HomeEvents.DeleteBookmark -> {
+                tempBookmarkTagsJob?.cancel()
                 viewModelScope.launch {
                     try {
                         reminderManager.cancelReminder(events.bookmark.id)
@@ -118,6 +124,8 @@ class HomeViewModel(
                                 tempBookmarkTags = emptyList()
                             )
                         }
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
                     } catch (e: Exception) {
                         _state.update { it.copy(error = e.message ?: "Delete failed") }
                     }
@@ -138,7 +146,7 @@ class HomeViewModel(
             is HomeEvents.AddToCollection -> addSelectedToCollection(events.collectionId)
             is HomeEvents.SetSortOrder -> {
                 viewModelScope.launch {
-                    val sorted = sortBookmarks(rawBookmarks, events.sortOrder)
+                    val sorted = sortBookmarks(rawBookmarks, events.sortOrder, defaultDispatcher)
                     _state.update {
                         it.copy(
                             sortOrder = events.sortOrder,
@@ -185,6 +193,11 @@ class HomeViewModel(
                 loadBookmarks()
             }
             is HomeEvents.DeleteTag -> {
+                val removedActiveFilter = events.tagId in _state.value.activeTagFilters
+                if (removedActiveFilter) {
+                    _state.update { it.copy(activeTagFilters = it.activeTagFilters - events.tagId) }
+                    loadBookmarks()
+                }
                 viewModelScope.launch { repository.deleteTag(events.tagId) }
             }
             is HomeEvents.ShowNoteEditor -> {
@@ -198,22 +211,28 @@ class HomeViewModel(
                 updateManager.downloadAndInstallUpdate()
             }
             is HomeEvents.HideNoteEditor -> {
-                _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
+                tempBookmarkTagsJob?.cancel()
+                _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null, tempBookmarkTags = emptyList()) }
             }
             is HomeEvents.UpdateNote -> {
+                tempBookmarkTagsJob?.cancel()
                 viewModelScope.launch {
                     val cleanNote = events.note?.trim()?.ifEmpty { null }
                     repository.updateNote(events.id, cleanNote)
-                    _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null) }
+                    _state.update { it.copy(showNoteEditor = false, noteEditorText = null, tempBookmark = null, tempBookmarkTags = emptyList()) }
                 }
             }
             is HomeEvents.ShowReminderPicker -> _state.update { it.copy(showReminderPicker = true, isBodySheet = false) }
-            is HomeEvents.HideReminderPicker -> _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+            is HomeEvents.HideReminderPicker -> {
+                tempBookmarkTagsJob?.cancel()
+                _state.update { it.copy(showReminderPicker = false, tempBookmark = null, tempBookmarkTags = emptyList()) }
+            }
             is HomeEvents.SetReminder -> {
+                tempBookmarkTagsJob?.cancel()
                 viewModelScope.launch {
                     repository.updateReminderTime(events.id, events.timeInMillis)
                     reminderManager.scheduleReminder(events.id, events.timeInMillis)
-                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null) }
+                    _state.update { it.copy(showReminderPicker = false, tempBookmark = null, tempBookmarkTags = emptyList()) }
                 }
             }
             is HomeEvents.CancelReminder -> {
@@ -221,23 +240,35 @@ class HomeViewModel(
                     repository.updateReminderTime(events.id, null)
                     reminderManager.cancelReminder(events.id)
                     _state.update {
-                        if (it.isBodySheet) it.copy(showReminderPicker = false)
-                        else it.copy(showReminderPicker = false, tempBookmark = null)
+                        if (it.isBodySheet) {
+                            it.copy(
+                                showReminderPicker = false,
+                                tempBookmark = it.tempBookmark?.takeIf { bm -> bm.id == events.id }?.copy(reminderTime = null)
+                                    ?: it.tempBookmark
+                            )
+                        } else {
+                            tempBookmarkTagsJob?.cancel()
+                            it.copy(showReminderPicker = false, tempBookmark = null, tempBookmarkTags = emptyList())
+                        }
                     }
                 }
             }
             is HomeEvents.ShowEditDialog -> {
                 _state.update { it.copy(showRenameDialog = true, tempBookmark = events.bookmark) }
             }
-            is HomeEvents.HideEditDialog -> _state.update { it.copy(showRenameDialog = false) }
+            is HomeEvents.HideEditDialog -> {
+                tempBookmarkTagsJob?.cancel()
+                _state.update { it.copy(showRenameDialog = false, tempBookmark = null, tempBookmarkTags = emptyList()) }
+            }
             is HomeEvents.UpdateBookmarkDetails -> {
+                tempBookmarkTagsJob?.cancel()
                 viewModelScope.launch {
                     repository.updateBookmarkDetails(events.id, events.title, events.description)
                 }
-                _state.update { it.copy(showRenameDialog = false) }
+                _state.update { it.copy(showRenameDialog = false, tempBookmark = null, tempBookmarkTags = emptyList()) }
             }
             is HomeEvents.RefreshBookmarkImage -> {
-                viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                viewModelScope.launch(ioDispatcher) {
                     `in`.iambhvsh.shelf.features.fetch.refreshStaleImage(
                         id = events.id,
                         url = events.url,
@@ -249,6 +280,16 @@ class HomeViewModel(
                 }
             }
             HomeEvents.ClearToast -> _state.update { it.copy(toastMessage = null) }
+            HomeEvents.ClearDuplicateToast -> _state.update { it.copy(duplicateToastKey = 0) }
         }
+    }
+
+    fun clearTransientState() {
+        tempBookmarkTagsJob?.cancel()
+        synchronized(attemptedStartupMetadataIds) { attemptedStartupMetadataIds.clear() }
+        synchronized(attemptedImageRefreshes) { attemptedImageRefreshes.clear() }
+        rawBookmarks = emptyList()
+        _state.value = HomeState()
+        loadBookmarks()
     }
 }

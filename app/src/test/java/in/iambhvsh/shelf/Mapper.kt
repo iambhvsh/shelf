@@ -104,4 +104,52 @@ class MapperTest {
         assertEquals(entity.id, mappedBack.id)
         assertEquals(entity.name, mappedBack.name)
     }
+
+    @Test
+    fun testCollectionEntityAndNullBookmarkFieldsMapCleanly() {
+        val colEntity = CollectionEntity(id = 99L, name = "Read Later", createdAt = 555L)
+        val colDomain = colEntity.toDomain()
+        assertEquals(99L, colDomain.id)
+        assertEquals("Read Later", colDomain.name)
+        assertEquals(0, colDomain.bookmarkCount)
+        assertFalse(colDomain.isVirtual)
+
+        val roundTrip = colDomain.toEntity()
+        assertEquals(99L, roundTrip.id)
+        assertEquals("Read Later", roundTrip.name)
+
+        val sparseEntity = BookmarkEntity(
+            id = 5L,
+            url = "https://minimal.org",
+            title = null,
+            description = null,
+            imageUrl = null,
+            isHidden = true
+        )
+        val sparseDomain = sparseEntity.toDomain()
+        assertNull(sparseDomain.title)
+        assertNull(sparseDomain.description)
+        assertNull(sparseDomain.imageUrl)
+        assertFalse(sparseDomain.isPinned)
+        assertNull(sparseDomain.note)
+        assertNull(sparseDomain.reminderTime)
+        assertFalse(sparseDomain.toEntity().isHidden)
+
+        val delimiterOnlyPreviews = CollectionWithCount(
+            id = 3L,
+            name = "Blank Previews",
+            createdAt = 1L,
+            bookmarkCount = 1,
+            previewUrls = "|||   |||"
+        )
+        assertTrue(delimiterOnlyPreviews.toDomain().previewUrls.isEmpty())
+
+        val allHidden = CollectionWithBookmarks(
+            collection = CollectionEntity(id = 4L, name = "Archived"),
+            bookmarks = listOf(
+                BookmarkEntity(id = 1L, url = "https://x.com", title = null, description = null, imageUrl = null, isHidden = true)
+            )
+        )
+        assertEquals(0, allHidden.toDomain().bookmarkCount)
+    }
 }

@@ -2,10 +2,10 @@ package `in`.iambhvsh.shelf.features.setting
 
 import android.content.Context
 
-class ChangelogLoader(
+open class ChangelogLoader(
     private val context: Context
 ) {
-    fun load(): String {
+    open fun load(): String {
         return try {
             context.assets
                 .open("changelog.md")

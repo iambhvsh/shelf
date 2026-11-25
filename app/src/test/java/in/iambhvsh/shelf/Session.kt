@@ -1,5 +1,6 @@
 package `in`.iambhvsh.shelf
 
+import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -7,9 +8,17 @@ import org.junit.Test
 
 class SessionManagerTest {
 
+    private var fakeElapsedRealtime = 10_000L
+
     @Before
     fun setUp() {
-        SessionManager.isUnlocked = false
+        SessionManager.reset()
+        SessionManager.elapsedRealtimeProvider = { fakeElapsedRealtime }
+    }
+
+    @After
+    fun tearDown() {
+        SessionManager.reset()
     }
 
     @Test
@@ -36,5 +45,72 @@ class SessionManagerTest {
     fun testAppLockDisabled_alwaysReturnsFalse() {
         SessionManager.isUnlocked = false
         assertFalse(SessionManager.shouldRequireAuthentication(appLockEnabled = false, timeout = 0L))
+    }
+
+    @Test
+    fun testImmediateTimeout_relocksOnAnyBackgroundRoundTrip() {
+        SessionManager.isUnlocked = true
+        SessionManager.onAppBackgrounded()
+        SessionManager.onAppForegrounded(appLockEnabled = true, timeout = 0L)
+        assertFalse(SessionManager.isUnlocked)
+        assertTrue(SessionManager.shouldRequireAuthentication(appLockEnabled = true, timeout = 0L))
+    }
+
+    @Test
+    fun testWithinTimeout_preservesUnlockedSession() {
+        SessionManager.isUnlocked = true
+        SessionManager.onAppBackgrounded()
+
+        fakeElapsedRealtime += 59_999L
+        SessionManager.onAppForegrounded(appLockEnabled = true, timeout = 60_000L)
+        assertTrue(SessionManager.isUnlocked)
+
+        fakeElapsedRealtime += 1L
+        SessionManager.onAppBackgrounded()
+        fakeElapsedRealtime += 60_000L
+        SessionManager.onAppForegrounded(appLockEnabled = true, timeout = 60_000L)
+        assertTrue(SessionManager.isUnlocked)
+    }
+
+    @Test
+    fun testExceededTimeout_relocksSession() {
+        SessionManager.isUnlocked = true
+        SessionManager.onAppBackgrounded()
+
+        fakeElapsedRealtime += 60_001L
+        SessionManager.onAppForegrounded(appLockEnabled = true, timeout = 60_000L)
+        assertFalse(SessionManager.isUnlocked)
+        assertTrue(SessionManager.shouldRequireAuthentication(appLockEnabled = true, timeout = 60_000L))
+    }
+
+    @Test
+    fun testTogglingAppLockOff_unlocksEvenAfterPriorLockout() {
+        SessionManager.isUnlocked = false
+        SessionManager.onAppForegrounded(appLockEnabled = false, timeout = 0L)
+        assertTrue(SessionManager.isUnlocked)
+        assertFalse(SessionManager.shouldRequireAuthentication(appLockEnabled = false, timeout = 0L))
+    }
+
+    @Test
+    fun testExactTimeoutBoundary_neverBackgrounded_negativeTimeout_andReset() {
+        SessionManager.onAppForegrounded(appLockEnabled = true, timeout = 60_000L)
+        assertFalse(SessionManager.isUnlocked)
+        assertTrue(SessionManager.shouldRequireAuthentication(appLockEnabled = true, timeout = 60_000L))
+
+        SessionManager.isUnlocked = true
+        SessionManager.onAppBackgrounded()
+        fakeElapsedRealtime += 60_000L
+        SessionManager.onAppForegrounded(appLockEnabled = true, timeout = 60_000L)
+        assertTrue(SessionManager.isUnlocked)
+        assertFalse(SessionManager.shouldRequireAuthentication(appLockEnabled = true, timeout = 60_000L))
+
+        SessionManager.onAppBackgrounded()
+        SessionManager.onAppForegrounded(appLockEnabled = true, timeout = -1L)
+        assertFalse(SessionManager.isUnlocked)
+
+        SessionManager.isUnlocked = true
+        SessionManager.reset()
+        assertFalse(SessionManager.isUnlocked)
+        assertTrue(SessionManager.shouldRequireAuthentication(appLockEnabled = true, timeout = 60_000L))
     }
 }

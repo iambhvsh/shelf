@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -63,7 +64,9 @@ fun CollectionScreen(
 
     val itemsToDisplay = filteredCollections
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val topPadding = statusBarTop + 68.dp
+    val bottomPadding = navBarBottom + 100.dp
 
     Box(
         modifier = Modifier
@@ -91,7 +94,7 @@ fun CollectionScreen(
             LazyVerticalStaggeredGrid(
                 modifier = Modifier.fillMaxSize(),
                 columns = StaggeredGridCells.Adaptive(160.dp),
-                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = 108.dp),
+                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = topPadding, bottom = bottomPadding),
                 verticalItemSpacing = 6.dp,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {

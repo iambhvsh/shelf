@@ -46,4 +46,28 @@ class NavigationRouteTest {
         assertFalse(canPopDeepScreen(isDeepScreen = false, currentEntryId = "entry-collections", displayedEntryId = "entry-collections"))
         assertFalse(canPopDeepScreen(isDeepScreen = true, currentEntryId = null, displayedEntryId = null))
     }
+
+    @Test
+    fun testAllAppRoutes_serializeAndDeserializeViaKotlinxSerialization() {
+        val json = kotlinx.serialization.json.Json
+        val allRoutes: List<AppRoute> = listOf(
+            AppRoute.Home,
+            AppRoute.Collections,
+            AppRoute.Settings,
+            AppRoute.CollectionDetail(42L),
+            AppRoute.SettingsAppearance,
+            AppRoute.SettingsGeneral,
+            AppRoute.SettingsSecurity,
+            AppRoute.SettingsData,
+            AppRoute.SettingsAbout,
+            AppRoute.SettingsTrash
+        )
+        assertEquals(allRoutes.map { it.route }.toSet().size, allRoutes.size)
+
+        val detail = AppRoute.CollectionDetail(42L)
+        val encoded = json.encodeToString(AppRoute.CollectionDetail.serializer(), detail)
+        val decoded = json.decodeFromString(AppRoute.CollectionDetail.serializer(), encoded)
+        assertEquals(42L, decoded.collectionId)
+        assertEquals("collection_detail/42", decoded.route)
+    }
 }

@@ -54,9 +54,11 @@ class BookmarkParser {
                 }
                 "bookmark" -> {
                     val url = tag.value.trim().replaceHtmlEntities()
+                    val isHttpScheme = url.startsWith("http://", ignoreCase = true) ||
+                        url.startsWith("https://", ignoreCase = true)
                     val rawTitle = tag.extra
                         .replace(Regex("<[^>]+>"), "").trim().replaceHtmlEntities()
-                    if (url.isNotBlank()) {
+                    if (url.isNotBlank() && isHttpScheme) {
                         val currentPath = if (folderStack.isNotEmpty()) {
                             folderStack.filterNotNull().filter { it.isNotBlank() }.joinToString("/").ifBlank { null }
                         } else null

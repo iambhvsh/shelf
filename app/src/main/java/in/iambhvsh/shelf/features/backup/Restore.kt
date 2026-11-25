@@ -12,6 +12,7 @@ import `in`.iambhvsh.shelf.data.TagEntity
 import `in`.iambhvsh.shelf.data.dao.BookmarkDao
 import `in`.iambhvsh.shelf.data.dao.CollectionDao
 import `in`.iambhvsh.shelf.data.dao.TagDao
+import `in`.iambhvsh.shelf.features.fetch.UrlUtils
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 
@@ -98,13 +99,18 @@ suspend fun importBackupFromJson(
         if (trailingText.isNotEmpty()) {
             val extra = extractTrailingBookmarks(trailingText, json)
             for (eb in extra) {
-                if (allBookmarks.none { it.url == eb.url }) {
+                val ebKey = UrlUtils.normalizeUrlKey(eb.url)
+                if (allBookmarks.none { UrlUtils.normalizeUrlKey(it.url) == ebKey }) {
                     allBookmarks.add(eb)
                 }
             }
         }
 
-        val existingInDb = bookmarkDao.getAllBookmarksOnce().associateBy { it.url }.toMutableMap()
+        val existingInDb = mutableMapOf<String, BookmarkEntity>()
+        for (entity in bookmarkDao.getAllBookmarksOnce()
+            .sortedWith(compareBy<BookmarkEntity> { it.isHidden }.thenByDescending { it.id })) {
+            existingInDb.putIfAbsent(UrlUtils.normalizeUrlKey(entity.url), entity)
+        }
 
         val existingTags = tagDao.getAllTagsOnce().associateBy { it.name }
         val tagNameToId = existingTags.mapValues { it.value.id }.toMutableMap()
@@ -132,14 +138,26 @@ suspend fun importBackupFromJson(
         val urlToBookmarkId = mutableMapOf<String, Long>()
 
         for (b in allBookmarks) {
-            val existing = existingInDb[b.url]
+            val normalizedKey = UrlUtils.normalizeUrlKey(b.url)
+            val existing = existingInDb[normalizedKey]
             val bookmarkId: Long
             if (existing != null) {
                 bookmarkId = existing.id
                 urlToBookmarkId[b.url] = bookmarkId
-                if (existing.isHidden) {
+                urlToBookmarkId[normalizedKey] = bookmarkId
+                if (existing.isHidden && !b.isHidden) {
                     bookmarkDao.restoreBookmark(
                         id = existing.id,
+                        title = b.title,
+                        description = b.description,
+                        imageUrl = b.imageUrl,
+                        createdAt = b.createdAt,
+                        isPinned = b.isPinned,
+                        note = b.note,
+                        reminderTime = b.reminderTime
+                    )
+                    existingInDb[normalizedKey] = existing.copy(
+                        isHidden = false,
                         title = b.title,
                         description = b.description,
                         imageUrl = b.imageUrl,
@@ -167,7 +185,8 @@ suspend fun importBackupFromJson(
                     )
                 )
                 urlToBookmarkId[b.url] = bookmarkId
-                existingInDb[b.url] = BookmarkEntity(
+                urlToBookmarkId[normalizedKey] = bookmarkId
+                existingInDb[normalizedKey] = BookmarkEntity(
                     id = bookmarkId,
                     url = b.url,
                     title = b.title,
@@ -215,7 +234,10 @@ suspend fun importBackupFromJson(
             if (collectionId > 0) {
                 restoredCollections++
                 c.bookmarkUrls.forEach { url ->
-                    val bmId = urlToBookmarkId[url] ?: existingInDb[url]?.id
+                    val normalizedUrl = UrlUtils.normalizeUrlKey(url)
+                    val bmId = urlToBookmarkId[url]
+                        ?: urlToBookmarkId[normalizedUrl]
+                        ?: existingInDb[normalizedUrl]?.id
                     if (bmId != null && bmId > 0) {
                         collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bmId, collectionId))
                     } else {

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -45,7 +46,9 @@ fun SettingsMainScreen(
     modifier: Modifier = Modifier
 ) {
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val topPadding = statusBarTop + 68.dp
+    val bottomPadding = navBarBottom + 100.dp
 
     val generalGroup = listOf(
         SettingsCategory(
@@ -87,7 +90,7 @@ fun SettingsMainScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
         verticalArrangement = Arrangement.spacedBy(ShelfShapes.Gap),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = topPadding + 8.dp, bottom = 108.dp)
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = topPadding + 8.dp, bottom = bottomPadding)
     ) {
         items(generalGroup.size, key = { generalGroup[it].title }) { index ->
             val item = generalGroup[index]

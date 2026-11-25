@@ -48,6 +48,7 @@ fun TagManagerSheet(
         Column(
             modifier = Modifier
                 .heightIn(max = screenHeight * 0.9f)
+                .imePadding()
                 .padding(bottom = 24.dp)
         ) {
             Box(

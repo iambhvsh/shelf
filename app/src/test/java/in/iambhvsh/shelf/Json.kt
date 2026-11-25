@@ -124,4 +124,16 @@ class JsonTest {
         assertEquals("https://extra2.com", extracted[1].url)
         assertEquals("Extra 2", extracted[1].title)
     }
+
+    @Test
+    fun testSanitizeJson_handlesNestedBracesInsideStringsAndInvalidPayloads() {
+        val noisy = """noise[[[ {"schemaVersion":3,"bookmarks":[{"url":"https://a.dev","title":"Code {x}"}],"collections":[],"tags":[]} trailing}"""
+        val sanitized = sanitizeJson(noisy)
+        assertNotNull(sanitized)
+        val decoded = json.decodeFromString<BackupData>(sanitized!!)
+        assertEquals("Code {x}", decoded.bookmarks.single().title)
+
+        assertNull(sanitizeJson("""{"unclosed":"brace"""))
+        assertTrue(extractTrailingBookmarks("""{"broken":true} {"url":"https://ok.dev"}""", json).single().url == "https://ok.dev")
+    }
 }

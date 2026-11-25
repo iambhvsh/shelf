@@ -26,11 +26,27 @@ abstract class BookmarkDatabase : RoomDatabase() {
     abstract fun tagDao(): TagDao
     
     companion object {
+        private fun hasColumn(db: SupportSQLiteDatabase, table: String, column: String): Boolean {
+            db.query("PRAGMA table_info(`$table`)").use { cursor ->
+                val nameIndex = cursor.getColumnIndex("name")
+                if (nameIndex < 0) return false
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(nameIndex) == column) return true
+                }
+            }
+            return false
+        }
+
         val MIGRATION_1_4 = object : Migration(1, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `bookmarks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `url` TEXT NOT NULL, `title` TEXT, `description` TEXT, `imageUrl` TEXT, `createdAt` INTEGER NOT NULL, `isHidden` INTEGER NOT NULL DEFAULT 0)")
+                if (!hasColumn(db, "bookmarks", "isHidden")) {
+                    db.execSQL("ALTER TABLE `bookmarks` ADD COLUMN `isHidden` INTEGER NOT NULL DEFAULT 0")
+                }
                 db.execSQL("CREATE TABLE IF NOT EXISTS `collections` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)")
                 db.execSQL("CREATE TABLE IF NOT EXISTS `bookmark_collection_cross_ref` (`bookmarkId` INTEGER NOT NULL, `collectionId` INTEGER NOT NULL, PRIMARY KEY(`bookmarkId`, `collectionId`), FOREIGN KEY(`bookmarkId`) REFERENCES `bookmarks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`collectionId`) REFERENCES `collections`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_bookmark_collection_cross_ref_bookmarkId` ON `bookmark_collection_cross_ref` (`bookmarkId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_bookmark_collection_cross_ref_collectionId` ON `bookmark_collection_cross_ref` (`collectionId`)")
             }
         }
 

@@ -27,44 +27,56 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
         val bookmarkId = intent.getLongExtra(ReminderManager.EXTRA_BOOKMARK_ID, -1L)
         if (bookmarkId == -1L) return
 
+        val pendingResult = goAsync()
         scope.launch {
             try {
-                bookmarkDao.updateReminderTime(bookmarkId, null)
-            } catch (_: Exception) {}
+                val bookmark = runCatching { bookmarkDao.getBookmarkById(bookmarkId) }.getOrNull()
+                runCatching { bookmarkDao.updateReminderTime(bookmarkId, null) }
+
+                val notificationManager =
+                    context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return@launch
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val channel = NotificationChannel(
+                        CHANNEL_ID,
+                        "Bookmark Reminders",
+                        NotificationManager.IMPORTANCE_DEFAULT
+                    )
+                    notificationManager.createNotificationChannel(channel)
+                }
+
+                val activityIntent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    putExtra("OPEN_BOOKMARK_ID", bookmarkId)
+                }
+
+                val pendingIntent = PendingIntent.getActivity(
+                    context,
+                    bookmarkId.toInt(),
+                    activityIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                val message = bookmark?.title?.takeIf { it.isNotBlank() }
+                    ?: bookmark?.url?.takeIf { it.isNotBlank() }
+                    ?: "Don't forget to read your saved bookmark!"
+
+                val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_notification)
+                    .setContentTitle("Shelf Reminder")
+                    .setContentText(message)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
+                    .build()
+
+                try {
+                    notificationManager.notify(bookmarkId.toInt(), notification)
+                } catch (_: SecurityException) {
+                }
+            } finally {
+                pendingResult.finish()
+            }
         }
-
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Bookmark Reminders",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        val activityIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("OPEN_BOOKMARK_ID", bookmarkId)
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            bookmarkId.toInt(),
-            activityIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Shelf Reminder")
-            .setContentText("Don't forget to read your saved bookmark!")
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .build()
-
-        notificationManager.notify(bookmarkId.toInt(), notification)
     }
 
     companion object {

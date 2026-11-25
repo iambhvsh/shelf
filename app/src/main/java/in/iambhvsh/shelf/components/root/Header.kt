@@ -61,7 +61,7 @@ fun ShelfHeader(
     onNewBookmarkClick: () -> Unit = {},
     onNewCollectionClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
-    onSortClick: () -> Unit = {},
+    onSortClick: (() -> Unit)? = {},
     onCloseSelection: () -> Unit = {},
     onSelectAll: () -> Unit = {},
     onDeselectAll: () -> Unit = {},

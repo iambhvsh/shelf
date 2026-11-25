@@ -53,6 +53,7 @@ sealed class HomeEvents {
     
     data class OpenBookmarkById(val id: Long) : HomeEvents()
     data class RefreshBookmarkImage(val id: Long, val url: String, val failedImageUrl: String?) : HomeEvents()
-    
+
     object ClearToast : HomeEvents()
+    object ClearDuplicateToast : HomeEvents()
 }

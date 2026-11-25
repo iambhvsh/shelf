@@ -57,7 +57,7 @@ interface BookmarkDao {
     @Query("SELECT * FROM bookmarks WHERE (url = :url OR RTRIM(url, '/') = RTRIM(:url, '/')) AND isHidden = 1 LIMIT 1")
     suspend fun findHiddenByUrl(url: String): BookmarkEntity?
     
-    @Query("SELECT * FROM bookmarks WHERE (url = :url OR RTRIM(url, '/') = RTRIM(:url, '/')) LIMIT 1")
+    @Query("SELECT * FROM bookmarks WHERE (url = :url OR RTRIM(url, '/') = RTRIM(:url, '/')) ORDER BY isHidden ASC, id DESC LIMIT 1")
     suspend fun findByUrl(url: String): BookmarkEntity?
 
     @Query("UPDATE bookmarks SET title = :title, description = :description WHERE id = :id")

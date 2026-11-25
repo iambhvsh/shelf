@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.nav.AppRoute
 import `in`.iambhvsh.shelf.nav.Router
 import `in`.iambhvsh.shelf.screens.collection.CollectionDetailScreen
@@ -26,6 +27,19 @@ import `in`.iambhvsh.shelf.screens.setting.SettingsGeneralScreen
 import `in`.iambhvsh.shelf.screens.setting.SettingsMainScreen
 import `in`.iambhvsh.shelf.screens.setting.SettingsSecurityScreen
 import `in`.iambhvsh.shelf.screens.setting.SettingsTrashScreen
+
+internal fun filterCollectionSearchBookmarks(
+    bookmarks: List<Bookmark>,
+    query: String
+): List<Bookmark> {
+    if (query.isBlank()) return bookmarks
+    return bookmarks.filter { bm ->
+        (bm.title?.contains(query, ignoreCase = true) == true) ||
+            bm.url.contains(query, ignoreCase = true) ||
+            (bm.description?.contains(query, ignoreCase = true) == true) ||
+            (bm.note?.contains(query, ignoreCase = true) == true)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,11 +68,7 @@ fun RootBody(
         isCollectionDetail
     ) {
         if (!isCollectionSearching || !isCollectionDetail) null
-        else if (collectionSearchQuery.isBlank()) collectionState.collectionBookmarks
-        else collectionState.collectionBookmarks.filter { bm ->
-            (bm.title?.contains(collectionSearchQuery, ignoreCase = true) ?: false) ||
-                    bm.url.contains(collectionSearchQuery, ignoreCase = true)
-        }
+        else filterCollectionSearchBookmarks(collectionState.collectionBookmarks, collectionSearchQuery)
     }
 
     Router(

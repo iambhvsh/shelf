@@ -23,6 +23,19 @@ import `in`.iambhvsh.shelf.features.setting.SettingEvents
 import `in`.iambhvsh.shelf.features.setting.SettingState
 import `in`.iambhvsh.shelf.features.setting.SettingViewModel
 
+internal fun isAllCollectionsSelected(
+    collections: List<Collection>,
+    selectedIds: Set<Long>
+): Boolean {
+    val selectableIds = collections.filter { !it.isVirtual }.map { it.id }
+    return selectableIds.isNotEmpty() && selectedIds.containsAll(selectableIds)
+}
+
+internal fun canSortCurrentScreen(
+    currentTab: Int,
+    isCollectionDetail: Boolean
+): Boolean = currentTab == 0 || isCollectionDetail
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootToolbar(
@@ -68,7 +81,7 @@ fun RootToolbar(
             trash.isNotEmpty() && settingState.selectedTrashIds.size == trash.size
         }
         state.isSelectionMode -> state.bookmarkData.isNotEmpty() && state.selectedIds.size == state.bookmarkData.size
-        collectionState.isSelectionMode -> collectionState.collections.isNotEmpty() && collectionState.selectedIds.size == collectionState.collections.size
+        collectionState.isSelectionMode -> isAllCollectionsSelected(collectionState.collections, collectionState.selectedIds)
         collectionState.isDetailSelectionMode -> collectionState.collectionBookmarks.isNotEmpty() && collectionState.detailSelectedIds.size == collectionState.collectionBookmarks.size
         else -> false
     }
@@ -125,10 +138,12 @@ fun RootToolbar(
                     }
                 }
             },
-            onSortClick = {
-                if (currentTab == 0) viewModel.homeEvents(HomeEvents.ShowSortSheet)
-                else collectionViewModel.onEvent(CollectionEvents.ShowSortSheet)
-            },
+            onSortClick = if (canSortCurrentScreen(currentTab, isCollectionDetail)) {
+                {
+                    if (currentTab == 0) viewModel.homeEvents(HomeEvents.ShowSortSheet)
+                    else collectionViewModel.onEvent(CollectionEvents.ShowSortSheet)
+                }
+            } else null,
             onCloseSelection = {
                 when {
                     isTrashSelection -> settingViewModel?.onEvent(SettingEvents.ClearTrashSelection)

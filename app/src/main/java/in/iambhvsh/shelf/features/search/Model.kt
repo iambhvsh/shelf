@@ -35,7 +35,7 @@ class SearchViewModel(
         val query = _state.value.searchQuery
         searchJob?.cancel()
         if (query.isBlank()) {
-            _state.update { it.copy(searchResults = emptyList(), isLoading = false) }
+            _state.update { it.copy(searchResults = emptyList(), isLoading = false, error = "") }
             return
         }
 
@@ -47,9 +47,9 @@ class SearchViewModel(
             }
             flow.collect { resource ->
                 when (resource) {
-                    is Resource.Loading -> _state.update { it.copy(isLoading = true) }
+                    is Resource.Loading -> _state.update { it.copy(isLoading = true, error = "") }
                     is Resource.Error -> _state.update { it.copy(isLoading = false, error = resource.errorMessage ?: "Error") }
-                    is Resource.Success -> _state.update { it.copy(isLoading = false, searchResults = resource.data ?: emptyList()) }
+                    is Resource.Success -> _state.update { it.copy(isLoading = false, searchResults = resource.data ?: emptyList(), error = "") }
                 }
             }
         }
