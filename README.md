@@ -20,6 +20,10 @@ A fast, private, offline-first bookmark manager for Android.
   <a href="https://rookieenough.github.io/Orion-Data/redirect.html?id=shelf"><img src="https://img.shields.io/badge/Get%20it%20on-Orion%20Store-8B5CF6?style=plastic&logo=android&logoColor=white" alt="Get it on Orion Store"></a>
 </p>
 
+<p>
+  <a href="https://alternativeto.net/software/shelf-by-iambhvsh/about/?utm_source=badge&utm_medium=referral"><img src="https://alternativeto.net/static/badges/badge-wide-color.svg" alt="Shelf | AlternativeTo"></a>
+</p>
+
 [Website](https://shelf.iambhvsh.in) · [Changelog](https://github.com/iambhvsh/shelf/releases) · [Report a bug](https://github.com/iambhvsh/shelf/issues)
 
 </div>
