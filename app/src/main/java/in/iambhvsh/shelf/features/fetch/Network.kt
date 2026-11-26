@@ -10,11 +10,14 @@ class NetworkFetcher(
 ) {
 
     companion object {
+        private const val MAX_HTML_BYTES = 2 * 1024 * 1024
+
         private val client = OkHttpClient.Builder()
             .followRedirects(true)
             .followSslRedirects(true)
             .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
             .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+            .callTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
             .build()
     }
 
@@ -30,15 +33,28 @@ class NetworkFetcher(
                 if (!response.isSuccessful) return null
 
                 val contentType = response.header("Content-Type") ?: ""
-                if (!contentType.contains("text/html", ignoreCase = true)) {
+                val isSupportedHtml = contentType.contains("text/html", ignoreCase = true) ||
+                    contentType.contains("application/xhtml+xml", ignoreCase = true)
+                if (!isSupportedHtml) {
                     return null
                 }
 
                 val finalUrl = response.request.url.toString()
-                
-                response.body.byteStream().use { stream ->
-                    Jsoup.parse(stream, null, finalUrl)
+                val charsetName = response.body.contentType()?.charset()?.name()
+
+                val bytes = response.body.byteStream().use { stream ->
+                    val out = java.io.ByteArrayOutputStream()
+                    val buf = ByteArray(8192)
+                    var total = 0
+                    while (total < MAX_HTML_BYTES) {
+                        val read = stream.read(buf, 0, minOf(buf.size, MAX_HTML_BYTES - total))
+                        if (read <= 0) break
+                        out.write(buf, 0, read)
+                        total += read
+                    }
+                    out.toByteArray()
                 }
+                Jsoup.parse(java.io.ByteArrayInputStream(bytes), charsetName, finalUrl)
             }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e

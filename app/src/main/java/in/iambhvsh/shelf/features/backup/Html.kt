@@ -38,7 +38,8 @@ internal suspend fun exportBookmarksToHtml(
         sb.appendLine("<DT><H3>${escapeHtml(c.name)}</H3>")
         sb.appendLine("<DL><p>")
         for (bm in bookmarks.filter { it.id in ids }) {
-            sb.appendLine("<DT><A HREF=\"${escapeHtml(bm.url)}\"${if (bm.title != null) ">${escapeHtml(bm.title)}" else ">${escapeHtml(bm.url)}"}</A>")
+            val label = bm.title?.takeIf { it.isNotBlank() } ?: bm.url
+            sb.appendLine("<DT><A HREF=\"${escapeHtml(bm.url)}\">${escapeHtml(label)}</A>")
         }
         sb.appendLine("</DL><p>")
     }
@@ -48,7 +49,8 @@ internal suspend fun exportBookmarksToHtml(
         sb.appendLine("<DT><H3>Uncategorized</H3>")
         sb.appendLine("<DL><p>")
         for (bm in unassigned) {
-            sb.appendLine("<DT><A HREF=\"${escapeHtml(bm.url)}\"${if (bm.title != null) ">${escapeHtml(bm.title)}" else ">${escapeHtml(bm.url)}"}</A>")
+            val label = bm.title?.takeIf { it.isNotBlank() } ?: bm.url
+            sb.appendLine("<DT><A HREF=\"${escapeHtml(bm.url)}\">${escapeHtml(label)}</A>")
         }
         sb.appendLine("</DL><p>")
     }

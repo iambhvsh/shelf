@@ -49,8 +49,8 @@ fun EditBookmarkSheet(
     onDismissRequest: () -> Unit,
     onSaveClick: (String?, String?) -> Unit
 ) {
-    var title by remember { mutableStateOf(bookmark.title ?: "") }
-    var description by remember { mutableStateOf(bookmark.description ?: "") }
+    var title by remember(bookmark.id) { mutableStateOf(bookmark.title ?: "") }
+    var description by remember(bookmark.id) { mutableStateOf(bookmark.description ?: "") }
     val focusRequester = remember { FocusRequester() }
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp

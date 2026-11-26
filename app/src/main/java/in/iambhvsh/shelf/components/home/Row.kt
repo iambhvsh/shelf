@@ -176,9 +176,10 @@ fun BookmarkListItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp)
-                        .clickable {
-                            if (isSelectionMode) onLongClick() else onNoteClick()
-                        }
+                        .combinedClickable(
+                            onClick = { if (isSelectionMode) onLongClick() else onNoteClick() },
+                            onLongClick = onLongClick
+                        )
                 ) {
                     Text(
                         text = note,
@@ -202,9 +203,10 @@ fun BookmarkListItem(
                     .width(140.dp)
                     .aspectRatio(imageAspectRatio)
                     .clip(MaterialTheme.shapes.largeIncreased)
-                    .clickable {
-                        if (isSelectionMode) onLongClick() else photoClickUrl(imageUrl)
-                    },
+                    .combinedClickable(
+                        onClick = { if (isSelectionMode) onLongClick() else photoClickUrl(imageUrl) },
+                        onLongClick = onLongClick
+                    ),
                 onError = {
                     imageFailed = true
                     onImageFailed?.invoke()

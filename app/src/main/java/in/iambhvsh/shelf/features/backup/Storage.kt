@@ -30,28 +30,36 @@ internal fun writeBackupToStorage(
     context: Context,
     jsonString: String,
     customUriStr: String?
-): Long {
-    val backupDir = File(context.filesDir, BACKUP_DIR_NAME)
-    backupDir.mkdirs()
-    val internalFile = File(backupDir, BACKUP_FILE_NAME)
-    internalFile.writeText(jsonString)
+): Long? {
+    val internalWritten = runCatching {
+        val backupDir = File(context.filesDir, BACKUP_DIR_NAME)
+        backupDir.mkdirs()
+        val internalFile = File(backupDir, BACKUP_FILE_NAME)
+        val tempFile = File(backupDir, "$BACKUP_FILE_NAME.tmp")
+        tempFile.writeText(jsonString)
+        if (!tempFile.renameTo(internalFile)) {
+            internalFile.writeText(jsonString)
+            tempFile.delete()
+        }
+        true
+    }.getOrDefault(false)
 
-    if (customUriStr != null) {
-        writeToCustomUri(context, jsonString, customUriStr)
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        writeToDownloads(context, jsonString)
+    val externalSucceeded = when {
+        customUriStr != null -> writeToCustomUri(context, jsonString, customUriStr)
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> writeToDownloads(context, jsonString)
+        else -> true
     }
 
-    return System.currentTimeMillis()
+    return if (internalWritten && externalSucceeded) System.currentTimeMillis() else null
 }
 
-private fun writeToCustomUri(context: Context, jsonString: String, uriString: String) {
-    try {
+private fun writeToCustomUri(context: Context, jsonString: String, uriString: String): Boolean {
+    return try {
         val treeUri = android.net.Uri.parse(uriString)
         val dir = DocumentFile.fromTreeUri(context, treeUri)
         if (dir == null || !dir.exists() || !dir.canWrite()) {
             showBackupErrorToast(context)
-            return
+            return false
         }
 
         var backupFile = dir.findFile(BACKUP_FILE_NAME)
@@ -60,15 +68,24 @@ private fun writeToCustomUri(context: Context, jsonString: String, uriString: St
         }
 
         if (backupFile != null) {
-            context.contentResolver.openOutputStream(backupFile.uri, "wt")?.use { output ->
-                output.write(jsonString.toByteArray())
+            val stream = context.contentResolver.openOutputStream(backupFile.uri, "wt")
+            if (stream != null) {
+                stream.use { output ->
+                    output.write(jsonString.toByteArray())
+                }
+                true
+            } else {
+                showBackupErrorToast(context)
+                false
             }
         } else {
             showBackupErrorToast(context)
+            false
         }
     } catch (e: Exception) {
         e.printStackTrace()
         showBackupErrorToast(context)
+        false
     }
 }
 
@@ -83,8 +100,8 @@ private fun showBackupErrorToast(context: Context) {
 }
 
 @SuppressLint("NewApi")
-private fun writeToDownloads(context: Context, jsonString: String) {
-    try {
+private fun writeToDownloads(context: Context, jsonString: String): Boolean {
+    return try {
         val collectionUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI
         val selection = """
             ${MediaStore.Downloads.DISPLAY_NAME} = ?
@@ -122,12 +139,14 @@ private fun writeToDownloads(context: Context, jsonString: String) {
             context.contentResolver.insert(collectionUri, contentValues)
         }
 
-        uri?.let {
-            context.contentResolver.openOutputStream(it, "wt")?.use { output ->
-                output.write(jsonString.toByteArray())
-            }
+        if (uri == null) return false
+        val stream = context.contentResolver.openOutputStream(uri, "wt") ?: return false
+        stream.use { output ->
+            output.write(jsonString.toByteArray())
         }
+        true
     } catch (e: Exception) {
         e.printStackTrace()
+        false
     }
 }

@@ -1,7 +1,9 @@
 package `in`.iambhvsh.shelf.features.setting
 
 import androidx.lifecycle.viewModelScope
+import `in`.iambhvsh.shelf.util.Resource
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -102,11 +104,12 @@ internal fun formatLastBackupTime(millis: Long): String {
 
 internal fun SettingViewModel.resetEverything() {
     viewModelScope.launch(ioDispatcher) {
+        backupManager.stopAutoBackup()
+        backupManager.clearInternalBackup()
         val existing = database.bookmarkDao().getAllBookmarksOnce()
         existing.forEach { reminderManager.cancelReminder(it.id) }
         database.clearAllTables()
         settingsRepository.resetToDefaults()
-        backupManager.stopAutoBackup()
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
             _state.update { current ->
                 SettingState(
@@ -173,8 +176,11 @@ internal fun SettingViewModel.restoreTrashItem(id: Long) {
             bookmarkRepository.unhideBookmarks(listOf(id))
             val bm = bookmarkRepository.getBookmarkById(id)
             val time = bm?.reminderTime
-            if (time != null && time > System.currentTimeMillis()) {
+            val now = System.currentTimeMillis()
+            if (time != null && time > now) {
                 reminderManager.scheduleReminder(id, time)
+            } else if (time != null) {
+                bookmarkRepository.updateReminderTime(id, null)
             }
             _state.update { it.copy(trashToastMessage = "Bookmark restored") }
         } catch (e: Exception) {
@@ -214,6 +220,8 @@ internal fun SettingViewModel.restoreSelectedTrash() {
                 val time = bm?.reminderTime
                 if (time != null && time > now) {
                     reminderManager.scheduleReminder(id, time)
+                } else if (time != null) {
+                    bookmarkRepository.updateReminderTime(id, null)
                 }
             }
             _state.update {
@@ -253,7 +261,9 @@ internal fun SettingViewModel.deletePermanentlySelected() {
 internal fun SettingViewModel.emptyTrash() {
     viewModelScope.launch {
         try {
-            _state.value.trashedBookmarks.forEach { reminderManager.cancelReminder(it.id) }
+            val trashedResource = bookmarkRepository.getTrashedBookmarks().first { it !is Resource.Loading }
+            val trashed = (trashedResource as? Resource.Success)?.data ?: _state.value.trashedBookmarks
+            trashed.forEach { reminderManager.cancelReminder(it.id) }
             bookmarkRepository.emptyTrash()
             _state.update {
                 it.copy(

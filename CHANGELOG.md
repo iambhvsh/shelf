@@ -2,21 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.0.6] - 2026-11-25
-
-### Fixed
-- **CancellationException Propagation:** Re-throw `CancellationException` in network fetcher, service layer, backup manager, home/collection/setting ops, and updater so coroutine cancellation is never swallowed.
-- **BackupManager Dependency Injection:** Replaced inline `LinkMetadataParser()` and `NetworkFetcher()` construction inside `fetchMissingImages` with constructor-injected dependencies to allow testing and avoid leaking instances.
-- **QuickSave Blank URL Guard:** `Init` event now short-circuits with an error state when the extracted URL is blank, preventing orphaned bookmark rows.
-- **SearchViewModel Error Clearing:** Blank search queries now clear the error state rather than preserving stale error messages.
-- **Home/Collection tempBookmark Refresh:** `loadBookmarks` and `selectCollection` now refresh the in-memory `tempBookmark` from the live list after load so sheet-bound state never reads stale data.
-- **Collection Delete Fallback:** `deleteCollectionById` falls back to `selectedCollection` when the target collection is not found in the loaded list, preventing silent no-ops.
-- **Update Installer Safety:** `installUpdateSuspending` re-throws `CancellationException` before showing the install toast, and closes OkHttp response bodies and `DownloadManager` cursors reliably.
-
-## [2.0.5] - 2026-11-25
-
-### Changed
-- **Collection Detail Selection Actions:** Separated deleting bookmarks from removing them from a collection in the selection top bar. The trash action now moves selected bookmarks to Recently Deleted with confirmation (including inside Uncategorised), while a dedicated folder-off button removes bookmarks from the current collection without hiding them.
+## [2.0.6] - 2026-11-26
 
 ### Fixed
 - **App Lock Initialization & Error Recovery:** Rebuilt biometric prompt configuration on resume when toggling App Lock or PIN fallback in Settings, added an unlock retry screen after biometric errors, and enforced immediate locking on `0ms` timeout round-trips.
@@ -26,6 +12,24 @@ All notable changes to this project will be documented in this file.
 - **In-App Updater & SAF Backup I/O:** Closed OkHttp response bodies and `DownloadManager` cursors reliably, moved APK staging off the main thread with session cleanup on error, added a notification fallback for Android 14+ background install prompts, enforced HTTPS release links, and moved SAF import/export reads and writes off the main thread with proper stream closing.
 - **Backup Restore Fidelity & URL Parsing:** Normalized trailing slashes and scheme casing during JSON and HTML restore, preserved hidden status when restoring trashed backup entries, retained pins/notes/reminders on HTML restore, rejected non-HTTP(S) schemes on HTML import and tab launch, and preserved balanced parentheses and relative `http*` asset paths in URL parsing.
 - **Home, Collections & Toolbar State:** Reset Home add-dialog loading state on errors, cleared active tag filters when their tag is deleted, prevented repeated startup metadata scrapes on image-less pages, fixed collection restore reminder rescheduling, hid sort options on the Collections overview tab, exposed the Empty Trash toolbar button, and adapted list bottom padding and tag sheets to system navigation bar and keyboard insets.
+- **CancellationException Propagation:** Re-throw `CancellationException` in network fetcher, service layer, backup manager, home/collection/setting ops, and updater so coroutine cancellation is never swallowed.
+- **BackupManager Dependency Injection:** Replaced inline `LinkMetadataParser()` and `NetworkFetcher()` construction inside `fetchMissingImages` with constructor-injected dependencies to allow testing and avoid leaking instances.
+- **QuickSave Blank URL Guard:** `Init` event now short-circuits with an error state when the extracted URL is blank, preventing orphaned bookmark rows.
+- **SearchViewModel Error Clearing:** Blank search queries now clear the error state rather than preserving stale error messages.
+- **Home/Collection tempBookmark Refresh:** `loadBookmarks` and `selectCollection` now refresh the in-memory `tempBookmark` from the live list after load so sheet-bound state never reads stale data.
+- **Collection Delete Fallback:** `deleteCollectionById` falls back to `selectedCollection` when the target collection is not found in the loaded list, preventing silent no-ops.
+- **QuickSave App Lock & Theme Alignment:** Guarded `QuickSaveActivity` against locked sessions, prevented overlay quick-save transitions from resetting `MainActivity` background lock timers, stopped `ProcessLifecycleOwner` 700ms debounce from bypassing immediate lock timeouts, kept App Lock active during transient `BIOMETRIC_ERROR_HW_UNAVAILABLE`, and applied user theme/accent preferences to QuickSave.
+- **Share Extraction & QuickSave Rollback Isolation:** Restricted `UrlUtils.extractUrl` from turning multi-word plain text into fake `https://` links, finished cleanly when no URL is present, and ran `QuickSaveViewModel` initial save and cancelled metadata cleanup on `externalScope` so dismissing cannot abort trash rollback.
+- **Collection Navigation & Reminder Deep-Link Routing:** Scoped `CollectionDetailScreen` cleanup to its active composition session token so exit animations never wipe newly opened collections, routed reminder notifications to Home cleanly across any tab, cleared consumed intent extras after unlock, and cancelled/cleared stale editor state when a reminder opens.
+- **ViewModel State & Backup/Network/Update Hardening:** Serialized Home sort/load updates, fixed CAS side-effects and filtered duplicate checks, added atomic `QuickSave` tag updates, synced `CollectionViewModel.CancelReminder`, returned external write status accurately in `BackupManager`, fixed `sanitizeJson` prefix slicing, handled HTML entities in one pass with normalized folder merging, bounded Jsoup/OkHttp reads with XHTML support, improved pre-release update version comparison and APK cleanup, and guarded past/trashed reminder notifications.
+- **Toolbar, Search Insets & Gesture Fixes:** Expanded collapsed headers on selection mode entry, reserved header end padding to prevent title/button overlap, added `combinedClickable` long-press support to card thumbnails and notes, keyed `PreviewMedia`/`NoteEditorSheet`/`EditBookmarkSheet` state, added IME bottom padding and search loading binding in `SearchResults`, prevented double-submit on input sheets, reset failed Trash swipes, disabled invisible `TagFilterRow` horizontal scrolls, and wired `expressiveBounce` interaction sources.
+
+## [2.0.5] - 2026-11-25
+
+### Changed
+- **Collection Detail Selection Actions:** Separated deleting bookmarks from removing them from a collection in the selection top bar. The trash action now moves selected bookmarks to Recently Deleted with confirmation (including inside Uncategorised), while a dedicated folder-off button removes bookmarks from the current collection without hiding them.
+
+### Fixed
 - **Navigation Re-entrancy and Touch Isolation:** Guarded forward and back navigation against repeated taps during transitions, gave every route an opaque surface background, and isolated pointer events across transitioning routes, visible top bars, and active search overlays so underlying cards cannot receive clicks.
 - **Dynamic Color Toggle After Reset:** Preserved `isDynamicColorSupported` when resetting settings so the Dynamic Color option stays visible in Appearance without requiring an app restart.
 - **Imported Backup Thumbnail Recovery:** Added reachable-image verification and bounded background re-fetching after JSON and browser HTML backup imports, alongside single-attempt thumbnail recovery on image load failures in Grid, List, and Search views so expired CDN previews update automatically.

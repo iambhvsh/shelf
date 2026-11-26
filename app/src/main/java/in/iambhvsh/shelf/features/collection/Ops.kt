@@ -109,14 +109,18 @@ internal fun CollectionViewModel.selectCollection(collection: Collection) {
                 is Resource.Success -> {
                     val items = resource.data ?: emptyList()
                     rawCollectionBookmarks = items
+                    val itemIds = items.map { it.id }.toSet()
                     val sortOrder = _state.value.sortOrder
                     _state.update { current ->
+                        val prunedDetailSelection = current.detailSelectedIds.intersect(itemIds)
                         val refreshedTemp = current.tempBookmark?.let { tmp ->
                             items.find { it.id == tmp.id } ?: tmp
                         }
                         current.copy(
                             isDetailLoading = false,
                             collectionBookmarks = sortBookmarks(items, sortOrder),
+                            detailSelectedIds = prunedDetailSelection,
+                            isDetailSelectionMode = prunedDetailSelection.isNotEmpty(),
                             tempBookmark = refreshedTemp
                         )
                     }
@@ -162,6 +166,7 @@ internal fun CollectionViewModel.selectCollectionById(collectionId: Long) {
                 is Resource.Success -> {
                     val items = resource.data ?: emptyList()
                     rawCollectionBookmarks = items
+                    val itemIds = items.map { it.id }.toSet()
                     val sortOrder = _state.value.sortOrder
                     val col = _state.value.selectedCollection ?: if (collectionId == Collection.UNCATEGORISED_ID) {
                         Collection(id = Collection.UNCATEGORISED_ID, name = "Uncategorised", isVirtual = true)
@@ -169,6 +174,7 @@ internal fun CollectionViewModel.selectCollectionById(collectionId: Long) {
                         _state.value.collections.find { it.id == collectionId }
                     }
                     _state.update { current ->
+                        val prunedDetailSelection = current.detailSelectedIds.intersect(itemIds)
                         val refreshedTemp = current.tempBookmark?.let { tmp ->
                             items.find { it.id == tmp.id } ?: tmp
                         }
@@ -176,6 +182,8 @@ internal fun CollectionViewModel.selectCollectionById(collectionId: Long) {
                             selectedCollection = col ?: current.selectedCollection,
                             isDetailLoading = false,
                             collectionBookmarks = sortBookmarks(items, sortOrder),
+                            detailSelectedIds = prunedDetailSelection,
+                            isDetailSelectionMode = prunedDetailSelection.isNotEmpty(),
                             tempBookmark = refreshedTemp
                         )
                     }
@@ -312,6 +320,8 @@ internal fun CollectionViewModel.restoreCollectionBookmarks(collectionId: Long) 
                     val time = bm.reminderTime
                     if (time != null && time > now) {
                         reminderManager.scheduleReminder(bm.id, time)
+                    } else if (time != null) {
+                        repository.updateReminderTime(bm.id, null)
                     }
                 }
             }

@@ -3,8 +3,12 @@ package `in`.iambhvsh.shelf
 import `in`.iambhvsh.shelf.components.root.canSortCurrentScreen
 import `in`.iambhvsh.shelf.components.root.filterCollectionSearchBookmarks
 import `in`.iambhvsh.shelf.components.root.isAllCollectionsSelected
+import `in`.iambhvsh.shelf.components.root.resolveHeaderTitleEndPadding
+import `in`.iambhvsh.shelf.screens.root.canNavigateFromEntry
+import `in`.iambhvsh.shelf.screens.root.canPopDeepScreen
 import `in`.iambhvsh.shelf.data.Bookmark
 import `in`.iambhvsh.shelf.data.Collection
+import androidx.compose.ui.unit.dp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -74,5 +78,20 @@ class ToolbarTest {
         assertEquals(listOf(11L), filterCollectionSearchBookmarks(items, "  multiplatform  ".trim()).map { it.id })
         assertEquals(listOf(10L), filterCollectionSearchBookmarks(items, "PLAIN.ORG").map { it.id })
         assertEquals(2, filterCollectionSearchBookmarks(items, "").size)
+    }
+
+    @Test
+    fun testHeaderTitleEndPaddingAndNavGuards_preventOverlapAndStaleTransitions() {
+        assertEquals(156.dp, resolveHeaderTitleEndPadding(isSelectionMode = true, isCollectionDetail = true, isTrashScreen = false, isDeepScreen = true))
+        assertEquals(112.dp, resolveHeaderTitleEndPadding(isSelectionMode = false, isCollectionDetail = true, isTrashScreen = false, isDeepScreen = true))
+        assertEquals(64.dp, resolveHeaderTitleEndPadding(isSelectionMode = false, isCollectionDetail = false, isTrashScreen = true, isDeepScreen = true))
+        assertEquals(24.dp, resolveHeaderTitleEndPadding(isSelectionMode = false, isCollectionDetail = false, isTrashScreen = false, isDeepScreen = true))
+        assertEquals(0.dp, resolveHeaderTitleEndPadding(isSelectionMode = false, isCollectionDetail = false, isTrashScreen = false, isDeepScreen = false))
+
+        assertTrue(canNavigateFromEntry("entry-1", "entry-1"))
+        assertFalse(canNavigateFromEntry("entry-2", "entry-1"))
+        assertTrue(canPopDeepScreen(isDeepScreen = true, currentEntryId = "entry-2", displayedEntryId = "entry-2"))
+        assertFalse(canPopDeepScreen(isDeepScreen = false, currentEntryId = "entry-2", displayedEntryId = "entry-2"))
+        assertFalse(canPopDeepScreen(isDeepScreen = true, currentEntryId = "entry-1", displayedEntryId = "entry-2"))
     }
 }

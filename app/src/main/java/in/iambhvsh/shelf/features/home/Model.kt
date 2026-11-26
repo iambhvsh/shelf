@@ -28,6 +28,7 @@ class HomeViewModel(
 
     internal var rawBookmarks: List<Bookmark> = emptyList()
     internal var bookmarkJob: Job? = null
+    internal var sortJob: Job? = null
     internal var tempBookmarkTagsJob: Job? = null
     internal var isFetchingMetadata = false
     internal val startupMetadataSemaphore = Semaphore(4)
@@ -92,7 +93,16 @@ class HomeViewModel(
             is HomeEvents.OpenBookmarkById -> {
                 viewModelScope.launch {
                     val bookmark = repository.getBookmarkById(events.id)
-                    if (bookmark != null && !_state.value.isBodySheet) {
+                    if (bookmark != null) {
+                        _state.update {
+                            it.copy(
+                                showNoteEditor = false,
+                                noteEditorText = null,
+                                showRenameDialog = false,
+                                showTagManager = false,
+                                showReminderPicker = false
+                            )
+                        }
                         homeEvents(HomeEvents.BookmarkPreviewClick(bookmark))
                         homeEvents(HomeEvents.CancelReminder(bookmark.id))
                     }
@@ -145,14 +155,18 @@ class HomeViewModel(
             HomeEvents.HideCollectionPicker -> _state.update { it.copy(showCollectionPicker = false) }
             is HomeEvents.AddToCollection -> addSelectedToCollection(events.collectionId)
             is HomeEvents.SetSortOrder -> {
-                viewModelScope.launch {
-                    val sorted = sortBookmarks(rawBookmarks, events.sortOrder, defaultDispatcher)
-                    _state.update {
-                        it.copy(
-                            sortOrder = events.sortOrder,
-                            showSortSheet = false,
-                            bookmarkData = sorted
-                        )
+                _state.update {
+                    it.copy(
+                        sortOrder = events.sortOrder,
+                        showSortSheet = false
+                    )
+                }
+                sortJob?.cancel()
+                sortJob = viewModelScope.launch {
+                    val snapshot = rawBookmarks
+                    val sorted = sortBookmarks(snapshot, events.sortOrder, defaultDispatcher)
+                    if (snapshot === rawBookmarks && _state.value.sortOrder == events.sortOrder) {
+                        _state.update { it.copy(bookmarkData = sorted) }
                     }
                 }
             }

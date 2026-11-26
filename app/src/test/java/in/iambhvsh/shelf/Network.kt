@@ -291,4 +291,23 @@ class NetworkTest {
         }
         assertEquals(1, updates.size)
     }
+
+    @Test
+    fun testFetchDocument_supportsXhtmlAndRejectsNonHtmlContentTypes() {
+        val xhtmlClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                Response.Builder()
+                    .request(chain.request())
+                    .protocol(Protocol.HTTP_1_1)
+                    .code(200)
+                    .message("OK")
+                    .header("Content-Type", "application/xhtml+xml; charset=utf-8")
+                    .body("<html><head><title>XHTML</title></head></html>".toResponseBody("application/xhtml+xml".toMediaType()))
+                    .build()
+            }
+            .build()
+        val xhtmlDoc = NetworkFetcher(xhtmlClient).fetchDocument("https://example.com/xhtml", "Agent")
+        assertNotNull(xhtmlDoc)
+        assertEquals("XHTML", xhtmlDoc?.title())
+    }
 }

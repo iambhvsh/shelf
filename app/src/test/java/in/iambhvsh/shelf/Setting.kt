@@ -470,5 +470,74 @@ class SettingStateTest {
         assertTrue(reminders.scheduled.none { it.first == tPast })
         vm.onEvent(SettingEvents.ClearTrashToast)
         assertNull(vm.state.value.trashToastMessage)
+
+        settings.setAppLockEnabled(true)
+        settings.setAppLockUsePinEnabled(true)
+        settings.setAppLockTimeout(60_000L)
+        vm.onEvent(SettingEvents.SyncSecurityState)
+        assertTrue(vm.state.value.appLockEnabled)
+        assertTrue(vm.state.value.appLockUsePinEnabled)
+        assertEquals(60_000L, vm.state.value.appLockTimeout)
+
+        settings.setAppLockEnabled(false)
+        vm.onEvent(SettingEvents.SyncSecurityState)
+        assertFalse(vm.state.value.appLockEnabled)
+    }
+
+    @Test
+    fun testSettingViewModel_emptyTrashWithoutLoadCancelsRemindersAndResetClearsBackup() = runTest {
+        val db = FakeBookmarkDatabase()
+        val store = db.store
+        val repo = ControllableBookmarkRepository(store)
+        val settingsRepo = FakeSettingsRepository()
+        val reminders = FakeReminderManager()
+        val backup = FakeBackupManager(db, store, settingsRepo)
+
+        val trashedId = store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(
+                url = "https://unloaded-trash.dev",
+                title = "Unloaded Trash",
+                description = null,
+                imageUrl = null,
+                isHidden = true,
+                reminderTime = 999_999_999L
+            )
+        )
+        val pastRestoreId = store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(
+                url = "https://expired-restore.dev",
+                title = "Expired",
+                description = null,
+                imageUrl = null,
+                isHidden = true,
+                reminderTime = 1_000L
+            )
+        )
+
+        val vm = SettingViewModel(
+            settingsRepository = settingsRepo,
+            backupManager = backup,
+            updateManager = FakeUpdateManager(),
+            changelogLoader = FakeChangelogLoader(),
+            database = db,
+            bookmarkRepository = repo,
+            reminderManager = reminders,
+            ioDispatcher = mainDispatcherRule.dispatcher
+        )
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onEvent(SettingEvents.RestoreTrashItem(pastRestoreId))
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertNull(store.bookmarkDao.getBookmarkById(pastRestoreId)?.reminderTime)
+
+        vm.onEvent(SettingEvents.ConfirmEmptyTrash)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(reminders.cancelled.contains(trashedId))
+        assertNull(store.bookmarkDao.getBookmarkById(trashedId))
+
+        vm.onEvent(SettingEvents.ConfirmReset)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(backup.autoBackupStopped)
+        assertTrue(backup.internalBackupCleared)
     }
 }

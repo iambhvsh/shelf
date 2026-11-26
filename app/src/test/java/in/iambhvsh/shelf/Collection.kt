@@ -463,4 +463,42 @@ class CollectionStateTest {
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertNull(vm.state.value.selectedCollection)
     }
+
+    @Test
+    fun testCollectionViewModel_staleExitAnimationDisposeDoesNotWipeNewlyOpenedCollection() = runTest {
+        val repo = ControllableBookmarkRepository()
+        val colA = repo.store.collectionDao.insertCollection(CollectionEntity(name = "A"))
+        val colB = repo.store.collectionDao.insertCollection(CollectionEntity(name = "B"))
+        val bmA = repo.store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(url = "https://a.dev", title = "A", description = null, imageUrl = null)
+        )
+        val bmB = repo.store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(url = "https://b.dev", title = "B", description = null, imageUrl = null)
+        )
+        repo.store.collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bmA, colA))
+        repo.store.collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bmB, colB))
+
+        val vm = CollectionViewModel(repo, FakeReminderManager(), FakeLinkMetadataParser(), mainDispatcherRule.dispatcher)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onEvent(CollectionEvents.SelectCollectionById(colA, sessionToken = 101L))
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(colA, vm.state.value.selectedCollection?.id)
+
+        vm.onEvent(CollectionEvents.SelectCollectionById(colB, sessionToken = 102L))
+        vm.onEvent(CollectionEvents.ClearCollectionIfMatches(colA, sessionToken = 101L))
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(colB, vm.state.value.selectedCollection?.id)
+        assertEquals(listOf(bmB), vm.state.value.collectionBookmarks.map { it.id })
+
+        vm.onEvent(CollectionEvents.SelectCollectionById(colB, sessionToken = 103L))
+        vm.onEvent(CollectionEvents.ClearCollectionIfMatches(colB, sessionToken = 102L))
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(colB, vm.state.value.selectedCollection?.id)
+        assertEquals(listOf(bmB), vm.state.value.collectionBookmarks.map { it.id })
+
+        vm.onEvent(CollectionEvents.ClearCollectionIfMatches(colB, sessionToken = 103L))
+        assertNull(vm.state.value.selectedCollection)
+        assertTrue(vm.state.value.collectionBookmarks.isEmpty())
+    }
 }

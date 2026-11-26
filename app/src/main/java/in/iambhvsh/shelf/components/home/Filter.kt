@@ -108,6 +108,7 @@ fun TagFilterRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
+            userScrollEnabled = enabled,
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically

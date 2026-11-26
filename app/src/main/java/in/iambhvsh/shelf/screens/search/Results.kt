@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
@@ -94,8 +95,9 @@ fun SearchResults(
         } else {
             val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
             val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
             val topPadding = statusBarTop + 68.dp
-            val bottomPadding = navBarBottom + 100.dp
+            val bottomPadding = maxOf(navBarBottom + 100.dp, imeBottom + 24.dp)
 
             if (viewMode == ViewMode.GRID) {
                 LazyVerticalStaggeredGrid(

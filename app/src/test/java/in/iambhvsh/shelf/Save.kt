@@ -334,4 +334,45 @@ class SaveTest {
         assertEquals(listOf(tagOrig), revertedTags.map { it.id })
         externalScope.cancel()
     }
+
+    @Test
+    fun testQuickSaveViewModel_plainTextRejectedAndMetadataJoinsBeforeTrashRollback() = runTest {
+        val repo = ControllableBookmarkRepository()
+        val trashedId = repo.store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(
+                url = "https://race-trash.dev",
+                title = "Orig Trash Title",
+                description = "Orig Trash Desc",
+                imageUrl = "https://race-trash.dev/o.png",
+                isHidden = true
+            )
+        )
+        val externalScope = TestScope(mainDispatcherRule.dispatcher + SupervisorJob())
+        val parser = FakeLinkMetadataParser {
+            kotlinx.coroutines.delay(50)
+            LinkPreviewData(title = "Scraped Title", description = "Scraped Desc", imageUrl = "https://scraped.png", url = it)
+        }
+        val vm = QuickSaveViewModel(repo, parser = parser, externalScope = externalScope)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onEvent(QuickSaveEvents.Init("Meeting at 5pm"))
+        assertFalse(vm.state.value.isSaving)
+        assertEquals("No valid URL found", vm.state.value.message)
+        assertNull(vm.state.value.bookmarkId)
+
+        vm.onEvent(QuickSaveEvents.Init("https://race-trash.dev"))
+        mainDispatcherRule.dispatcher.scheduler.runCurrent()
+        assertEquals(trashedId, vm.state.value.bookmarkId)
+
+        vm.onEvent(QuickSaveEvents.CancelSave)
+        externalScope.advanceUntilIdle()
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        val afterCancel = repo.store.bookmarkDao.getBookmarkById(trashedId)!!
+        assertTrue(afterCancel.isHidden)
+        assertEquals("Orig Trash Title", afterCancel.title)
+        assertEquals("Orig Trash Desc", afterCancel.description)
+        assertEquals("https://race-trash.dev/o.png", afterCancel.imageUrl)
+        externalScope.cancel()
+    }
 }

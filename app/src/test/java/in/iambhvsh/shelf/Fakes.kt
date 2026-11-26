@@ -723,17 +723,20 @@ class FakeBookmarkDatabase(
 class FakeBackupManager(
     private val database: BookmarkDatabase,
     private val store: InMemoryDaoStore,
-    settingsRepository: SettingsRepository = FakeSettingsRepository()
+    settingsRepository: SettingsRepository = FakeSettingsRepository(),
+    ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.Unconfined
 ) : BackupManager(
     database = database,
     bookmarkDao = store.bookmarkDao,
     collectionDao = store.collectionDao,
     tagDao = store.tagDao,
     settingsRepository = settingsRepository,
-    context = FakeContext()
+    context = FakeContext(),
+    ioDispatcher = ioDispatcher
 ) {
     var autoBackupStarted = false
     var autoBackupStopped = false
+    var internalBackupCleared = false
     var refreshTimeCalls = 0
     var refreshThumbnailsCalls = 0
     var jsonToExport: String? = null
@@ -743,6 +746,10 @@ class FakeBackupManager(
 
     override fun refreshLastBackupTime() {
         refreshTimeCalls++
+    }
+
+    override fun clearInternalBackup() {
+        internalBackupCleared = true
     }
 
     override fun startAutoBackup() {

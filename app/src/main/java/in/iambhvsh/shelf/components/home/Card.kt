@@ -174,9 +174,10 @@ fun BookmarkCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp)
-                            .clickable {
-                                if (isSelectionMode) onLongClick() else onNoteClick()
-                            }
+                            .combinedClickable(
+                                onClick = { if (isSelectionMode) onLongClick() else onNoteClick() },
+                                onLongClick = onLongClick
+                            )
                     ) {
                         Text(
                             text = note,

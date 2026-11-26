@@ -56,14 +56,19 @@ class UpdateManagerImpl(
         private const val API_URL = "https://api.github.com/repos/iambhvsh/shelf/releases/latest"
         private const val CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000L
         private const val APK_FILE_NAME = "shelf_update.apk"
+        private const val MAX_RELEASE_JSON_BYTES = 1024 * 1024
         private val releaseJson = Json { ignoreUnknownKeys = true }
 
         internal fun isVersionNewer(current: String, fetched: String): Boolean {
             return try {
-                val cleanCurrent = current.trim().removePrefix("v").removePrefix("V").substringBefore("-")
-                val cleanFetched = fetched.trim().removePrefix("v").removePrefix("V").substringBefore("-")
-                val currentParts = cleanCurrent.split(".").map { it.toIntOrNull() ?: 0 }
-                val fetchedParts = cleanFetched.split(".").map { it.toIntOrNull() ?: 0 }
+                val strippedCurrent = current.trim().removePrefix("v").removePrefix("V").substringBefore("+")
+                val strippedFetched = fetched.trim().removePrefix("v").removePrefix("V").substringBefore("+")
+                val currentCore = strippedCurrent.substringBefore("-")
+                val fetchedCore = strippedFetched.substringBefore("-")
+                val currentPre = strippedCurrent.substringAfter("-", "")
+                val fetchedPre = strippedFetched.substringAfter("-", "")
+                val currentParts = currentCore.split(".").map { it.toIntOrNull() ?: 0 }
+                val fetchedParts = fetchedCore.split(".").map { it.toIntOrNull() ?: 0 }
 
                 for (i in 0 until maxOf(currentParts.size, fetchedParts.size)) {
                     val c = currentParts.getOrElse(i) { 0 }
@@ -71,7 +76,12 @@ class UpdateManagerImpl(
                     if (f > c) return true
                     if (c > f) return false
                 }
-                false
+                when {
+                    currentPre.isNotEmpty() && fetchedPre.isEmpty() -> true
+                    currentPre.isEmpty() && fetchedPre.isNotEmpty() -> false
+                    currentPre.isNotEmpty() && fetchedPre.isNotEmpty() -> fetchedPre > currentPre
+                    else -> false
+                }
             } catch (_: Exception) {
                 false
             }
@@ -158,7 +168,18 @@ class UpdateManagerImpl(
             val request = Request.Builder().url(API_URL).build()
             okHttpClient.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext false
-                val responseBody = response.body.string()
+                val responseBody = response.body.byteStream().use { stream ->
+                    val out = java.io.ByteArrayOutputStream()
+                    val buf = ByteArray(8192)
+                    var total = 0
+                    while (total < MAX_RELEASE_JSON_BYTES) {
+                        val read = stream.read(buf, 0, minOf(buf.size, MAX_RELEASE_JSON_BYTES - total))
+                        if (read <= 0) break
+                        out.write(buf, 0, read)
+                        total += read
+                    }
+                    out.toString(Charsets.UTF_8.name())
+                }
                 val release = parseLatestRelease(responseBody, currentVersion)
                 if (release != null) {
                     settingsRepository.setLatestAvailableVersion(release.version)
@@ -197,6 +218,10 @@ class UpdateManagerImpl(
                 isReceiverRegistered = true
             }
 
+            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            if (downloadId != -1L) {
+                runCatching { downloadManager.remove(downloadId) }
+            }
             val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APK_FILE_NAME)
             if (file.exists()) {
                 file.delete()
@@ -210,7 +235,6 @@ class UpdateManagerImpl(
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
 
-            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadId = downloadManager.enqueue(request)
             Toast.makeText(context, "Download started...", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {

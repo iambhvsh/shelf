@@ -205,4 +205,27 @@ class ParserTest {
         assertEquals("https://kotlinlang.org/coroutines", bookmarks[0].url)
         assertEquals(listOf("Engineering/Kotlin/Coroutines"), bookmarks[0].collections)
     }
+
+    @Test
+    fun testEntityDoubleUnescapeNumericEntitiesAndNormalizedUrlMerge() {
+        val html = """
+            <!DOCTYPE NETSCAPE-Bookmark-file-1>
+            <DL><p>
+                <DT><H3>Docs</H3>
+                <DL><p>
+                    <DT><A HREF="https://a.dev">It&#8217;s &amp;quot;Quoted&amp;quot;&nbsp;Here</A>
+                </DL><p>
+                <DT><H3>Archive</H3>
+                <DL><p>
+                    <DT><A HREF="HTTPS://a.dev/">Second Copy</A>
+                </DL><p>
+            </DL><p>
+        """.trimIndent()
+
+        val (bookmarks, collections) = parser.parse(html)
+        assertEquals(1, bookmarks.size)
+        assertEquals("It’s &quot;Quoted&quot; Here", bookmarks[0].title)
+        assertEquals(listOf("Docs", "Archive"), bookmarks[0].collections)
+        assertEquals(listOf("Docs", "Archive"), collections)
+    }
 }

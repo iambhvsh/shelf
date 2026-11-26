@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import `in`.iambhvsh.shelf.theme.HeroFont
 import kotlinx.coroutines.delay
 import java.util.Calendar
@@ -36,6 +37,7 @@ fun GreetingTitle(
     headerTitle: String,
     titleXOffset: Dp,
     isShiftedToStart: Boolean,
+    titleEndPadding: Dp = 0.dp,
     modifier: Modifier = Modifier
 ) {
     AnimatedContent(
@@ -47,7 +49,7 @@ fun GreetingTitle(
                 ).using(SizeTransform(clip = false))
         },
         label = "HeaderTitleAnimation",
-        modifier = modifier.padding(start = titleXOffset)
+        modifier = modifier.padding(start = titleXOffset, end = titleEndPadding)
     ) { target ->
         if (target == "home_header") {
             val greeting = remember { randomGreeting() }

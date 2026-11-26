@@ -21,7 +21,7 @@ fun NoteEditorSheet(
 ) {
     val sheetState = rememberShelfSheetState()
     val scope = rememberCoroutineScope()
-    var noteText by remember { mutableStateOf(initialNote ?: "") }
+    var noteText by remember(initialNote) { mutableStateOf(initialNote ?: "") }
 
     val maxChar = 500
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current

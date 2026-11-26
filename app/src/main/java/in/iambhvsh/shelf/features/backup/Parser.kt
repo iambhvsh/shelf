@@ -1,5 +1,7 @@
 package `in`.iambhvsh.shelf.features.backup
 
+import `in`.iambhvsh.shelf.features.fetch.UrlUtils
+
 data class ParsedBookmark(
     val url: String,
     val title: String,
@@ -67,10 +69,11 @@ class BookmarkParser {
                             collectionsWithBookmarks.add(currentPath)
                         }
 
-                        val existing = bookmarkMap[url]
+                        val key = UrlUtils.normalizeUrlKey(url)
+                        val existing = bookmarkMap[key]
                         if (existing == null) {
                             val colList = if (currentPath != null) mutableListOf(currentPath) else mutableListOf()
-                            bookmarkMap[url] = MutableParsedBookmark(
+                            bookmarkMap[key] = MutableParsedBookmark(
                                 url = url,
                                 title = rawTitle.ifBlank { url },
                                 collections = colList
@@ -105,11 +108,29 @@ class BookmarkParser {
         val collections: MutableList<String>
     )
 
-    private fun String.replaceHtmlEntities(): String = this
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-        .replace("&apos;", "'")
+    private fun String.replaceHtmlEntities(): String {
+        val entityRegex = Regex("&(#x[0-9a-fA-F]+|#[0-9]+|amp|lt|gt|quot|apos|nbsp);")
+        return entityRegex.replace(this) { match ->
+            when (val token = match.groupValues[1]) {
+                "amp" -> "&"
+                "lt" -> "<"
+                "gt" -> ">"
+                "quot" -> "\""
+                "apos" -> "'"
+                "nbsp" -> " "
+                else -> {
+                    val codePoint = if (token.startsWith("#x")) {
+                        token.substring(2).toIntOrNull(16)
+                    } else if (token.startsWith("#")) {
+                        token.substring(1).toIntOrNull()
+                    } else null
+                    if (codePoint != null && codePoint in 1..Character.MAX_CODE_POINT && !Character.isSurrogate(codePoint.toChar())) {
+                        String(Character.toChars(codePoint))
+                    } else {
+                        match.value
+                    }
+                }
+            }
+        }
+    }
 }

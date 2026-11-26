@@ -78,6 +78,10 @@ fun SettingDialogsAndSheets(
                         withContext(Dispatchers.Main) {
                             viewModel.onEvent(SettingEvents.ImportData(json))
                         }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Selected backup file is empty", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 } catch (_: Exception) {
                     withContext(Dispatchers.Main) {
@@ -101,6 +105,10 @@ fun SettingDialogsAndSheets(
                     if (html.isNotBlank()) {
                         withContext(Dispatchers.Main) {
                             viewModel.onEvent(SettingEvents.ImportBrowserBookmarks(html))
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Selected bookmarks file is empty", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (_: Exception) {

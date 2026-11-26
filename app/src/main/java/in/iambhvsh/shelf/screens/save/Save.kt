@@ -4,8 +4,10 @@ import `in`.iambhvsh.shelf.features.save.*
 import `in`.iambhvsh.shelf.components.save.*
 
 import android.widget.Toast
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +29,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,13 +96,17 @@ fun QuickSaveScreen(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(8.dp))
+            val collectionInteraction = remember { MutableInteractionSource() }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(ShelfShapes.card)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .expressiveBounce(scaleDown = 0.98f)
-                    .clickable { onEvent(QuickSaveEvents.ShowCollectionPicker) }
+                    .expressiveBounce(scaleDown = 0.98f, interactionSource = collectionInteraction)
+                    .clickable(
+                        interactionSource = collectionInteraction,
+                        indication = LocalIndication.current
+                    ) { onEvent(QuickSaveEvents.ShowCollectionPicker) }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -128,13 +135,17 @@ fun QuickSaveScreen(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(8.dp))
+            val tagsInteraction = remember { MutableInteractionSource() }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(ShelfShapes.card)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .expressiveBounce(scaleDown = 0.98f)
-                    .clickable { onEvent(QuickSaveEvents.ShowTagPicker) }
+                    .expressiveBounce(scaleDown = 0.98f, interactionSource = tagsInteraction)
+                    .clickable(
+                        interactionSource = tagsInteraction,
+                        indication = LocalIndication.current
+                    ) { onEvent(QuickSaveEvents.ShowTagPicker) }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {

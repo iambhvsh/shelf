@@ -36,6 +36,9 @@ import `in`.iambhvsh.shelf.features.setting.TapAction
 import `in`.iambhvsh.shelf.features.setting.ViewMode
 import `in`.iambhvsh.shelf.openChromeTab
 import `in`.iambhvsh.shelf.screens.search.SearchResults
+import java.util.concurrent.atomic.AtomicLong
+
+private val NEXT_COLLECTION_DETAIL_TOKEN = AtomicLong(0L)
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -82,13 +85,15 @@ fun CollectionDetailScreen(
         viewModel.onEvent(CollectionEvents.ClearDetailSelection)
     }
 
+    val sessionToken = remember { NEXT_COLLECTION_DETAIL_TOKEN.incrementAndGet() }
+
     LaunchedEffect(collectionId) {
-        viewModel.onEvent(CollectionEvents.SelectCollectionById(collectionId))
+        viewModel.onEvent(CollectionEvents.SelectCollectionById(collectionId, sessionToken))
     }
 
-    DisposableEffect(collectionId) {
+    DisposableEffect(collectionId, sessionToken) {
         onDispose {
-            viewModel.onEvent(CollectionEvents.ClearSelectedCollection)
+            viewModel.onEvent(CollectionEvents.ClearCollectionIfMatches(collectionId, sessionToken))
         }
     }
 

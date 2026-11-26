@@ -110,5 +110,16 @@ class UrlAndDetectorTest {
         )
         assertEquals("https://a.dev/1", UrlUtils.extractUrl("Check https://a.dev/1, then https://b.dev/2"))
         assertEquals("relative.png", UrlUtils.makeAbsoluteUrl("relative.png", "not valid base"))
+        assertEquals("", UrlUtils.extractUrl("Meeting at 5pm"))
+        assertEquals("", UrlUtils.extractUrl("..."))
+        assertEquals("", UrlUtils.extractUrl(")))"))
+        assertEquals("", UrlUtils.extractUrl("3.14"))
+        assertEquals("https://localhost:3000/test", UrlUtils.extractUrl("localhost:3000/test"))
+        assertEquals("https://192.168.1.10:8080/a", UrlUtils.extractUrl("192.168.1.10:8080/a"))
+        assertEquals("https://example.com/a", UrlUtils.extractUrl("\"https://example.com/a\"!"))
+        assertEquals("https://example.com/a", UrlUtils.normalizeUrlKey("HTTPS://EXAMPLE.COM/a/"))
+        assertEquals("https://example.com?q=1", UrlUtils.normalizeUrlKey("https://example.com/?q=1"))
+        assertEquals("data:image/png;base64,AAA", UrlUtils.makeAbsoluteUrl("data:image/png;base64,AAA", "https://example.com/blog"))
+        assertEquals("https://example.com/img/og.png", UrlUtils.makeAbsoluteUrl("../img/og.png", "https://example.com/blog/post"))
     }
 }

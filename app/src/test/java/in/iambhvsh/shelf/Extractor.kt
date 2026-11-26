@@ -125,4 +125,25 @@ class MetadataExtractorTest {
         assertEquals("", extractor.extractDescription(docEmpty))
         assertEquals("", extractor.extractImageUrl(docEmpty, "https://a.com"))
     }
+
+    @Test
+    fun testExtractDescriptionAndImage_skipsBlankMetaAndSupportsShortcutAndSecureUrl() {
+        val descHtml = """
+            <html><head>
+                <meta name="description" content="   " />
+                <meta property="og:description" content="Actual OG Summary" />
+                <meta property="og:image:secure_url" content="https://cdn.a.com/secure.png" />
+            </head></html>
+        """.trimIndent()
+        val descDoc = Jsoup.parse(descHtml)
+        assertEquals("Actual OG Summary", extractor.extractDescription(descDoc))
+        assertEquals("https://cdn.a.com/secure.png", extractor.extractImageUrl(descDoc, "https://a.com"))
+
+        val shortcutHtml = """
+            <html><head>
+                <link rel="shortcut icon" href="/shortcut.ico" />
+            </head></html>
+        """.trimIndent()
+        assertEquals("https://a.com/shortcut.ico", extractor.extractImageUrl(Jsoup.parse(shortcutHtml), "https://a.com"))
+    }
 }

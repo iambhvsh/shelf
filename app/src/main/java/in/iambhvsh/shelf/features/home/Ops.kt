@@ -9,6 +9,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withPermit
@@ -53,10 +54,10 @@ internal fun HomeViewModel.saveBookmark() {
     val url = UrlUtils.ensureHttpScheme(rawUrl)
 
     val normalizedInput = UrlUtils.normalizeUrlKey(url)
-    val isDuplicate = _state.value.bookmarkData.any {
+    val isDuplicateInView = _state.value.bookmarkData.any {
         UrlUtils.normalizeUrlKey(it.url) == normalizedInput
     }
-    if (isDuplicate) {
+    if (isDuplicateInView) {
         _state.update {
             it.copy(
                 inputUrl = "",
@@ -66,8 +67,19 @@ internal fun HomeViewModel.saveBookmark() {
         }
         return
     }
+
     viewModelScope.launch {
         try {
+            if (repository.existsByUrl(url)) {
+                _state.update {
+                    it.copy(
+                        inputUrl = "",
+                        duplicateToastKey = it.duplicateToastKey + 1,
+                        isDialog = false
+                    )
+                }
+                return@launch
+            }
             _state.update { it.copy(isLoading = true) }
             val meta = parser.parse(url)
 
@@ -82,7 +94,7 @@ internal fun HomeViewModel.saveBookmark() {
                 it.copy(
                     isLoading = false,
                     isDialog = false,
-                    inputUrl = if (inserted) "" else it.inputUrl,
+                    inputUrl = "",
                     duplicateToastKey = if (inserted) it.duplicateToastKey else it.duplicateToastKey + 1
                 )
             }
@@ -115,13 +127,11 @@ internal fun HomeViewModel.loadTags() {
             if (resource is Resource.Success) {
                 val loadedTags = resource.data ?: emptyList()
                 val validIds = loadedTags.map { it.id }.toSet()
-                var filtersPruned = false
-                _state.update { current ->
+                val previous = _state.getAndUpdate { current ->
                     val filtered = current.activeTagFilters.intersect(validIds)
-                    filtersPruned = filtered.size != current.activeTagFilters.size
                     current.copy(tags = loadedTags, activeTagFilters = filtered)
                 }
-                if (filtersPruned) {
+                if (previous.activeTagFilters.any { it !in validIds }) {
                     loadBookmarks()
                 }
             }
@@ -171,16 +181,25 @@ internal fun HomeViewModel.loadBookmarks() {
                 is Resource.Success<*> -> {
                     val items = data.data ?: emptyList()
                     rawBookmarks = items
-                    val sortOrder = _state.value.sortOrder
-                    val sortedItems = sortBookmarks(items, sortOrder, defaultDispatcher)
+                    sortJob?.cancel()
+                    var sortOrder = _state.value.sortOrder
+                    var sortedItems = sortBookmarks(items, sortOrder, defaultDispatcher)
+                    while (_state.value.sortOrder != sortOrder) {
+                        sortOrder = _state.value.sortOrder
+                        sortedItems = sortBookmarks(items, sortOrder, defaultDispatcher)
+                    }
+                    val itemIds = items.map { it.id }.toSet()
                     _state.update { current ->
+                        val prunedSelected = current.selectedIds.intersect(itemIds)
                         val refreshedTemp = current.tempBookmark?.let { tmp ->
-                            items.find { it.id == tmp.id } ?: tmp
+                            items.find { it.id == tmp.id }
                         }
                         current.copy(
                             isLoading = false,
                             bookmarkData = sortedItems,
-                            tempBookmark = refreshedTemp
+                            selectedIds = prunedSelected,
+                            isSelectionMode = prunedSelected.isNotEmpty(),
+                            tempBookmark = refreshedTemp ?: current.tempBookmark
                         )
                     }
                     fetchMissingMetadataOnStart()

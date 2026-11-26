@@ -457,4 +457,66 @@ class HomeStateTest {
         assertFalse(vm.state.value.isSelectionMode)
         assertTrue(vm.attemptedStartupMetadataIds.isNotEmpty() || vm.state.value.bookmarkData.all { it.imageUrl != null })
     }
+
+    @Test
+    fun testHomeViewModel_openBookmarkByIdReplacesActiveSheetAndClosesTransientEditors() = runTest {
+        val repo = ControllableBookmarkRepository()
+        val reminders = FakeReminderManager()
+        val bm1 = repo.store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(url = "https://first.dev", title = "First", description = null, imageUrl = null, note = "First note")
+        )
+        val bm2 = repo.store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(url = "https://second.dev", title = "Second", description = null, imageUrl = null, reminderTime = 555_000L)
+        )
+        val vm = HomeViewModel(repo, reminders, FakeUpdateManager(), FakeLinkMetadataParser(), mainDispatcherRule.dispatcher, mainDispatcherRule.dispatcher)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        val first = vm.state.value.bookmarkData.first { it.id == bm1 }
+        vm.homeEvents(HomeEvents.BookmarkPreviewClick(first))
+        vm.homeEvents(HomeEvents.ShowNoteEditor(first.note))
+        assertTrue(vm.state.value.showNoteEditor)
+        assertFalse(vm.state.value.isBodySheet)
+
+        vm.homeEvents(HomeEvents.OpenBookmarkById(bm2))
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.state.value.isBodySheet)
+        assertFalse(vm.state.value.showNoteEditor)
+        assertNull(vm.state.value.noteEditorText)
+        assertEquals(bm2, vm.state.value.tempBookmark?.id)
+        assertTrue(reminders.cancelled.contains(bm2))
+    }
+
+    @Test
+    fun testHomeViewModel_duplicateCheckAcrossTagFiltersAndSelectionPruning() = runTest {
+        val repo = ControllableBookmarkRepository()
+        val tagId = repo.store.tagDao.insertTag(TagEntity(name = "FilterTag"))
+        val bmTagged = repo.store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(url = "https://tagged.dev", title = "Tagged", description = null, imageUrl = "https://tagged.dev/i.png")
+        )
+        val bmUntagged = repo.store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(url = "https://untagged.dev", title = "Untagged", description = null, imageUrl = "https://untagged.dev/i.png")
+        )
+        repo.store.tagDao.addTagToBookmark(BookmarkTagCrossRef(bmTagged, tagId))
+
+        val parser = FakeLinkMetadataParser()
+        val vm = HomeViewModel(repo, FakeReminderManager(), FakeUpdateManager(), parser, mainDispatcherRule.dispatcher, mainDispatcherRule.dispatcher)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        vm.homeEvents(HomeEvents.ToggleSelection(bmUntagged))
+        assertTrue(vm.state.value.isSelectionMode)
+
+        vm.homeEvents(HomeEvents.ToggleTagFilter(tagId))
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertFalse(vm.state.value.isSelectionMode)
+        assertTrue(vm.state.value.selectedIds.isEmpty())
+
+        vm.homeEvents(HomeEvents.FabClick)
+        vm.homeEvents(HomeEvents.OnTextFieldValueChange("https://untagged.dev/"))
+        vm.homeEvents(HomeEvents.SaveBookmark)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, vm.state.value.duplicateToastKey)
+        assertEquals("", vm.state.value.inputUrl)
+        assertTrue(parser.parsedUrls.isEmpty())
+    }
 }

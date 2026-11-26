@@ -32,6 +32,7 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
             try {
                 val bookmark = runCatching { bookmarkDao.getBookmarkById(bookmarkId) }.getOrNull()
                 runCatching { bookmarkDao.updateReminderTime(bookmarkId, null) }
+                if (bookmark == null || bookmark.isHidden) return@launch
 
                 val notificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return@launch
@@ -57,8 +58,8 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
 
-                val message = bookmark?.title?.takeIf { it.isNotBlank() }
-                    ?: bookmark?.url?.takeIf { it.isNotBlank() }
+                val message = bookmark.title?.takeIf { it.isNotBlank() }
+                    ?: bookmark.url.takeIf { it.isNotBlank() }
                     ?: "Don't forget to read your saved bookmark!"
 
                 val notification = NotificationCompat.Builder(context, CHANNEL_ID)

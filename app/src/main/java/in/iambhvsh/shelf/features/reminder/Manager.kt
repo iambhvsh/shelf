@@ -11,6 +11,7 @@ open class ReminderManager(private val context: Context) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
 
     open fun scheduleReminder(bookmarkId: Long, timeInMillis: Long) {
+        if (timeInMillis <= System.currentTimeMillis()) return
         val manager = alarmManager ?: return
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra(EXTRA_BOOKMARK_ID, bookmarkId)
@@ -22,26 +23,37 @@ open class ReminderManager(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (manager.canScheduleExactAlarms()) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (manager.canScheduleExactAlarms()) {
+                    manager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        timeInMillis,
+                        pendingIntent
+                    )
+                } else {
+                    manager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        timeInMillis,
+                        pendingIntent
+                    )
+                }
+            } else {
                 manager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
                     timeInMillis,
                     pendingIntent
                 )
-            } else {
+            }
+        } catch (_: SecurityException) {
+            runCatching {
                 manager.setAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
                     timeInMillis,
                     pendingIntent
                 )
             }
-        } else {
-            manager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                timeInMillis,
-                pendingIntent
-            )
+        } catch (_: IllegalStateException) {
         }
     }
 

@@ -7,17 +7,30 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import `in`.iambhvsh.shelf.data.SettingsRepository
 import `in`.iambhvsh.shelf.features.fetch.UrlUtils
 import `in`.iambhvsh.shelf.features.save.QuickSaveEvents
 import `in`.iambhvsh.shelf.screens.save.QuickSaveScreen
 import `in`.iambhvsh.shelf.features.save.QuickSaveViewModel
 import `in`.iambhvsh.shelf.theme.ShelfTheme
+import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.koinViewModel
 
 class QuickSaveActivity : ComponentActivity() {
+    private val settingsRepository: SettingsRepository by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (!SessionManager.canAccessQuickSave(
+                appLockEnabled = settingsRepository.getAppLockEnabled(),
+                timeout = settingsRepository.getAppLockTimeout()
+            )
+        ) {
+            Toast.makeText(this, "Shelf is locked. Unlock Shelf first.", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
 
         val sharedText = intent?.getStringExtra(Intent.EXTRA_TEXT)?.trim()
         
@@ -28,6 +41,11 @@ class QuickSaveActivity : ComponentActivity() {
         }
 
         val url = UrlUtils.extractUrl(sharedText)
+        if (url.isBlank()) {
+            Toast.makeText(this, "No valid link", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
 
         setContent {
             val viewModel: QuickSaveViewModel = koinViewModel()
@@ -38,9 +56,9 @@ class QuickSaveActivity : ComponentActivity() {
             }
 
             ShelfTheme(
-                themeMode = `in`.iambhvsh.shelf.theme.ThemeMode.SYSTEM,
-                dynamicColor = true,
-                accentColor = `in`.iambhvsh.shelf.theme.AccentColor.PERIWINKLE
+                themeMode = settingsRepository.getThemeMode(),
+                dynamicColor = settingsRepository.getDynamicColor(),
+                accentColor = settingsRepository.getAccentColor()
             ) {
                 QuickSaveScreen(
                     state = state,

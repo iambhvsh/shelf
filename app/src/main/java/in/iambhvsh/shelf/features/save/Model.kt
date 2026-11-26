@@ -24,8 +24,10 @@ class QuickSaveViewModel(
     private val parser: LinkMetadataParser = LinkMetadataParser(),
     private val externalScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) : ViewModel() {
+    private var saveJob: Job? = null
     private var metadataJob: Job? = null
     private var pendingCancel = false
+    private var rollbackCompleted = false
     private var trashedSnapshot: Bookmark? = null
     private var trashedCollectionId: Long? = null
     private var trashedTags: List<Tag> = emptyList()
@@ -48,6 +50,7 @@ class QuickSaveViewModel(
                 }
                 if (_state.value.url == normalizedUrl && _state.value.bookmarkId != null) return
                 pendingCancel = false
+                rollbackCompleted = false
                 trashedSnapshot = null
                 trashedCollectionId = null
                 trashedTags = emptyList()
@@ -74,15 +77,22 @@ class QuickSaveViewModel(
                 val bookmarkId = _state.value.bookmarkId ?: return
                 viewModelScope.launch {
                     val tag = _state.value.allTags.find { it.id == event.tagId } ?: return@launch
-                    val currentTags = _state.value.selectedTags.toMutableList()
-                    if (currentTags.any { it.id == event.tagId }) {
+                    val currentlySelected = _state.value.selectedTags.any { it.id == event.tagId }
+                    if (currentlySelected) {
                         repository.removeTagFromBookmark(bookmarkId, event.tagId)
-                        currentTags.removeAll { it.id == event.tagId }
                     } else {
                         repository.addTagToBookmark(bookmarkId, event.tagId)
-                        currentTags.add(tag)
                     }
-                    _state.update { it.copy(selectedTags = currentTags) }
+                    _state.update { current ->
+                        val updated = if (currentlySelected) {
+                            current.selectedTags.filterNot { it.id == event.tagId }
+                        } else if (current.selectedTags.any { it.id == event.tagId }) {
+                            current.selectedTags
+                        } else {
+                            current.selectedTags + tag
+                        }
+                        current.copy(selectedTags = updated)
+                    }
                 }
             }
 
@@ -99,36 +109,33 @@ class QuickSaveViewModel(
             is QuickSaveEvents.DeleteTag -> {
                 viewModelScope.launch {
                     repository.deleteTag(event.tagId)
-                    val currentTags = _state.value.selectedTags.toMutableList()
-                    currentTags.removeAll { it.id == event.tagId }
-                    _state.update { it.copy(selectedTags = currentTags) }
+                    _state.update { current ->
+                        current.copy(selectedTags = current.selectedTags.filterNot { it.id == event.tagId })
+                    }
                 }
             }
 
             QuickSaveEvents.CancelSave -> {
                 pendingCancel = true
-                metadataJob?.cancel()
-                val current = _state.value
-                val bookmarkId = current.bookmarkId ?: return
-                if (current.isAlreadySaved) return
-                val snapshot = trashedSnapshot
-                val colId = trashedCollectionId
-                val tagsToRestore = trashedTags
+                val activeSaveJob = saveJob
+                val activeMetadataJob = metadataJob
+                activeMetadataJob?.cancel()
                 externalScope.launch {
-                    if (current.wasRestoredFromTrash && snapshot != null) {
-                        restoreTrashedSnapshot(bookmarkId, snapshot, colId, tagsToRestore)
-                    } else if (current.wasRestoredFromTrash) {
-                        repository.hideBookmarks(listOf(bookmarkId))
-                    } else {
-                        val initialBookmark = Bookmark(
-                            id = bookmarkId,
-                            url = current.url,
-                            title = null,
-                            description = null,
-                            imageUrl = null
-                        )
-                        repository.deleteBookmark(initialBookmark)
-                    }
+                    activeSaveJob?.join()
+                    activeMetadataJob?.join()
+                    if (rollbackCompleted) return@launch
+                    val current = _state.value
+                    val bookmarkId = current.bookmarkId ?: return@launch
+                    if (current.isAlreadySaved) return@launch
+                    rollbackCompleted = true
+                    performCancelRollback(
+                        bookmarkId = bookmarkId,
+                        url = current.url,
+                        wasRestoredFromTrash = current.wasRestoredFromTrash,
+                        snapshot = trashedSnapshot,
+                        colId = trashedCollectionId,
+                        tagsToRestore = trashedTags
+                    )
                 }
             }
             
@@ -142,7 +149,7 @@ class QuickSaveViewModel(
     }
 
     private fun saveBookmarkInitially(url: String) {
-        viewModelScope.launch {
+        saveJob = externalScope.launch {
             val status = repository.findBookmarkStatusByUrl(url)
             val existingByUrl = status?.bookmark
             val exists = status != null && !status.isHidden
@@ -162,14 +169,16 @@ class QuickSaveViewModel(
             val id = repository.saveAndReturnId(initialBookmark)
 
             if (pendingCancel) {
-                if (!exists) {
-                    if (wasInTrash && trashedSnapshot != null) {
-                        restoreTrashedSnapshot(id, trashedSnapshot!!, trashedCollectionId, trashedTags)
-                    } else if (wasInTrash) {
-                        repository.hideBookmarks(listOf(id))
-                    } else {
-                        repository.deleteBookmark(initialBookmark.copy(id = id))
-                    }
+                if (!exists && !rollbackCompleted) {
+                    rollbackCompleted = true
+                    performCancelRollback(
+                        bookmarkId = id,
+                        url = url,
+                        wasRestoredFromTrash = wasInTrash,
+                        snapshot = trashedSnapshot,
+                        colId = trashedCollectionId,
+                        tagsToRestore = trashedTags
+                    )
                 }
                 return@launch
             }
@@ -197,6 +206,30 @@ class QuickSaveViewModel(
             } else {
                 _state.update { it.copy(isSaving = false) }
             }
+        }
+    }
+
+    private suspend fun performCancelRollback(
+        bookmarkId: Long,
+        url: String,
+        wasRestoredFromTrash: Boolean,
+        snapshot: Bookmark?,
+        colId: Long?,
+        tagsToRestore: List<Tag>
+    ) {
+        if (wasRestoredFromTrash && snapshot != null) {
+            restoreTrashedSnapshot(bookmarkId, snapshot, colId, tagsToRestore)
+        } else if (wasRestoredFromTrash) {
+            repository.hideBookmarks(listOf(bookmarkId))
+        } else {
+            val initialBookmark = Bookmark(
+                id = bookmarkId,
+                url = url,
+                title = null,
+                description = null,
+                imageUrl = null
+            )
+            repository.deleteBookmark(initialBookmark)
         }
     }
     

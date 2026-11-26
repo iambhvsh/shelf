@@ -45,6 +45,7 @@ fun HomeScreen(
     isSearching: Boolean = false,
     searchResults: List<Bookmark> = emptyList(),
     searchQuery: String = "",
+    isSearchLoading: Boolean = false,
     viewModel: HomeViewModel = koinViewModel(),
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
@@ -140,7 +141,7 @@ fun HomeScreen(
                 viewMode = viewMode,
                 selectedIds = state.selectedIds,
                 isSelectionMode = state.isSelectionMode,
-                isLoading = state.isLoading,
+                isLoading = isSearchLoading,
                 onBodyClick = { item -> handleTap(item, tapAction, context, clipboard, viewModel) },
                 onPhotoClick = { viewModel.homeEvents(HomeEvents.PreviewImageClick(url = it)) },
                 onNoteClick = { item ->

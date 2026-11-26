@@ -252,7 +252,15 @@ class BackupTest {
         """.trimIndent()
         val res = importBookmarksFromHtml(html, store.bookmarkDao, store.collectionDao)
         assertEquals(1, res.imported)
+        assertEquals(0, res.skipped)
         assertEquals(2, res.collections)
         assertEquals(2, store.collectionCrossRefsState.value.size)
+
+        val emptyTitleId = store.bookmarkDao.insertWithReturn(
+            BookmarkEntity(url = "https://blanktitle.dev", title = "   ", description = null, imageUrl = null)
+        )
+        assertTrue(emptyTitleId > 0)
+        val exported = exportBookmarksToHtml(store.bookmarkDao, store.collectionDao)
+        assertTrue(exported.contains(">https://blanktitle.dev</A>"))
     }
 }

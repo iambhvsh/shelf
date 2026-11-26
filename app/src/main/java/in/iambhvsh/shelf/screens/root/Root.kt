@@ -33,6 +33,7 @@ import `in`.iambhvsh.shelf.features.home.HomeViewModel
 import `in`.iambhvsh.shelf.features.search.SearchViewModel
 import `in`.iambhvsh.shelf.features.setting.SettingEvents
 import `in`.iambhvsh.shelf.features.setting.SettingViewModel
+import `in`.iambhvsh.shelf.nav.AppRoute
 import `in`.iambhvsh.shelf.theme.ShelfTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -42,6 +43,8 @@ fun Root(
     sharedUrl: String? = null,
     openBookmarkId: Long? = null,
     intentId: Int = 0,
+    onOpenBookmarkConsumed: () -> Unit = {},
+    onSharedUrlConsumed: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
     collectionViewModel: CollectionViewModel = koinViewModel(),
     settingViewModel: SettingViewModel = koinViewModel(),
@@ -75,6 +78,12 @@ fun Root(
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val scrollBehavior = if (navState.isDeepScreen) pinnedScrollBehavior else enterAlwaysScrollBehavior
 
+    LaunchedEffect(state.isSelectionMode, collectionState.isSelectionMode) {
+        if (state.isSelectionMode || collectionState.isSelectionMode) {
+            enterAlwaysScrollBehavior.state.heightOffset = 0f
+            enterAlwaysScrollBehavior.state.contentOffset = 0f
+        }
+    }
     LaunchedEffect(isSearching) {
         if (isSearching) focusRequester.requestFocus()
     }
@@ -86,9 +95,27 @@ fun Root(
     LaunchedEffect(state.activeTagFilters) {
         searchViewModel.onTagsChange(state.activeTagFilters)
     }
+    LaunchedEffect(sharedUrl, intentId) {
+        if (sharedUrl != null) {
+            if (navState.currentRoute != AppRoute.Home.route) {
+                enterAlwaysScrollBehavior.state.heightOffset = 0f
+                enterAlwaysScrollBehavior.state.contentOffset = 0f
+                navigateRootTab(navController, navState.currentRoute, 0)
+            }
+            viewModel.homeEvents(HomeEvents.OnTextFieldValueChange(sharedUrl))
+            viewModel.homeEvents(HomeEvents.FabClick)
+            onSharedUrlConsumed()
+        }
+    }
     LaunchedEffect(openBookmarkId, intentId) {
-        if (openBookmarkId != null && !state.isBodySheet) {
+        if (openBookmarkId != null) {
+            if (navState.currentRoute != AppRoute.Home.route) {
+                enterAlwaysScrollBehavior.state.heightOffset = 0f
+                enterAlwaysScrollBehavior.state.contentOffset = 0f
+                navigateRootTab(navController, navState.currentRoute, 0)
+            }
             viewModel.homeEvents(HomeEvents.OpenBookmarkById(openBookmarkId))
+            onOpenBookmarkConsumed()
         }
     }
     LaunchedEffect(isCollectionSearching) {
@@ -236,6 +263,8 @@ fun RootScreen(
     sharedUrl: String? = null,
     openBookmarkId: Long? = null,
     intentId: Int = 0,
+    onOpenBookmarkConsumed: () -> Unit = {},
+    onSharedUrlConsumed: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
     collectionViewModel: CollectionViewModel = koinViewModel(),
     settingViewModel: SettingViewModel = koinViewModel(),
@@ -244,6 +273,8 @@ fun RootScreen(
     sharedUrl = sharedUrl,
     openBookmarkId = openBookmarkId,
     intentId = intentId,
+    onOpenBookmarkConsumed = onOpenBookmarkConsumed,
+    onSharedUrlConsumed = onSharedUrlConsumed,
     viewModel = viewModel,
     collectionViewModel = collectionViewModel,
     settingViewModel = settingViewModel,

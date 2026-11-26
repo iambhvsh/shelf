@@ -28,6 +28,7 @@ sealed class SettingEvents {
     data class ToggleAppLock(val enabled: Boolean) : SettingEvents()
     data class ToggleAppLockUsePin(val enabled: Boolean) : SettingEvents()
     data class SetAppLockTimeout(val timeout: Long) : SettingEvents()
+    object SyncSecurityState : SettingEvents()
     object ShowAppLockTimeoutSheet : SettingEvents()
     object HideAppLockTimeoutSheet : SettingEvents()
     data class ImportBrowserBookmarks(val html: String) : SettingEvents()

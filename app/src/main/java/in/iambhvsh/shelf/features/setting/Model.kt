@@ -108,9 +108,9 @@ class SettingViewModel(
             }
             SettingEvents.ConfirmAutoBackupEnable -> {
                 settingsRepository.setAutoBackupEnabled(true)
+                _state.update { it.copy(autoBackupEnabled = true, showAutoBackupInfoDialog = false) }
                 backupManager.startAutoBackup()
                 backupManager.refreshLastBackupTime()
-                _state.update { it.copy(autoBackupEnabled = true, showAutoBackupInfoDialog = false) }
             }
             is SettingEvents.SetAutoBackupUri -> {
                 settingsRepository.setAutoBackupUri(event.uri)
@@ -132,6 +132,15 @@ class SettingViewModel(
             is SettingEvents.SetAppLockTimeout -> {
                 settingsRepository.setAppLockTimeout(event.timeout)
                 _state.update { it.copy(appLockTimeout = event.timeout, showAppLockTimeoutSheet = false) }
+            }
+            SettingEvents.SyncSecurityState -> {
+                _state.update {
+                    it.copy(
+                        appLockEnabled = settingsRepository.getAppLockEnabled(),
+                        appLockUsePinEnabled = settingsRepository.getAppLockUsePinEnabled(),
+                        appLockTimeout = settingsRepository.getAppLockTimeout()
+                    )
+                }
             }
             SettingEvents.ShowAppLockTimeoutSheet -> _state.update { it.copy(showAppLockTimeoutSheet = true) }
             SettingEvents.HideAppLockTimeoutSheet -> _state.update { it.copy(showAppLockTimeoutSheet = false) }

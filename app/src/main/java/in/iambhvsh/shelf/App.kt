@@ -2,6 +2,7 @@ package `in`.iambhvsh.shelf
 
 import android.app.Application
 import android.content.Context
+import android.os.Bundle
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -36,6 +37,7 @@ class App : Application(), DefaultLifecycleObserver {
 
     private val settingsRepository: SettingsRepository by inject()
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var sawMainActivitySinceStop = false
 
     override fun onCreate() {
         super<Application>.onCreate()
@@ -52,6 +54,20 @@ class App : Application(), DefaultLifecycleObserver {
         }
         GlobalContext.getOrNull()?.get<BackupManager>()
 
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: android.app.Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityStarted(activity: android.app.Activity) {
+                if (activity is MainActivity) {
+                    sawMainActivitySinceStop = true
+                }
+            }
+            override fun onActivityResumed(activity: android.app.Activity) {}
+            override fun onActivityPaused(activity: android.app.Activity) {}
+            override fun onActivityStopped(activity: android.app.Activity) {}
+            override fun onActivitySaveInstanceState(activity: android.app.Activity, outState: Bundle) {}
+            override fun onActivityDestroyed(activity: android.app.Activity) {}
+        })
+
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
@@ -64,7 +80,8 @@ class App : Application(), DefaultLifecycleObserver {
 
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
-        SessionManager.onAppBackgrounded()
+        SessionManager.onProcessStopped(hasMainActivityForeground = sawMainActivitySinceStop)
+        sawMainActivitySinceStop = false
     }
 }
 

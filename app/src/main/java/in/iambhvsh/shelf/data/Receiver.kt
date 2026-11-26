@@ -44,14 +44,26 @@ class InstallationReceiver : BroadcastReceiver() {
                 }
             }
             PackageInstaller.STATUS_SUCCESS -> {
+                cleanupUpdateApk(context)
                 Toast.makeText(context, "Update installed successfully", Toast.LENGTH_SHORT).show()
             }
             PackageInstaller.STATUS_FAILURE, PackageInstaller.STATUS_FAILURE_ABORTED,
             PackageInstaller.STATUS_FAILURE_BLOCKED, PackageInstaller.STATUS_FAILURE_CONFLICT,
             PackageInstaller.STATUS_FAILURE_INCOMPATIBLE, PackageInstaller.STATUS_FAILURE_INVALID,
             PackageInstaller.STATUS_FAILURE_STORAGE -> {
+                cleanupUpdateApk(context)
                 Toast.makeText(context, "Update failed: $message", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    private fun cleanupUpdateApk(context: Context) {
+        runCatching {
+            val file = java.io.File(
+                context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS),
+                "shelf_update.apk"
+            )
+            if (file.exists()) file.delete()
         }
     }
 

@@ -26,6 +26,8 @@ class CollectionViewModel(
     internal var tagsJob: Job? = null
     internal var tempBookmarkTagsJob: Job? = null
     internal var rawCollectionBookmarks: List<Bookmark> = emptyList()
+    internal var activeDetailSessionToken: Long = 0L
+    internal var detailSessionCounter: Long = 0L
     internal val attemptedImageRefreshes = mutableSetOf<String>()
 
     init {
@@ -39,22 +41,19 @@ class CollectionViewModel(
             CollectionEvents.ShowCreateDialog -> _state.update { it.copy(showCreateDialog = true, inputName = "") }
             CollectionEvents.HideCreateDialog -> _state.update { it.copy(showCreateDialog = false, inputName = "") }
             CollectionEvents.CreateCollection -> createCollection()
-            is CollectionEvents.SelectCollection -> selectCollection(event.collection)
-            is CollectionEvents.SelectCollectionById -> selectCollectionById(event.collectionId)
-            CollectionEvents.ClearSelectedCollection -> {
-                collectionJob?.cancel()
-                tempBookmarkTagsJob?.cancel()
-                _state.update {
-                    it.copy(
-                        selectedCollection = null,
-                        collectionBookmarks = emptyList(),
-                        isDetailSelectionMode = false,
-                        detailSelectedIds = emptySet(),
-                        tempBookmark = null,
-                        tempBookmarkTags = emptyList(),
-                        showAddBookmarkDialog = false,
-                        addBookmarkUrl = ""
-                    )
+            is CollectionEvents.SelectCollection -> {
+                activeDetailSessionToken = ++detailSessionCounter
+                selectCollection(event.collection)
+            }
+            is CollectionEvents.SelectCollectionById -> {
+                activeDetailSessionToken = if (event.sessionToken != 0L) event.sessionToken else ++detailSessionCounter
+                selectCollectionById(event.collectionId)
+            }
+            CollectionEvents.ClearSelectedCollection -> clearSelectedCollectionState()
+            is CollectionEvents.ClearCollectionIfMatches -> {
+                val tokenMatches = event.sessionToken == 0L || event.sessionToken == activeDetailSessionToken
+                if (tokenMatches && _state.value.selectedCollection?.id == event.collectionId) {
+                    clearSelectedCollectionState()
                 }
             }
             is CollectionEvents.ToggleSelection -> {
@@ -189,8 +188,13 @@ class CollectionViewModel(
                     repository.updateReminderTime(event.id, null)
                     reminderManager.cancelReminder(event.id)
                     _state.update {
-                        if (it.isDetailBodySheet) it.copy(showReminderPicker = false)
-                        else {
+                        if (it.isDetailBodySheet) {
+                            it.copy(
+                                showReminderPicker = false,
+                                tempBookmark = it.tempBookmark?.takeIf { bm -> bm.id == event.id }?.copy(reminderTime = null)
+                                    ?: it.tempBookmark
+                            )
+                        } else {
                             tempBookmarkTagsJob?.cancel()
                             it.copy(showReminderPicker = false, tempBookmark = null, tempBookmarkTags = emptyList())
                         }
@@ -221,9 +225,25 @@ class CollectionViewModel(
     }
 
     fun backToCollections() {
+        clearSelectedCollectionState()
+    }
+
+    private fun clearSelectedCollectionState() {
         collectionJob?.cancel()
         tempBookmarkTagsJob?.cancel()
-        _state.update { it.copy(selectedCollection = null, collectionBookmarks = emptyList(), tempBookmark = null, tempBookmarkTags = emptyList()) }
+        _state.update {
+            it.copy(
+                selectedCollection = null,
+                collectionBookmarks = emptyList(),
+                isDetailSelectionMode = false,
+                detailSelectedIds = emptySet(),
+                tempBookmark = null,
+                tempBookmarkTags = emptyList(),
+                showAddBookmarkDialog = false,
+                addBookmarkUrl = "",
+                isDetailLoading = false
+            )
+        }
     }
 
     fun clearTransientState() {

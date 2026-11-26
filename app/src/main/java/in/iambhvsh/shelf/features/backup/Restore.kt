@@ -88,7 +88,9 @@ suspend fun importBackupFromJson(
         } catch (e: Exception) {
             val sanitized = sanitizeJson(trimmed)
             if (sanitized != null) {
-                val trailing = trimmed.substring(sanitized.length).trim()
+                val startIndex = trimmed.indexOf('{').coerceAtLeast(0)
+                val endOffset = (startIndex + sanitized.length).coerceAtMost(trimmed.length)
+                val trailing = trimmed.substring(endOffset).trim()
                 Pair(json.decodeFromString<BackupData>(sanitized), trailing)
             } else {
                 throw e

@@ -12,9 +12,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -236,6 +238,15 @@ fun SettingsTrashScreen(
                         }
                     }
 
+                    LaunchedEffect(state.trashToastMessage) {
+                        if ((state.trashToastMessage == "Restore failed" || state.trashToastMessage == "Delete failed") &&
+                            dismissState.currentValue != SwipeToDismissBoxValue.Settled &&
+                            pendingSwipeDeleteBookmark?.id != item.id
+                        ) {
+                            dismissState.reset()
+                        }
+                    }
+
                     SwipeToDismissBox(
                         state = dismissState,
                         enableDismissFromStartToEnd = !isSelectionMode,
@@ -295,17 +306,20 @@ fun SettingsTrashScreen(
                             }
                         }
                     ) {
+                        val cardInteractionSource = remember { MutableInteractionSource() }
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
-                                .expressiveBounce(scaleDown = 0.98f)
+                                .expressiveBounce(scaleDown = 0.98f, interactionSource = cardInteractionSource)
                                 .clip(cardShape)
                                 .then(
                                     if (isSelected) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, cardShape)
                                     else Modifier
                                 )
                                 .combinedClickable(
+                                    interactionSource = cardInteractionSource,
+                                    indication = LocalIndication.current,
                                     onClick = {
                                         if (isSelectionMode) {
                                             viewModel.onEvent(SettingEvents.ToggleTrashSelection(item.id))

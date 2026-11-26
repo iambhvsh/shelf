@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -67,6 +68,14 @@ open class BackupManager(
     open fun refreshLastBackupTime() {
         val file = getInternalBackupFile(context)
         _lastBackupTimeMillis.value = if (file.exists()) file.lastModified() else 0L
+    }
+
+    open fun clearInternalBackup() {
+        runCatching {
+            val file = getInternalBackupFile(context)
+            if (file.exists()) file.delete()
+        }
+        _lastBackupTimeMillis.value = 0L
     }
 
     open fun startAutoBackup() {
@@ -109,12 +118,20 @@ open class BackupManager(
                     BackupData(bookmarks = backupBookmarks, collections = backupCollections, tags = backupTags)
                 }
                 .collect { data ->
-                    val jsonString = json.encodeToString(data)
-                    _lastBackupTimeMillis.value = writeBackupToStorage(
-                        context = context,
-                        jsonString = jsonString,
-                        customUriStr = settingsRepository.getAutoBackupUri()
-                    )
+                    try {
+                        val jsonString = json.encodeToString(data)
+                        val timestamp = writeBackupToStorage(
+                            context = context,
+                            jsonString = jsonString,
+                            customUriStr = settingsRepository.getAutoBackupUri()
+                        )
+                        if (timestamp != null) {
+                            _lastBackupTimeMillis.value = timestamp
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                    }
                 }
         }
     }
@@ -126,7 +143,7 @@ open class BackupManager(
 
     open fun readInternalBackup(): String? = readInternalBackupFile(context)
 
-    open suspend fun generateBackupJson(): String {
+    open suspend fun generateBackupJson(): String = withContext(ioDispatcher) {
         val bookmarks = bookmarkDao.getAllBookmarksOnce()
         val collections = collectionDao.getAllCollectionsRaw().first()
 
@@ -155,13 +172,16 @@ open class BackupManager(
         val backupTags = allTags.map { BackupTag(it.name) }
 
         val data = BackupData(bookmarks = backupBookmarks, collections = backupCollections, tags = backupTags)
-        return json.encodeToString(data)
+        json.encodeToString(data)
     }
 
-    open suspend fun generateExportHtml(): String = exportBookmarksToHtml(bookmarkDao, collectionDao)
+    open suspend fun generateExportHtml(): String = withContext(ioDispatcher) {
+        exportBookmarksToHtml(bookmarkDao, collectionDao)
+    }
 
-    open suspend fun importFromBrowserBookmarks(html: String): BrowserImportResult =
+    open suspend fun importFromBrowserBookmarks(html: String): BrowserImportResult = withContext(ioDispatcher) {
         importBookmarksFromHtml(html, bookmarkDao, collectionDao, database)
+    }
 
     open fun refreshImportedThumbnailsAsync(checkExistingImages: Boolean) {
         scope.launch {
@@ -205,7 +225,7 @@ open class BackupManager(
         }
     }
 
-    open suspend fun importFromJson(jsonString: String): JsonImportResult {
+    open suspend fun importFromJson(jsonString: String): JsonImportResult = withContext(ioDispatcher) {
         val result = importBackupFromJson(
             jsonString = jsonString,
             json = json,
@@ -222,6 +242,6 @@ open class BackupManager(
                 reminderManager.scheduleReminder(bm.id, time)
             }
         }
-        return result
+        result
     }
 }

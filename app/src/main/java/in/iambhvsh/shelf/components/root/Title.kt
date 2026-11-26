@@ -124,6 +124,7 @@ fun HeaderCenterSlot(
     isSearching: Boolean,
     titleBias: Float,
     titleXOffset: Dp,
+    titleEndPadding: Dp = 0.dp,
     isShiftedToStart: Boolean,
     isSelectionMode: Boolean,
     selectedCount: Int,
@@ -178,6 +179,7 @@ fun HeaderCenterSlot(
                 GreetingTitle(
                     headerTitle = headerTitle,
                     titleXOffset = titleXOffset,
+                    titleEndPadding = titleEndPadding,
                     isShiftedToStart = isShiftedToStart
                 )
             }

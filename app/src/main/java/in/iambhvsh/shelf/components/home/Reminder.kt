@@ -116,6 +116,7 @@ fun ReminderPickerSheet(
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberShelfSheetState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -163,16 +164,25 @@ fun ReminderPickerSheet(
             confirmButton = {
                 ExpressiveTextButton(
                     onClick = {
-                        showTimePicker = false
                         val selectedDate = datePickerState.selectedDateMillis
                         if (selectedDate != null) {
-                            onSetReminder(
-                                combineUtcDateWithLocalTime(
-                                    utcDateMillis = selectedDate,
-                                    hour = timePickerState.hour,
-                                    minute = timePickerState.minute
-                                )
+                            val scheduledMillis = combineUtcDateWithLocalTime(
+                                utcDateMillis = selectedDate,
+                                hour = timePickerState.hour,
+                                minute = timePickerState.minute
                             )
+                            if (scheduledMillis > System.currentTimeMillis()) {
+                                showTimePicker = false
+                                onSetReminder(scheduledMillis)
+                            } else {
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "Please pick a future time",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } else {
+                            showTimePicker = false
                         }
                     }
                 ) {

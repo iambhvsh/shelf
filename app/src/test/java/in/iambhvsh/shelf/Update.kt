@@ -250,4 +250,14 @@ class UpdateTest {
         }
         assertTrue(cancelledCaught)
     }
+
+    @Test
+    fun testIsVersionNewer_prereleaseVsStableAndBuildMetadata() {
+        assertTrue(UpdateManagerImpl.isVersionNewer("2.0.5-beta", "2.0.5"))
+        assertTrue(UpdateManagerImpl.isVersionNewer("2.0.5-beta", "v2.0.5"))
+        assertFalse(UpdateManagerImpl.isVersionNewer("2.0.5", "2.0.5-beta"))
+        assertTrue(UpdateManagerImpl.isVersionNewer("2.0.5-alpha", "2.0.5-beta"))
+        assertTrue(UpdateManagerImpl.isVersionNewer("2.0.5+32", "2.0.6+33"))
+        assertFalse(UpdateManagerImpl.isVersionNewer("2.0.5+32", "2.0.5+33"))
+    }
 }

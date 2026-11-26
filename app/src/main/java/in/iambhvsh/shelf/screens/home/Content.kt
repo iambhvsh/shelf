@@ -16,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -50,6 +51,19 @@ fun HomeContent(
 ) {
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val hasTags = state.tags.isNotEmpty() && !state.isSelectionMode
+
+    val canScrollContent = if (viewMode == ViewMode.GRID) {
+        gridState.canScrollForward || gridState.canScrollBackward
+    } else {
+        listState.canScrollForward || listState.canScrollBackward
+    }
+
+    LaunchedEffect(canScrollContent, state.bookmarkData.size, state.activeTagFilters) {
+        if (!canScrollContent) {
+            scrollBehavior?.state?.heightOffset = 0f
+            scrollBehavior?.state?.contentOffset = 0f
+        }
+    }
 
     Box(
         modifier = modifier

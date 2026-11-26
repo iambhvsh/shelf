@@ -18,6 +18,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import `in`.iambhvsh.shelf.components.common.rememberShelfSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -44,9 +48,11 @@ fun HomeInputSheet(
         val screenHeight = configuration.screenHeightDp.dp
         val sheetState = rememberShelfSheetState(skipPartiallyExpanded = false)
         val scope = androidx.compose.runtime.rememberCoroutineScope()
+        var isSubmitting by remember { mutableStateOf(false) }
 
         val animateDismiss: (action: (() -> Unit)?) -> Unit = { action ->
-            kotlinx.coroutines.CoroutineScope(scope.coroutineContext).run {
+            if (!isSubmitting) {
+                isSubmitting = true
                 scope.launch {
                     sheetState.hide()
                     action?.invoke()
@@ -123,7 +129,7 @@ fun HomeInputSheet(
 
                 ExpressiveButton(
                     onClick = { animateDismiss(onSaveClick) },
-                    enabled = isValidUrl,
+                    enabled = isValidUrl && !isSubmitting,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Save Bookmark")
@@ -132,7 +138,8 @@ fun HomeInputSheet(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 ExpressiveTextButton(
-                    onClick = { animateDismiss(null) }
+                    onClick = { animateDismiss(null) },
+                    enabled = !isSubmitting
                 ) {
                     Text("Cancel")
                 }

@@ -133,7 +133,7 @@ private fun PreviewMedia(
     onPhotoClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    var imageFailed by remember { mutableStateOf(false) }
+    var imageFailed by remember(imageUrl) { mutableStateOf(false) }
     if (imageFailed) return
 
     val containerHeight = if (isPortrait) 240.dp else 200.dp

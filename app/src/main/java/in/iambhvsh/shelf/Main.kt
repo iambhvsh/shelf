@@ -104,7 +104,19 @@ class MainActivity : FragmentActivity() {
             val openBookmarkId = currentIntent?.getLongExtra("OPEN_BOOKMARK_ID", -1L)?.takeIf { it != -1L }
 
             if (isAuthenticatedState) {
-                Root(sharedUrl = sharedUrl, openBookmarkId = openBookmarkId, intentId = intentId)
+                Root(
+                    sharedUrl = sharedUrl,
+                    openBookmarkId = openBookmarkId,
+                    intentId = intentId,
+                    onOpenBookmarkConsumed = {
+                        currentIntent?.removeExtra("OPEN_BOOKMARK_ID")
+                        intent?.removeExtra("OPEN_BOOKMARK_ID")
+                    },
+                    onSharedUrlConsumed = {
+                        currentIntent?.removeExtra(Intent.EXTRA_TEXT)
+                        intent?.removeExtra(Intent.EXTRA_TEXT)
+                    }
+                )
             } else {
                 ShelfTheme(
                     themeMode = settingsRepository.getThemeMode(),
@@ -181,6 +193,16 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        SessionManager.onMainActivityStopped(
+            appLockEnabled = settingsRepository.getAppLockEnabled(),
+            timeout = settingsRepository.getAppLockTimeout(),
+            isChangingConfigurations = isChangingConfigurations,
+            isAuthenticating = isAuthenticating
+        )
+    }
+
     private fun triggerAuthentication() {
         biometricError = null
         val info = buildPromptInfoIfAvailable(settingsRepository.getAppLockUsePinEnabled()) ?: return
@@ -199,15 +221,19 @@ class MainActivity : FragmentActivity() {
         }
 
         val canAuthenticate = BiometricManager.from(this).canAuthenticate(authenticators)
-        if (canAuthenticate == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED ||
-            canAuthenticate == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE ||
-            canAuthenticate == BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE
-        ) {
-            settingsRepository.setAppLockEnabled(false)
-            isAuthenticatedState = true
-            SessionManager.isUnlocked = true
-            biometricError = null
-            return null
+        when (resolveBiometricAvailability(canAuthenticate)) {
+            BiometricAvailability.AVAILABLE -> Unit
+            BiometricAvailability.UNSUPPORTED_OR_NOT_ENROLLED -> {
+                settingsRepository.setAppLockEnabled(false)
+                isAuthenticatedState = true
+                SessionManager.isUnlocked = true
+                biometricError = null
+                return null
+            }
+            BiometricAvailability.TEMPORARILY_UNAVAILABLE -> {
+                biometricError = "Biometric authentication is temporarily unavailable. Try again."
+                return null
+            }
         }
 
         val promptInfoBuilder = BiometricPrompt.PromptInfo.Builder()
@@ -230,6 +256,22 @@ class MainActivity : FragmentActivity() {
         setIntent(intent)
         currentIntent = intent
         intentId++
+    }
+}
+
+internal enum class BiometricAvailability {
+    AVAILABLE,
+    TEMPORARILY_UNAVAILABLE,
+    UNSUPPORTED_OR_NOT_ENROLLED
+}
+
+internal fun resolveBiometricAvailability(canAuthenticate: Int): BiometricAvailability {
+    return when (canAuthenticate) {
+        BiometricManager.BIOMETRIC_SUCCESS -> BiometricAvailability.AVAILABLE
+        BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED,
+        BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE,
+        BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> BiometricAvailability.UNSUPPORTED_OR_NOT_ENROLLED
+        else -> BiometricAvailability.TEMPORARILY_UNAVAILABLE
     }
 }
 

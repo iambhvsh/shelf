@@ -1,7 +1,8 @@
 package `in`.iambhvsh.shelf.components.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 val aspectRatioCache = ConcurrentHashMap<String, Float>()
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Media(
     imageUrl: String?,
@@ -70,9 +72,10 @@ fun Media(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable {
-                        if (isSelectionMode) onLongClick() else photoClickUrl(imageUrl)
-                    },
+                    .combinedClickable(
+                        onClick = { if (isSelectionMode) onLongClick() else photoClickUrl(imageUrl) },
+                        onLongClick = onLongClick
+                    ),
                 onSuccess = { state ->
                     val size = state.painter.intrinsicSize
                     if (size.width.isFinite() && size.height.isFinite() && size.width > 0f && size.height > 0f) {

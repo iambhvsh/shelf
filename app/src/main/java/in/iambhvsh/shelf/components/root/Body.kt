@@ -75,12 +75,13 @@ fun RootBody(
         navController = navController,
         homeScreen = {
             HomeScreen(
-                sharedUrl = sharedUrl,
+                sharedUrl = null,
                 tapAction = settingState.tapAction,
                 viewMode = settingState.viewMode,
                 isSearching = isSearching,
                 searchResults = searchState.searchResults,
                 searchQuery = searchState.searchQuery,
+                isSearchLoading = searchState.isLoading,
                 viewModel = viewModel,
                 scrollBehavior = scrollBehavior
             )

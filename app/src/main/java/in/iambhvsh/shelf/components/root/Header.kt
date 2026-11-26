@@ -93,6 +93,17 @@ fun ShelfHeader(
         label = "TitleOffset"
     )
 
+    val titleEndPadding by animateDpAsState(
+        targetValue = resolveHeaderTitleEndPadding(
+            isSelectionMode = isSelectionMode,
+            isCollectionDetail = isCollectionDetail,
+            isTrashScreen = isTrashScreen,
+            isDeepScreen = isDeepScreen
+        ),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "TitleEndPadding"
+    )
+
     val surface = MaterialTheme.colorScheme.surface
     val isHeaderInteractive by remember {
         derivedStateOf { smoothedAlpha.value > 0.05f }
@@ -133,6 +144,7 @@ fun ShelfHeader(
             isSearching = isSearching,
             titleBias = titleBias,
             titleXOffset = titleXOffset,
+            titleEndPadding = titleEndPadding,
             isShiftedToStart = isShiftedToStart,
             isSelectionMode = isSelectionMode,
             selectedCount = selectedCount,
@@ -234,4 +246,17 @@ fun ShelfHeader(
         }
     }
 }
+}
+
+internal fun resolveHeaderTitleEndPadding(
+    isSelectionMode: Boolean,
+    isCollectionDetail: Boolean,
+    isTrashScreen: Boolean,
+    isDeepScreen: Boolean
+): androidx.compose.ui.unit.Dp = when {
+    isSelectionMode -> 156.dp
+    isCollectionDetail -> 112.dp
+    isTrashScreen -> 64.dp
+    isDeepScreen -> 24.dp
+    else -> 0.dp
 }
